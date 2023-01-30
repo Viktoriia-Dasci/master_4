@@ -7,7 +7,7 @@
 # Commented out IPython magic to ensure Python compatibility.
 # %matplotlib inline
 import torch
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 from torch.nn import functional as F
 import torch.optim as optim
@@ -49,15 +49,14 @@ from optuna.trial import TrialState
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device
 
-from google.colab import drive
-drive.mount('/content/drive')
+#from google.colab import drive
+#drive.mount('/content/drive')
 
 # !pip install segmentation_models_pytorch
 from segmentation_models_pytorch import losses
 dice_loss = losses.DiceLoss('binary')
 foc_loss = losses.FocalLoss('binary')
 
-input_path = "/content/drive/MyDrive/data-pytorch/"
 
 """### 2. Create PyTorch data generators"""
 
@@ -107,8 +106,8 @@ class myDataset_train(Dataset):
 
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "/content/drive/MyDrive/data-pytorch/Train/"  
-        self.masks_path = "/content/drive/MyDrive/Slices/train_masks/" 
+        self.imgs_path = "/Users/vta/Downloads/data-pytorch/Val/"  
+        self.masks_path = "/Users/vta/Downloads/Slices/val_masks/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -172,8 +171,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/content/drive/MyDrive/data-pytorch/Val/"
-        self.masks_path = "/content/drive/MyDrive/Slices/val_masks/"
+        self.imgs_path = "/Users/vta/Downloads/data-pytorch/Test/"
+        self.masks_path = "/Users/vta/Downloads/Slices/test_masks/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -230,8 +229,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/content/drive/MyDrive/data-pytorch/Test/"
-        self.masks_path = "/content/drive/MyDrive/Slices/test_masks/"
+        self.imgs_path = "/Users/vta/Downloads/data-pytorch/Test/"
+        self.masks_path = "/Users/vta/Downloads/Slices/test_masks/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -304,22 +303,6 @@ def load_data(batch_size):
 
     return dataloaders
 
-#setting up tensorboard
-
-writer = SummaryWriter('runs/HGGvsLGG')
-
-# def show_img(img):
-#     # unnormalize the images
-#     img = img / 2 + 0.5 
-#     img = np.clip(img, 0, 1)
-#     npimg = img.numpy()
-#     #npimg = np.transpose(npimg, (1, 2, 0)
-#     #npimg = cv2.cvtColor(np.transpose(npimg, (1, 2, 0)), cv2.COLOR_RGB2GRAY)  
-#     plt.rcParams["figure.figsize"] = [10.00, 5.0]
-#     plt.rcParams["figure.autolayout"] = True
-#     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-#     #plt.imshow(npimg)
-#     return npimg # return the unnormalized images
 
 #unnormalize images
 def imshow(image):
@@ -577,10 +560,10 @@ def objective(trial):
      return accuracy
   
   
-EPOCHS = 10
+EPOCHS = 3
     
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), 
         pruner=optuna.pruners.HyperbandPruner(
         min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=30)
+study.optimize(objective, n_trials=3)
 
