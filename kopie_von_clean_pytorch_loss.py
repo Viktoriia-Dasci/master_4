@@ -110,6 +110,8 @@ class myDataset_train(Dataset):
         self.masks_path = "__MACOSX/Slices/val_masks/.*" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
+        print(file_list)
+        print(msk_list)
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
         #print(file_list)
         self.images = []
