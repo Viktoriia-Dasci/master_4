@@ -106,8 +106,8 @@ class myDataset_train(Dataset):
 
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "__MACOSX/data-pytorch/Val/"  
-        self.masks_path = "__MACOSX/Slices/val_masks/" 
+        self.imgs_path = "__MACOSX/data-pytorch/Val/.*"  
+        self.masks_path = "__MACOSX/Slices/val_masks/.*" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -171,8 +171,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "__MACOSX/data-pytorch/Test/"
-        self.masks_path = "__MACOSX/Slices/test_masks/"
+        self.imgs_path = "__MACOSX/data-pytorch/Test/.*"
+        self.masks_path = "__MACOSX/Slices/test_masks/.*"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -229,8 +229,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "_MACOSX/data-pytorch/Test/"
-        self.masks_path = "__MACOSX/Slices/test_masks/"
+        self.imgs_path = "_MACOSX/data-pytorch/Test/.*"
+        self.masks_path = "__MACOSX/Slices/test_masks/.*"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
