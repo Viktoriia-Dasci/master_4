@@ -192,12 +192,12 @@ class myDataset_val(Dataset):
         self.masks = []
         for class_path in file_list:
             class_name = class_path.split("/")[-1]
-            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+            for img_path in sorted(glob.glob(class_path + "/*")):
                 self.images.append(img_path)
-            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+            for img_path in sorted(glob.glob(class_path + "/*")):
                 self.targets.append(class_name)
         for msk_path in msk_list:
-            for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
+            for masks_path in sorted(glob.glob(msk_path + "/*")):
                   self.masks.append(masks_path)
         self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
         print(len(self.images))
