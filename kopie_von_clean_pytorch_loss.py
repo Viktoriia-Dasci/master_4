@@ -8,7 +8,7 @@
 #%matplotlib inline
 import torch
 #from torch.utils.tensorboard import SummaryWriter
-import torch.nn as nn
+from torch import nn
 #from torch.nn import functional as F
 import torch.optim as optim
 from torch import optim
