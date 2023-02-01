@@ -123,13 +123,13 @@ class myDataset_train(Dataset):
             print(class_name)
             #print(glob.glob(class_path + "/.*"))
             #print(sorted(glob.glob(class_path + "/.*")))
-            for img_path in sorted(glob.glob(class_path + "/*.")):
+            for img_path in sorted(glob.glob(class_path + "/*")):
                 #print(img_path)
                 self.images.append(img_path)
-            for img_path in sorted(glob.glob(class_path + "/*.")):
+            for img_path in sorted(glob.glob(class_path + "/*")):
                 self.targets.append(class_name)
         for msk_path in msk_list:
-            for masks_path in sorted(glob.glob(msk_path + "/*.")):
+            for masks_path in sorted(glob.glob(msk_path + "/*")):
                   self.masks.append(masks_path)
         print(len(self.images))
         print(len(self.targets))
