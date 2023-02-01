@@ -154,8 +154,8 @@ class myDataset_train(Dataset):
         masks_ID = self.masks[idx]
         masks_path = self.masks[idx]
         print(img_path)
-        img = np.load(img_path)
-        msk = np.load(masks_path)
+        img = np.load(img_path, allow_pickle=True)
+        msk = np.load(masks_path, allow_pickle=True)
         reshap_img = img.reshape(-1, 3)
         min_max_scaler = p.MinMaxScaler()
         img_t = min_max_scaler.fit_transform(reshap_img)
@@ -188,7 +188,7 @@ class myDataset_val(Dataset):
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
         print(msk_list)
-        msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
+        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
         self.images = []
         self.targets = []
         self.masks = []
