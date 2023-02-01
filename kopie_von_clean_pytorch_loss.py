@@ -5,7 +5,7 @@
 
 
 # Commented out IPython magic to ensure Python compatibility.
-# %matplotlib inline
+#%matplotlib inline
 import torch
 #from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
@@ -106,8 +106,8 @@ class myDataset_train(Dataset):
 
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "__MACOSX/data-pytorch/Val/.*"  
-        self.masks_path = "__MACOSX/Slices/val_masks/.*" 
+        self.imgs_path = "/home/viktoriia.trokhova/__MACOSX/data-pytorch/Train/"  
+        self.masks_path = "/home/viktoriia.trokhova/__MACOSX/Slices/train_masks/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -116,16 +116,24 @@ class myDataset_train(Dataset):
         #print(file_list)
         self.images = []
         self.targets = []
-        self.masks = []
+        self.masks = []       
         for class_path in file_list:
             class_name = class_path.split("/")[-1]
-            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+            print(class_path)
+            print(class_name)
+            #print(glob.glob(class_path + "/.*"))
+            #print(sorted(glob.glob(class_path + "/.*")))
+            for img_path in sorted(glob.glob(class_path + "/*.")):
+                #print(img_path)
                 self.images.append(img_path)
-            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+            for img_path in sorted(glob.glob(class_path + "/*.")):
                 self.targets.append(class_name)
         for msk_path in msk_list:
-            for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
+            for masks_path in sorted(glob.glob(msk_path + "/*.")):
                   self.masks.append(masks_path)
+        print(len(self.images))
+        print(len(self.targets))
+        print(len(self.masks))
         self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
         print(self.images[-100])
         print(self.targets[-100])
@@ -145,6 +153,7 @@ class myDataset_train(Dataset):
         masks_path = self.masks[idx]
         masks_ID = self.masks[idx]
         masks_path = self.masks[idx]
+        print(img_path)
         img = np.load(img_path)
         msk = np.load(masks_path)
         reshap_img = img.reshape(-1, 3)
@@ -173,8 +182,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "__MACOSX/data-pytorch/Test/.*"
-        self.masks_path = "__MACOSX/Slices/test_masks/.*"
+        self.imgs_path = "__MACOSX/Val/"
+        self.masks_path = "__MACOSX/Slices/val_masks/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -191,6 +200,9 @@ class myDataset_val(Dataset):
             for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
                   self.masks.append(masks_path)
         self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
+        print(len(self.images))
+        print(len(self.targets))
+        print(len(self.masks))
         print(self.images[-100])
         print(self.targets[-100])
         print(self.masks[-100])
@@ -207,6 +219,7 @@ class myDataset_val(Dataset):
         img_path  = self.images[idx]
         class_name = self.targets[idx]
         masks_path = self.masks[idx]
+        print(img_path)
         img = np.load(img_path)
         msk = np.load(masks_path)
         reshap_img = img.reshape(-1, 3)
@@ -231,8 +244,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "_MACOSX/data-pytorch/Test/.*"
-        self.masks_path = "__MACOSX/Slices/test_masks/.*"
+        self.imgs_path = "/home/viktoriia.trokhova/__MACOSX/data-pytorch/Test/"
+        self.masks_path = "__MACOSX/Slices/test_masks/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -241,20 +254,20 @@ class myDataset_test(Dataset):
         self.masks = []
         for class_path in file_list:
             class_name = class_path.split("/")[-1]
-            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+            for img_path in sorted(glob.glob(class_path + "/.*")):
                 self.images.append(img_path)
-            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+            for img_path in sorted(glob.glob(class_path + "/.*")):
                 self.targets.append(class_name)
         for msk_path in msk_list:
-            for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
+            for masks_path in sorted(glob.glob(msk_path + "/.*")):
                   self.masks.append(masks_path)
         self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
-        # print(self.images[-100])
-        # print(self.targets[-100])
-        # print(self.masks[-100])
-        # print(len(self.images))
-        # print(len(self.targets))
-        # print(len(self.masks))
+        print(self.images[-100])
+        print(self.targets[-100])
+        print(self.masks[-100])
+        print(len(self.images))
+        print(len(self.targets))
+        print(len(self.masks))
         self.class_map = {"HGG" : 0, "LGG": 1}
         self.img_dim = (224, 224)
 
@@ -265,8 +278,9 @@ class myDataset_test(Dataset):
         img_path  = self.images[idx]
         class_name = self.targets[idx]
         masks_path = self.masks[idx]
-        img = np.load(img_path)
-        msk = np.load(masks_path)
+        print(img_path)
+        img = np.load(img_path, allow_pickle=True, fix_imports=True, encoding='latin1')
+        msk = np.load(masks_path, allow_pickle=True, fix_imports=True, encoding='latin1')
         min_max_scaler = p.MinMaxScaler()
         img = min_max_scaler.fit_transform(img)
         msk = min_max_scaler.fit_transform(msk)
@@ -307,7 +321,7 @@ def load_data(batch_size):
 
 
 #unnormalize images
-def imshow(image):
+'''def imshow(image):
     npimg = image.numpy()
     npimg = np.transpose(npimg, (1,2,0))
     #npimg = np.clip(npimg, 0, 1)
@@ -363,7 +377,7 @@ msk_grid = torchvision.utils.make_grid(masks)
 #img_grid = show_img(img_grid)
 msk_grid = imshow(msk_grid)
 # write to tensorboard
-#writer.add_image('training images', img_grid)
+#writer.add_image('training images', img_grid)'''
 
 """### 3. Create the network"""
 
@@ -568,4 +582,3 @@ study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESam
         pruner=optuna.pruners.HyperbandPruner(
         min_resource=1, max_resource=6, reduction_factor=5))
 study.optimize(objective, n_trials=3)
-
