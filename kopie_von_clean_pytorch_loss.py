@@ -29,7 +29,7 @@ import pandas as pd
 import tensorflow as tf
 
 import matplotlib.pyplot as plt
-from PIL import Image
+#from PIL import Image
 import cv2
 import seaborn as sns
 
