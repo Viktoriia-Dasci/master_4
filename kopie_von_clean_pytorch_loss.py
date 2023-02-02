@@ -510,7 +510,7 @@ def train_and_evaluate(param, model, trial):
             total_acc_train = 0
             total_loss_train = 0
 
-            for train_input, train_label, train_mask in dataloaders['Train']:
+            for train_input, train_label, train_mask in dataloaders['Val']:
 
                 train_label = train_label.long().to(device)
                 train_input = train_input.float().to(device)
@@ -535,7 +535,7 @@ def train_and_evaluate(param, model, trial):
             # with torch.no_grad():
             
 
-            for val_input, val_label, val_mask in dataloaders['Val']:
+            for val_input, val_label, val_mask in dataloaders['Test']:
 
                 val_label = val_label.long().to(device)
                 val_input = val_input.float().to(device)
@@ -550,7 +550,7 @@ def train_and_evaluate(param, model, trial):
                 acc = (output.argmax(dim=1) == val_label).sum().item()
                 total_acc_val += acc
         
-            accuracy = total_acc_val/len(image_datasets['Val'])
+            accuracy = total_acc_val/len(image_datasets['Test'])
             print(accuracy)
             # Add prune mechanism
             trial.report(accuracy, epoch_num)
