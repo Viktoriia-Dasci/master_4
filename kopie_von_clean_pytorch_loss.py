@@ -107,7 +107,7 @@ class myDataset_train(Dataset):
     def __init__(self, transform=False): 
         #folder containing class folders with images
         self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Train/"  
-        self.masks_path = "/home/viktoriia.trokhova/__MACOSX/Slices/train_masks/" 
+        self.masks_path = "/home/viktoriia.trokhova/Slices-new/train_masks/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -182,8 +182,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/__MACOSX/Val/"
-        self.masks_path = "/home/viktoriia.trokhova/__MACOSX/Slices/val_masks/"
+        self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Val/"
+        self.masks_path = "/home/viktoriia.trokhova/Slices-new/val_masks/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -246,8 +246,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/__MACOSX/data-pytorch/Test/"
-        self.masks_path = "/home/viktoriia.trokhova/__MACOSX/Slices/test_masks/"
+        self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Test/"
+        self.masks_path = "/home/viktoriia.trokhova/Slices-new/test_masks/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
