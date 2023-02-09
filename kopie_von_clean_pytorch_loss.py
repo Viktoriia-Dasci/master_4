@@ -154,8 +154,8 @@ class myDataset_train(Dataset):
         masks_ID = self.masks[idx]
         masks_path = self.masks[idx]
         print(img_path)
-        img = np.load(img_path, allow_pickle=True,fix_imports=True,encoding='latin1')
-        msk = np.load(masks_path, allow_pickle=True,fix_imports=True,encoding='latin1')
+        img = np.load(img_path)
+        msk = np.load(masks_path)
         reshap_img = img.reshape(-1, 3)
         min_max_scaler = p.MinMaxScaler()
         img_t = min_max_scaler.fit_transform(reshap_img)
@@ -281,8 +281,8 @@ class myDataset_test(Dataset):
         class_name = self.targets[idx]
         masks_path = self.masks[idx]
         print(img_path)
-        img = np.load(img_path, allow_pickle=True, fix_imports=True, encoding='latin1')
-        msk = np.load(masks_path, allow_pickle=True, fix_imports=True, encoding='latin1')
+        img = np.load(img_path)
+        msk = np.load(masks_path)
         min_max_scaler = p.MinMaxScaler()
         img = min_max_scaler.fit_transform(img)
         msk = min_max_scaler.fit_transform(msk)
