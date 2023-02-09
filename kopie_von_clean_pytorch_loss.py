@@ -106,7 +106,7 @@ class myDataset_train(Dataset):
 
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/__MACOSX/data-pytorch/Train/"  
+        self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Train/"  
         self.masks_path = "/home/viktoriia.trokhova/__MACOSX/Slices/train_masks/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
