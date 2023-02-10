@@ -9,7 +9,7 @@
 import torch
 #from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
-#from torch.nn import functional as F
+from torch.nn import functional as F
 import torch.optim as optim
 from torch import optim
 from torch.utils import data
@@ -153,7 +153,6 @@ class myDataset_train(Dataset):
         masks_path = self.masks[idx]
         masks_ID = self.masks[idx]
         masks_path = self.masks[idx]
-        print(img_path)
         img = np.load(img_path)
         msk = np.load(masks_path)
         reshap_img = img.reshape(-1, 3)
