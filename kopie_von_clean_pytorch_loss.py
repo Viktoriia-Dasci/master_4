@@ -9,7 +9,7 @@
 import torch
 #from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
-from torch.nn import functional as F
+#from torch.nn import functional as F
 import torch.optim as optim
 from torch import optim
 from torch.utils import data
@@ -403,7 +403,7 @@ class MyCustomResnet50(nn.Module):
         output = output.view(input_imgs.size(0), -1)
         #images_outputs = self.fc1(output)
         output = dropout(output)
-        images_outputs = F.relu(self.fc2(output))
+        images_outputs = nn.relu(self.fc2(output))
 
 
         # # compute gcam for images
