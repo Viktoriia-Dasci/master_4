@@ -403,7 +403,7 @@ class MyCustomResnet50(nn.Module):
         output = output.view(input_imgs.size(0), -1)
         #images_outputs = self.fc1(output)
         output = dropout(output)
-        images_outputs = nn.relu(self.fc2(output))
+        images_outputs = nn.ReLU(self.fc2(output))
 
 
         # # compute gcam for images
