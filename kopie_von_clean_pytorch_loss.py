@@ -6,7 +6,8 @@
 
 # Commented out IPython magic to ensure Python compatibility.
 #%matplotlib inline
-os.environ["CUDA_MAX_MEM_ALLOC_PERCENT"] = "95"
+# import os
+# os.environ["CUDA_MAX_MEM_ALLOC_PERCENT"] = "95"
 import torch
 #from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
