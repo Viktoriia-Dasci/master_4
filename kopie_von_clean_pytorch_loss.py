@@ -561,7 +561,7 @@ def train_and_evaluate(param, model, trial):
             if trial.should_prune():
                 raise optuna.exceptions.TrialPruned()
     final_accuracy = max(accuracies)
-    PATH = '/content/drive/MyDrive/model_weights/model_best.pt'
+    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
     torch.save(model.state_dict(), PATH)
   
     return final_accuracy
