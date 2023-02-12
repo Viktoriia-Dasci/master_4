@@ -220,7 +220,6 @@ class myDataset_val(Dataset):
         img_path  = self.images[idx]
         class_name = self.targets[idx]
         masks_path = self.masks[idx]
-        print(img_path)
         img = np.load(img_path)
         msk = np.load(masks_path)
         reshap_img = img.reshape(-1, 3)
@@ -279,7 +278,6 @@ class myDataset_test(Dataset):
         img_path  = self.images[idx]
         class_name = self.targets[idx]
         masks_path = self.masks[idx]
-        print(img_path)
         img = np.load(img_path)
         msk = np.load(masks_path)
         min_max_scaler = p.MinMaxScaler()
