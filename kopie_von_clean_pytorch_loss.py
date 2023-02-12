@@ -498,8 +498,9 @@ Thresholds = []
 best_model_wts = {}
 
 # Train and evaluate the accuracy of neural network with the addition of pruning mechanism
+# Train and evaluate the accuracy of neural network with the addition of pruning mechanism
 def train_and_evaluate(param, model, trial):
-
+    accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
 
     #criterion = nn.CrossEntropyLoss()
@@ -551,20 +552,25 @@ def train_and_evaluate(param, model, trial):
                 total_acc_val += acc
         
             accuracy = total_acc_val/len(image_datasets['Val'])
+            accuracies.append(accuracy)
             print(accuracy)
-            # Add prune mechanism
-            trial.report(accuracy, epoch_num)
+            if len(accuracies) >= 3 and accuracy <= 0.5729:
+                break
 
+            trial.report(accuracy, epoch_num)
             if trial.should_prune():
                 raise optuna.exceptions.TrialPruned()
-
-    return accuracy
+    final_accuracy = max(accuracies)
+    PATH = '/content/drive/MyDrive/model_weights/model_best.pt'
+    torch.save(model.state_dict(), PATH)
+  
+    return final_accuracy
   
 # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
 def objective(trial):
 
      params = {
-              'learning_rate': trial.suggest_loguniform('learning_rate', 1e-5, 1e-1),
+              'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1),
               'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
               'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
               'lambda_val': trial.suggest_float("lambda_val", 1e-5, 1e-1),
@@ -573,14 +579,27 @@ def objective(trial):
     
      model = MyCustomResnet50(pretrained=True).to(device)
 
-     accuracy = train_and_evaluate(params, model, trial)
+     max_accuracy = train_and_evaluate(params, model, trial)
 
-     return accuracy
+     return max_accuracy
   
   
-EPOCHS = 3
+EPOCHS = 30
     
-study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), 
-        pruner=optuna.pruners.HyperbandPruner(
-        min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=3)
+study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+study.optimize(objective, n_trials=30)
+pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+
+print("Study statistics: ")
+print("  Number of finished trials: ", len(study.trials))
+print("  Number of pruned trials: ", len(pruned_trials))
+print("  Number of complete trials: ", len(complete_trials))
+
+print("Best trial:")
+trial = study.best_trial
+print("  Value: ", trial.value)
+
+print("  Params: ")
+for key, value in trial.params.items():
+    print("    {}: {}".format(key, value))
