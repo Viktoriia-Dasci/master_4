@@ -488,7 +488,7 @@ for param in model.parameters():
     
 # Unfreeze the layers for fine-tuning
 for name, child in model.named_children():
-    if name == 'fc':
+    if name == 'fc2':
         for param in child.parameters():
             param.requires_grad = True
 
@@ -511,7 +511,7 @@ def train_and_evaluate(param, model, trial):
     # Freeze all layers
 
     #criterion = nn.CrossEntropyLoss()
-    optimizer = getattr(optim, param['optimizer'])(model.fc.parameters(), lr= param['learning_rate'])
+    optimizer = getattr(optim, param['optimizer'])(model.fc2.parameters(), lr= param['learning_rate'])
 
     for epoch_num in range(EPOCHS):
             model.train()
