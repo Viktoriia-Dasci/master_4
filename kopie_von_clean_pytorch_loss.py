@@ -481,10 +481,16 @@ def compute_gradcam(output, feats, target):
 
 model = MyCustomResnet50(pretrained=True).to(device)
 
-# criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters())
+# Freeze all layers
+for param in model.parameters():
+    param.requires_grad = False
 
-model.parameters()
+    
+# Unfreeze the layers for fine-tuning
+for name, child in model.named_children():
+    if name == 'fc':
+        for param in child.parameters():
+            param.requires_grad = True
 
 """### 4. Train the model"""
 
@@ -502,9 +508,10 @@ best_model_wts = {}
 def train_and_evaluate(param, model, trial):
     accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
+    # Freeze all layers
 
     #criterion = nn.CrossEntropyLoss()
-    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
+    optimizer = getattr(optim, param['optimizer'])(model.fc.parameters(), lr= param['learning_rate'])
 
     for epoch_num in range(EPOCHS):
             model.train()
