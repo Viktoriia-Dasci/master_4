@@ -572,7 +572,7 @@ def objective(trial):
      params = {
               'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1),
               'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
-              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
+              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32]),
               'lambda_val': trial.suggest_float("lambda_val", 1e-5, 1e-1),
                'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
               }
