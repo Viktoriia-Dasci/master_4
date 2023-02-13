@@ -514,6 +514,7 @@ def train_and_evaluate(param, model, trial):
     optimizer = getattr(optim, param['optimizer'])(model.fc2.parameters(), lr= param['learning_rate'])
 
     for epoch_num in range(EPOCHS):
+            torch.cuda.empty_cache()
             model.train()
             total_acc_train = 0
             total_loss_train = 0
@@ -579,7 +580,7 @@ def objective(trial):
      params = {
               'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1),
               'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
-              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32]),
+              'batch_size': trial.suggest_categorical("batch_size", [8, 16]),
               'lambda_val': trial.suggest_float("lambda_val", 1e-5, 1e-1),
                'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
               }
