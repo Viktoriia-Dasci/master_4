@@ -481,16 +481,16 @@ def compute_gradcam(output, feats, target):
 
 model = MyCustomResnet50(pretrained=True).to(device)
 
-# Freeze all layers
-for param in model.parameters():
-    param.requires_grad = False
+# # Freeze all layers
+# for param in model.parameters():
+#     param.requires_grad = False
 
     
-# Unfreeze the layers for fine-tuning
-for name, child in model.named_children():
-    if name == 'fc2':
-        for param in child.parameters():
-            param.requires_grad = True
+# # Unfreeze the layers for fine-tuning
+# for name, child in model.named_children():
+#     if name == 'fc2':
+#         for param in child.parameters():
+#             param.requires_grad = True
 
 """### 4. Train the model"""
 
@@ -511,7 +511,7 @@ def train_and_evaluate(param, model, trial):
     # Freeze all layers
 
     #criterion = nn.CrossEntropyLoss()
-    optimizer = getattr(optim, param['optimizer'])(model.fc2.parameters(), lr= param['learning_rate'])
+    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
 
     for epoch_num in range(EPOCHS):
             torch.cuda.empty_cache()
@@ -578,9 +578,9 @@ def train_and_evaluate(param, model, trial):
 def objective(trial):
 
      params = {
-              'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1),
-              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
-              'batch_size': trial.suggest_categorical("batch_size", [8, 16]),
+              'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
+              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
               'lambda_val': trial.suggest_float("lambda_val", 1e-5, 1e-1),
                'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
               }
