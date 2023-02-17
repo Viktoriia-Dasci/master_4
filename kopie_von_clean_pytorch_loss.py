@@ -114,7 +114,7 @@ class myDataset_train(Dataset):
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
         print(msk_list)
-        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
+        msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
         #print(file_list)
         self.images = []
         self.targets = []
@@ -392,7 +392,7 @@ class MyCustomResnet50(nn.Module):
         in_features = resnet50.fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(2048, 128)
-        self.fc2 = nn.Linear(2048, 2)
+        self.fc2 = nn.Linear(128, 2)
 
 
 
