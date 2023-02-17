@@ -91,7 +91,7 @@ train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
 aug_transform = transforms.Compose([
      transforms.RandomHorizontalFlip(), 
      transforms.RandomVerticalFlip(),
-     transforms.RandomRotation(45),
+     transforms.RandomRotation(5),
 ])
 
 
@@ -108,8 +108,8 @@ class myDataset_train(Dataset):
 
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Train/"  
-        self.masks_path = "/home/viktoriia.trokhova/Slices-new/train_masks/" 
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/train/"  
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/train/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -143,7 +143,7 @@ class myDataset_train(Dataset):
         # print(len(self.images))
         # print(len(self.targets))
         # print(len(self.masks))
-        self.class_map = {"HGG" : 0, "LGG": 1}
+        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
 
     def __len__(self):
@@ -183,8 +183,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Val/"
-        self.masks_path = "/home/viktoriia.trokhova/Slices-new/val_masks/"
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/val/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/val/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -212,7 +212,7 @@ class myDataset_val(Dataset):
         # print(len(self.images))
         # print(len(self.targets))
         # print(len(self.masks))
-        self.class_map = {"HGG" : 0, "LGG": 1}
+        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
 
     def __len__(self):
@@ -246,8 +246,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/data-pytorch-new/Test/"
-        self.masks_path = "/home/viktoriia.trokhova/Slices-new/test_masks/"
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/test/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -270,7 +270,7 @@ class myDataset_test(Dataset):
         print(len(self.images))
         print(len(self.targets))
         print(len(self.masks))
-        self.class_map = {"HGG" : 0, "LGG": 1}
+        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
 
     def __len__(self):
@@ -391,7 +391,7 @@ class MyCustomResnet50(nn.Module):
         self.features = nn.Sequential(*self.features)
         in_features = resnet50.fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        #self.fc1 = nn.Linear(2048, 128)
+        self.fc1 = nn.Linear(2048, 128)
         self.fc2 = nn.Linear(2048, 2)
 
 
@@ -401,8 +401,8 @@ class MyCustomResnet50(nn.Module):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
         output = output.view(input_imgs.size(0), -1)
-        #images_outputs = self.fc1(output)
-        output = dropout(output)
+        images_outputs = self.fc1(output)
+        output = dropout(images_outputs)
         images_outputs = F.relu(self.fc2(output))
         #images_outputs = nn.ReLU(self.fc2(output))
 
