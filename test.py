@@ -170,6 +170,38 @@ class MyCustomResnet50(nn.Module):
         
 
         return images_outputs, targets, xe_loss, gcam_losses      #return images_outputs
+      
+def compute_gradcam(output, feats, target):
+    """
+    Compute normalized Grad-CAM for the given target using the model output and features
+    :param output:
+    :param feats:
+    :param target:
+    :return:
+    """
+    eps = 1e-8
+
+    target = target.cpu().detach().numpy()
+    one_hot = np.zeros((output.shape[0], output.shape[-1]), dtype=np.float32)
+    indices_range = np.arange(output.shape[0])
+    one_hot[indices_range, target[indices_range]] = 1
+    one_hot = torch.from_numpy(one_hot)
+    one_hot = Variable(output, requires_grad=True)
+
+    # Compute the Grad-CAM for the original image
+    one_hot_cuda = torch.sum(one_hot.to(device) * output)
+    dy_dz1, = torch.autograd.grad(one_hot_cuda, feats, grad_outputs=torch.ones(one_hot_cuda.size()).to(device),
+                                  retain_graph=True, create_graph=True)
+
+    # We compute the dot product of grad and features (Element-wise Grad-CAM) to preserve grad spatial locations
+    gcam512_1 = dy_dz1 * feats
+    gradcam = gcam512_1.sum(dim=1)
+    gradcam = torch.nn.ReLU(inplace=True)(gradcam)
+    spatial_sum1 = gradcam.sum(dim=[1, 2]).unsqueeze(-1).unsqueeze(-1)
+    gradcam = (gradcam / (spatial_sum1 + eps)) + eps
+
+
+    return gradcam      
 
 
 model = MyCustomResnet50(pretrained=True).to(device)
