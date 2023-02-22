@@ -43,6 +43,14 @@ from optuna.trial import TrialState
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
+                                      transforms.Resize((224,224)),
+                                      torchvision.transforms.Normalize(
+                                          mean=[0.485, 0.456, 0.406],
+                                          std=[0.229, 0.224, 0.225],
+    ),
+                                      ])
+
 class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
@@ -88,14 +96,14 @@ class myDataset_test(Dataset):
         msk = min_max_scaler.fit_transform(msk)
         img_float32 = np.float32(img)
         img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
-        #img_tensor = val_transforms(img_color)
+        img_tensor = val_transforms(img_color)
         msk_float32 = np.float32(msk)
         msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
-        #msk_tensor = val_transforms(msk_color)
+        msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
     
-        return img_color, class_id, msk_color
+        return img_tensor, class_id, msk_tensor
 
 
 class MyCustomResnet50(nn.Module):
