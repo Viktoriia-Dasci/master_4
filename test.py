@@ -40,6 +40,9 @@ from torchmetrics import AUROC
 import optuna
 from optuna.trial import TrialState
 
+from segmentation_models_pytorch import losses
+dice_loss = losses.DiceLoss('binary')
+foc_loss = losses.FocalLoss('binary')
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -203,6 +206,7 @@ def compute_gradcam(output, feats, target):
 
     return gradcam      
 
+  
 
 model = MyCustomResnet50(pretrained=True).to(device)
 
