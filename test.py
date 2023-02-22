@@ -43,6 +43,61 @@ from optuna.trial import TrialState
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+class myDataset_test(Dataset):
+
+    def __init__(self, transform=None): 
+        #folder containing class folders with images
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/test/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/test/"
+        file_list = glob.glob(self.imgs_path + "*")
+        msk_list = glob.glob(self.masks_path + "*")
+        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
+        self.images = []
+        self.targets = []
+        self.masks = []
+        for class_path in file_list:
+            class_name = class_path.split("/")[-1]
+            for img_path in sorted(glob.glob(class_path + "/.*")):
+                self.images.append(img_path)
+            for img_path in sorted(glob.glob(class_path + "/.*")):
+                self.targets.append(class_name)
+        for msk_path in msk_list:
+            for masks_path in sorted(glob.glob(msk_path + "/.*")):
+                  self.masks.append(masks_path)
+        self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
+        print(self.images[-100])
+        print(self.targets[-100])
+        print(self.masks[-100])
+        print(len(self.images))
+        print(len(self.targets))
+        print(len(self.masks))
+        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
+        self.img_dim = (224, 224)
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        img_path  = self.images[idx]
+        class_name = self.targets[idx]
+        masks_path = self.masks[idx]
+        img = np.load(img_path)
+        msk = np.load(masks_path)
+        min_max_scaler = p.MinMaxScaler()
+        img = min_max_scaler.fit_transform(img)
+        msk = min_max_scaler.fit_transform(msk)
+        img_float32 = np.float32(img)
+        img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
+        img_tensor = val_transforms(img_color)
+        msk_float32 = np.float32(msk)
+        msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
+        msk_tensor = val_transforms(msk_color)
+        class_id = self.class_map[class_name]
+        class_id = torch.tensor(class_id)
+    
+        return img_tensor, class_id, msk_tensor
+
+
 class MyCustomResnet50(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
