@@ -41,6 +41,8 @@ import optuna
 from optuna.trial import TrialState
 
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 class MyCustomResnet50(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
