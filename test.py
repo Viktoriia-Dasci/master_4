@@ -88,14 +88,14 @@ class myDataset_test(Dataset):
         msk = min_max_scaler.fit_transform(msk)
         img_float32 = np.float32(img)
         img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
-        img_tensor = val_transforms(img_color)
+        #img_tensor = val_transforms(img_color)
         msk_float32 = np.float32(msk)
         msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
-        msk_tensor = val_transforms(msk_color)
+        #msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
     
-        return img_tensor, class_id, msk_tensor
+        return img_color, class_id, msk_color
 
 
 class MyCustomResnet50(nn.Module):
@@ -191,7 +191,7 @@ for inputs, labels, masks in test_dataloader:
     running_loss += loss.item() * inputs.size(0)
     running_corrects += torch.sum(preds == labels.data)
 
-epoch_loss = running_loss / 1871
-epoch_acc = running_corrects.double() / 1871
+epoch_loss = running_loss / 1611
+epoch_acc = running_corrects.double() / 1611
 print('Test loss: {:.4f}, acc: {:.4f}'.format(epoch_loss,
                                             epoch_acc))
