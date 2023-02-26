@@ -169,7 +169,7 @@ def model_train(model_name, image_size = 224):
     history = model.fit(X_train,y_train,validation_data=(X_val, y_val), epochs=30, verbose=1, batch_size=32,
                    callbacks=[tensorboard, checkpoint, reduce_lr])
     
-return history
+    return history
 
 
 def plot_acc_loss(model_history):
