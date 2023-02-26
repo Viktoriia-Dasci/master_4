@@ -160,7 +160,7 @@ def model_train(model_name, image_size = 224):
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     sgd = SGD(learning_rate=0.004)
-    model.compile(loss='categorical_crossentropy',optimizer = sgd, metrics= ['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy'])
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
@@ -168,9 +168,11 @@ def model_train(model_name, image_size = 224):
     #fitting the model
     history = model.fit(X_train,y_train,validation_data=(X_val, y_val), epochs=30, verbose=1, batch_size=32,
                    callbacks=[tensorboard, checkpoint, reduce_lr])
-    return history
     
- def plot_acc_loss(model_history):
+return history
+
+
+def plot_acc_loss(model_history):
     loss = model_history.history['loss']
     val_loss = model_history.history['val_loss']
     epochs = range(1, len(loss) + 1)
