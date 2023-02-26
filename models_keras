@@ -156,16 +156,17 @@ def model_train(model_name, image_size = 224):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=0.5)(model)
-    model = tf.keras.layers.Dense(3,activation='softmax')(model)
+    model = tf.keras.layers.Dropout(rate=0.79)(model)
+    model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    model.compile(loss='categorical_crossentropy',optimizer = 'Adam', metrics= ['accuracy'])
+    sgd = SGD(learning_rate=0.004)
+    model.compile(loss='categorical_crossentropy',optimizer = sgd, metrics= ['accuracy'])
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
     #fitting the model
-    history = model.fit(X_train,y_train,validation_data=(X_val, y_val), epochs=30, verbose=1, batch_size=16,
+    history = model.fit(X_train,y_train,validation_data=(X_val, y_val), epochs=30, verbose=1, batch_size=32,
                    callbacks=[tensorboard, checkpoint, reduce_lr])
     return history
     
@@ -213,24 +214,3 @@ plot_acc_loss(history_densenet121)
 colors_dark = ["#1F1F1F", "#313131", '#636363', '#AEAEAE', '#DADADA']
 colors_red = ["#331313", "#582626", '#9E1717', '#D35151', '#E9B4B4']
 colors_green = ['#01411C','#4B6F44','#4F7942','#74C365','#D0F0C0']
-
-
-my_model_eff = load_model('/content/drive/MyDrive/Models/effnet_new.h5')
-
-pred_eff = my_model_eff.predict(X_test)
-pred_ready_eff = np.argmax(pred_eff,axis=1)
-y_test_new_eff = np.argmax(y_test,axis=1)
-
-print(classification_report(y_test_new_eff,pred_ready_eff))
-
-fig,ax=plt.subplots(1,1,figsize=(14,7))
-sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
-           cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
-fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
-             fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
-
-plt.show()
-
-test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
-
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
