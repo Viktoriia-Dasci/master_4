@@ -23,6 +23,8 @@ from PIL import Image
 from keras.models import load_model
 from skimage.color import rgb2gray
 from sklearn.utils import shuffle
+from tensorflow.keras.optimizers import SGD
+
 
 def save_to_dir(slices, path):
       for i in range(len(slices)):
