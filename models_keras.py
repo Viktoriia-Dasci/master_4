@@ -220,15 +220,15 @@ history_vit = model_train(model_name = tfa.image.models.vit.ViTModel(include_top
 
 plot_acc_loss(history_vit)
 
-history_deit = model_train(model_name = tfa.image.models.deit.DeiT(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
+history_deit = model_train(model_name = tfa.models.deit.DeiT(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
 
 plot_acc_loss(history_deit)
 
-history_Regnety = model_train(model_name = tfa.image.models.deit.Regnety(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
+history_Regnety = model_train(model_name = tfa.models.deit.Regnety(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
 
 plot_acc_loss(history_Regnety)
 
-history_NFNet = model_train(model_name = tfa.image.models.nfnet.NFNet(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
+history_NFNet = model_train(model_name = tfa.models.nfnet.NFNet(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
 
 plot_acc_loss(history_NFNet)
 
