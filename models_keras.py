@@ -225,15 +225,15 @@ pred_eff = my_model_eff.predict(X_test)
 pred_ready_eff = np.argmax(pred_eff,axis=1)
 y_test_new_eff = np.argmax(y_test,axis=1)
 
-print(classification_report(y_test_new_eff,pred_ready_eff))
+# print(classification_report(y_test_new_eff,pred_ready_eff))
 
-fig,ax=plt.subplots(1,1,figsize=(14,7))
-sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
-           cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
-fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
-             fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+# fig,ax=plt.subplots(1,1,figsize=(14,7))
+# sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+#            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+# fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+#              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
 
-plt.show()
+# plt.show()
 
 test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
 
