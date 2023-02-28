@@ -613,7 +613,7 @@ EPOCHS = 30
 #     print("    {}: {}".format(key, value))
 
 
-def train_and_evaluate(param, model, trial):
+def train_and_evaluate(model):
     accuracies = []
     dataloaders = load_data(batch_size=32)
     # Freeze all layers
@@ -684,3 +684,6 @@ def train_and_evaluate(param, model, trial):
     torch.save(model.state_dict(), PATH)
   
     return final_accuracy
+  
+  
+train_and_evaluate(model)
