@@ -236,5 +236,30 @@ y_test_new_eff = np.argmax(y_test,axis=1)
 # plt.show()
 
 test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
+#acc = 0.81
 
 print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+
+my_model_res = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07cc32a950>.h5')
+
+pred_res = my_model_res.predict(X_test)
+pred_ready_res = np.argmax(pred_res,axis=1)
+y_test_new_res = np.argmax(y_test,axis=1)
+
+# print(classification_report(y_test_new_res,pred_ready_res))
+
+# fig,ax=plt.subplots(1,1,figsize=(14,7))
+# sns.heatmap(confusion_matrix(y_test_new_res,pred_ready_res),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+#            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+# fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+#              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+
+# plt.show()
+
+test_loss, test_acc = my_model_res.evaluate(X_test, y_test, verbose=2)
+
+print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+
+# inception: <keras.engine.functional.Functional object at 0x7f07681711b0>.h5
+# densenet: <keras.engine.functional.Functional object at 0x7f06ec417370>.h5
+
