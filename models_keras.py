@@ -216,7 +216,7 @@ def plot_acc_loss(model_history):
 
 # plot_acc_loss(history_densenet121)
 
-history_vit = model_train(model_name = tfa.image.models.vit.ViTModel(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+history_vit = model_train(model_name = tfa.models.vit.ViTModel(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
 plot_acc_loss(history_vit)
 
