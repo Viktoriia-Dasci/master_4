@@ -199,22 +199,42 @@ def plot_acc_loss(model_history):
     
     
     
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
+# history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
-plot_acc_loss(history_effnet)
+# plot_acc_loss(history_effnet)
 
-history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+# history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_resnet50)
+# plot_acc_loss(history_resnet50)
 
-history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+# history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_inceptionv3)
+# plot_acc_loss(history_inceptionv3)
 
-history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+# history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_densenet121)
+# plot_acc_loss(history_densenet121)
 
 colors_dark = ["#1F1F1F", "#313131", '#636363', '#AEAEAE', '#DADADA']
 colors_red = ["#331313", "#582626", '#9E1717', '#D35151', '#E9B4B4']
 colors_green = ['#01411C','#4B6F44','#4F7942','#74C365','#D0F0C0']
+
+my_model_eff = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f0904dda9b0>.h5')
+
+pred_eff = my_model_eff.predict(X_test)
+pred_ready_eff = np.argmax(pred_eff,axis=1)
+y_test_new_eff = np.argmax(y_test,axis=1)
+
+print(classification_report(y_test_new_eff,pred_ready_eff))
+
+fig,ax=plt.subplots(1,1,figsize=(14,7))
+sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+           cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+             fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+
+plt.show()
+
+test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
+
+print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
