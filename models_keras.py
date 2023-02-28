@@ -8,6 +8,7 @@ import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 import seaborn as sns
 from tensorflow.keras.applications import EfficientNetB0
+from tensorflow.keras.applications.regnety import RegNetY
 import matplotlib.pyplot as plt
 from tifffile import imsave
 import cv2
@@ -224,13 +225,13 @@ def plot_acc_loss(model_history):
 
 # plot_acc_loss(history_deit)
 
-history_Regnety = model_train(model_name = tfa.image.Regnety(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
+history_Regnety = model_train(model_name = RegNetY(weights='imagenet', input_shape=(224, 224, 3), include_top=False))
 
 plot_acc_loss(history_Regnety)
 
-history_NFNet = model_train(model_name = tfa.image.NFNet(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
+# history_NFNet = model_train(model_name = tfa.image.NFNet(include_top=False, pretrained=True, input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_NFNet)
+# plot_acc_loss(history_NFNet)
 
 
 
