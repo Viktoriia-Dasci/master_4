@@ -123,7 +123,7 @@ msk_val = np.array(msk_val)
 X_test = np.array(X_test)
 y_test = np.array(y_test)
 
-labels = ['HGG', 'LGG', 'NB']
+labels = ['HGG', 'LGG']
 y_train_new = []
 for i in y_train:
     y_train_new.append(labels.index(i))
