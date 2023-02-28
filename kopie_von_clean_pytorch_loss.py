@@ -676,9 +676,9 @@ def train_and_evaluate(model):
             if len(accuracies) >= 3 and accuracy <= 0.5729:
                 break
 
-            trial.report(accuracy, epoch_num)
-            if trial.should_prune():
-                raise optuna.exceptions.TrialPruned()
+#             trial.report(accuracy, epoch_num)
+#             if trial.should_prune():
+#                 raise optuna.exceptions.TrialPruned()
     final_accuracy = max(accuracies)
     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
     torch.save(model.state_dict(), PATH)
