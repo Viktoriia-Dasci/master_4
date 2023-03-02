@@ -228,7 +228,8 @@ for inputs, labels, masks in test_dataloader:
   
     outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.79))
 
-    loss = xe_loss_.mean() + 0.575 * gcam_losses_.mean()
+    #loss = xe_loss_.mean() + 0.575 * gcam_losses_.mean()
+    loss = xe_loss_.mean()
    
     _, preds = torch.max(outputs, 1)  
 
