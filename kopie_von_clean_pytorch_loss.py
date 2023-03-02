@@ -88,10 +88,10 @@ train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                            std=[0.229, 0.224, 0.225],),
                                        ])
 
-aug_transform = transforms.Compose([
-     transforms.RandomHorizontalFlip(), 
-     transforms.RandomVerticalFlip(),
-])
+# aug_transform = transforms.Compose([
+#      transforms.RandomHorizontalFlip(), 
+#      transforms.RandomVerticalFlip(),
+# ])
 
 
 
@@ -167,12 +167,12 @@ class myDataset_train(Dataset):
         img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
         img_tensor = train_transforms(img_color)
         state = torch.get_rng_state()
-        img_tensor = aug_transform(img_tensor)
+        #img_tensor = aug_transform(img_tensor)
         msk_float32 = np.float32(msk)
         msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
         msk_tensor = train_transforms(msk_color)
         torch.set_rng_state(state)
-        msk_tensor = aug_transform(msk_tensor)
+        #msk_tensor = aug_transform(msk_tensor)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
     
@@ -637,7 +637,7 @@ def train_and_evaluate(model):
 
                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
                 
-                batch_loss = xe_loss_.mean()
+                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 total_loss_train += batch_loss.item()
                 
                 acc = (output.argmax(dim=1) == train_label).sum().item()
@@ -663,7 +663,7 @@ def train_and_evaluate(model):
 
                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
 
-                batch_loss = xe_loss_.mean()
+                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 total_loss_val += batch_loss.item()
                 
                 acc = (output.argmax(dim=1) == val_label).sum().item()
