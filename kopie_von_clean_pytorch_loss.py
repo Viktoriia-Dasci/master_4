@@ -637,7 +637,8 @@ def train_and_evaluate(model):
 
                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
                 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                #batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                batch_loss = xe_loss_.mean()
                 total_loss_train += batch_loss.item()
                 
                 acc = (output.argmax(dim=1) == train_label).sum().item()
@@ -663,7 +664,8 @@ def train_and_evaluate(model):
 
                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                #batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                batch_loss = xe_loss_.mean()
                 total_loss_val += batch_loss.item()
                 
                 acc = (output.argmax(dim=1) == val_label).sum().item()
