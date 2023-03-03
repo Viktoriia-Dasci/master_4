@@ -88,10 +88,9 @@ train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                            std=[0.229, 0.224, 0.225],),
                                        ])
 
-# aug_transform = transforms.Compose([
-#      transforms.RandomHorizontalFlip(), 
-#      transforms.RandomVerticalFlip(),
-# ])
+aug_transform = transforms.Compose([
+     transforms.RandomHorizontalFlip(),
+])
 
 
 
@@ -167,12 +166,12 @@ class myDataset_train(Dataset):
         img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
         img_tensor = train_transforms(img_color)
         state = torch.get_rng_state()
-        #img_tensor = aug_transform(img_tensor)
+        img_tensor = aug_transform(img_tensor)
         msk_float32 = np.float32(msk)
         msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
         msk_tensor = train_transforms(msk_color)
         torch.set_rng_state(state)
-        #msk_tensor = aug_transform(msk_tensor)
+        msk_tensor = aug_transform(msk_tensor)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
     
