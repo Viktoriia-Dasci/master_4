@@ -8,7 +8,6 @@ import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 import seaborn as sns
 from tensorflow.keras.applications import EfficientNetB0
-from tensorflow.keras.applications.regnety import RegNetY
 import matplotlib.pyplot as plt
 from tifffile import imsave
 import cv2
