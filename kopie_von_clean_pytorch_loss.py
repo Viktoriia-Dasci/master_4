@@ -89,7 +89,10 @@ train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                        ])
 
 aug_transform = transforms.Compose([
-     transforms.RandomVerticalFlip()
+     transforms.RandomVerticalFlip(),
+     transforms.RandomHorizontalFlip(),
+     transforms.RandomRotation(degrees=(0, 5))
+      
 ])
 
 
