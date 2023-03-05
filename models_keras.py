@@ -240,9 +240,9 @@ def plot_acc_loss(model_history):
 
 my_model_eff = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f0904dda9b0>.h5')
 print('efficientnet')
-pred_eff = my_model_eff.predict(X_test)
-pred_ready_eff = np.argmax(pred_eff,axis=1)
-y_test_new_eff = np.argmax(y_test,axis=1)
+# pred_eff = my_model_eff.predict(X_val)
+# pred_ready_eff = np.argmax(pred_eff,axis=1)
+# y_test_new_eff = np.argmax(y_val,axis=1)
 
 # print(classification_report(y_test_new_eff,pred_ready_eff))
 
@@ -254,16 +254,16 @@ y_test_new_eff = np.argmax(y_test,axis=1)
 
 # plt.show()
 
-test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
+test_loss, test_acc = my_model_eff.evaluate(X_val, y_val, verbose=2)
 #acc = 0.81
 
 print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 my_model_res = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07cc32a950>.h5')
 print('resnet')
-pred_res = my_model_res.predict(X_test)
-pred_ready_res = np.argmax(pred_res,axis=1)
-y_test_new_res = np.argmax(y_test,axis=1)
+# pred_res = my_model_res.predict(X_test)
+# pred_ready_res = np.argmax(pred_res,axis=1)
+# y_test_new_res = np.argmax(y_test,axis=1)
 
 # print(classification_report(y_test_new_res,pred_ready_res))
 
@@ -275,15 +275,15 @@ y_test_new_res = np.argmax(y_test,axis=1)
 
 # plt.show()
 
-test_loss, test_acc = my_model_res.evaluate(X_test, y_test, verbose=2)
+test_loss, test_acc = my_model_res.evaluate(X_val, y_val, verbose=2)
 
 print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 my_model_inception = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07681711b0>.h5')
 print('inception')
-pred_incep = my_model_inception.predict(X_test)
-pred_ready_incep = np.argmax(pred_incep,axis=1)
-y_test_new_incep = np.argmax(y_test,axis=1)
+# pred_incep = my_model_inception.predict(X_test)
+# pred_ready_incep = np.argmax(pred_incep,axis=1)
+# y_test_new_incep = np.argmax(y_test,axis=1)
 
 # print(classification_report(y_test_new_incep,pred_ready_incep))
 
@@ -295,15 +295,15 @@ y_test_new_incep = np.argmax(y_test,axis=1)
 
 # plt.show()
 
-test_loss, test_acc = my_model_inception.evaluate(X_test, y_test, verbose=2)
+test_loss, test_acc = my_model_inception.evaluate(X_val, y_val, verbose=2)
 
 print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f06ec417370>.h5')
 print('densenet')
-pred_dense = my_model_densenet.predict(X_test)
-pred_ready_dense = np.argmax(pred_dense,axis=1)
-y_test_new_dense = np.argmax(y_test,axis=1)
+# pred_dense = my_model_densenet.predict(X_test)
+# pred_ready_dense = np.argmax(pred_dense,axis=1)
+# y_test_new_dense = np.argmax(y_test,axis=1)
 
 
 # print(classification_report(y_test_new_dense,pred_ready_dense))
@@ -316,7 +316,7 @@ y_test_new_dense = np.argmax(y_test,axis=1)
 
 # plt.show()
 
-test_loss, test_acc = my_model_densenet.evaluate(X_test, y_test, verbose=2)
+test_loss, test_acc = my_model_densenet.evaluate(X_val, y_val, verbose=2)
 
 print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
