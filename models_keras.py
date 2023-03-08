@@ -25,6 +25,9 @@ from keras.models import load_model
 from skimage.color import rgb2gray
 from sklearn.utils import shuffle
 from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.imagenet_utils import preprocess_input
+
 
 
 def save_to_dir(slices, path):
@@ -146,14 +149,20 @@ X_train, y_train = shuffle(X_train,y_train, random_state=101)
 X_val, y_val = shuffle(X_val,y_val, random_state=101)
 X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
-data_augmentation = keras.Sequential(
-    [
-        layers.experimental.preprocessing.RandomFlip("horizontal"),
-        layers.experimental.preprocessing.RandomRotation(0.1),
-    ]
-)
+datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input,
+    rotation_range=5,
+   #width_shift_range=0.1,
+   #height_shift_range=0.1,
+   #shear_range=0.1,
+    vertical_flip=True,
+    horizontal_flip=True,
+    fill_mode='nearest')
 
-norm_image = cv2.normalize(X_train[0], None, alpha = 0, beta = 255, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
+train_generator = datagen.flow(
+    X_train, y_train, batch_size=32,
+    shuffle=True)
+
 
 def model_train(model_name, image_size = 224):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
@@ -169,9 +178,9 @@ def model_train(model_name, image_size = 224):
     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
     #fitting the model
-    history = model.fit(X_train,y_train,validation_data=(X_val, y_val), epochs=30, verbose=1, batch_size=32,
-                   callbacks=[tensorboard, checkpoint, reduce_lr])
-    
+    history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
+                   callbacks=[tensorboard, checkpoint, reduce_lr]) 
+
     return history
 
 
@@ -200,9 +209,9 @@ def plot_acc_loss(model_history):
     
     
     
-# history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
+history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
-# plot_acc_loss(history_effnet)
+plot_acc_loss(history_effnet)
 
 # history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
@@ -238,7 +247,7 @@ def plot_acc_loss(model_history):
 # colors_red = ["#331313", "#582626", '#9E1717', '#D35151', '#E9B4B4']
 # colors_green = ['#01411C','#4B6F44','#4F7942','#74C365','#D0F0C0']
 
-my_model_eff = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f0904dda9b0>.h5')
+#my_model_eff = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f0904dda9b0>.h5')
 print('efficientnet')
 # pred_eff = my_model_eff.predict(X_val)
 # pred_ready_eff = np.argmax(pred_eff,axis=1)
@@ -254,12 +263,12 @@ print('efficientnet')
 
 # plt.show()
 
-test_loss, test_acc = my_model_eff.evaluate(X_val, y_val, verbose=2)
+#test_loss, test_acc = my_model_eff.evaluate(X_val, y_val, verbose=2)
 #acc = 0.81
 
 print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-my_model_res = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07cc32a950>.h5')
+#my_model_res = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07cc32a950>.h5')
 print('resnet')
 # pred_res = my_model_res.predict(X_test)
 # pred_ready_res = np.argmax(pred_res,axis=1)
@@ -275,11 +284,11 @@ print('resnet')
 
 # plt.show()
 
-test_loss, test_acc = my_model_res.evaluate(X_val, y_val, verbose=2)
+#test_loss, test_acc = my_model_res.evaluate(X_val, y_val, verbose=2)
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+#print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-my_model_inception = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07681711b0>.h5')
+#my_model_inception = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07681711b0>.h5')
 print('inception')
 # pred_incep = my_model_inception.predict(X_test)
 # pred_ready_incep = np.argmax(pred_incep,axis=1)
@@ -295,11 +304,11 @@ print('inception')
 
 # plt.show()
 
-test_loss, test_acc = my_model_inception.evaluate(X_val, y_val, verbose=2)
+#test_loss, test_acc = my_model_inception.evaluate(X_val, y_val, verbose=2)
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+#print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f06ec417370>.h5')
+#my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f06ec417370>.h5')
 print('densenet')
 # pred_dense = my_model_densenet.predict(X_test)
 # pred_ready_dense = np.argmax(pred_dense,axis=1)
@@ -316,9 +325,9 @@ print('densenet')
 
 # plt.show()
 
-test_loss, test_acc = my_model_densenet.evaluate(X_val, y_val, verbose=2)
+#test_loss, test_acc = my_model_densenet.evaluate(X_val, y_val, verbose=2)
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+#print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 # # inception: <keras.engine.functional.Functional object at 0x7f07681711b0>.h5
 # # densenet: <keras.engine.functional.Functional object at 0x7f06ec417370>.h5
