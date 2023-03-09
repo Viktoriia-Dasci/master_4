@@ -184,7 +184,10 @@ def model_train(model_name, image_size = 224):
     return history
 
 
-def plot_acc_loss(model_history):
+def plot_acc_loss(model_history, folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
     loss = model_history.history['loss']
     val_loss = model_history.history['val_loss']
     epochs = range(1, len(loss) + 1)
@@ -194,7 +197,8 @@ def plot_acc_loss(model_history):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.show()
+    plt.savefig(os.path.join(folder_path, 'loss.png'))
+    plt.close()
 
     acc = model_history.history['accuracy']
     val_acc = model_history.history['val_accuracy']
@@ -205,17 +209,18 @@ def plot_acc_loss(model_history):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.show()
+    plt.savefig(os.path.join(folder_path, 'accuracy.png'))
+    plt.close()
     
     
     
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
+# history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
-plot_acc_loss(history_effnet)
+# plot_acc_loss(history_effnet, '/home/viktoriia.trokhova/plots/effnet')
 
-# history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-# plot_acc_loss(history_resnet50)
+plot_acc_loss(history_resnet50, '/home/viktoriia.trokhova/plots/resnet')
 
 # history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
