@@ -218,13 +218,13 @@ def plot_acc_loss(model_history, folder_path):
 
 # plot_acc_loss(history_effnet, '/home/viktoriia.trokhova/plots/effnet')
 
-history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+# history_resnet50 = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_resnet50, '/home/viktoriia.trokhova/plots/resnet')
+# plot_acc_loss(history_resnet50, '/home/viktoriia.trokhova/plots/resnet')
 
-# history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-# plot_acc_loss(history_inceptionv3)
+plot_acc_loss(history_inceptionv3)
 
 # history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
@@ -271,7 +271,7 @@ print('efficientnet')
 #test_loss, test_acc = my_model_eff.evaluate(X_val, y_val, verbose=2)
 #acc = 0.81
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+# print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 #my_model_res = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07cc32a950>.h5')
 print('resnet')
