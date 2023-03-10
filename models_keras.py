@@ -228,7 +228,7 @@ plot_acc_loss(history_inceptionv3, '/home/viktoriia.trokhova/plots/inception')
 
 # history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-# plot_acc_loss(history_densenet121)
+# plot_acc_loss(history_densenet121, '/home/viktoriia.trokhova/plots/densenet')
 
 # history_vit = model_train(model_name = tfa.image.ViTModel(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
