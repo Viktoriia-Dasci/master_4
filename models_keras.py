@@ -224,7 +224,7 @@ def plot_acc_loss(model_history, folder_path):
 
 history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_inceptionv3)
+plot_acc_loss(history_inceptionv3, '/home/viktoriia.trokhova/plots/inception')
 
 # history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
