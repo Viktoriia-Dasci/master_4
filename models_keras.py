@@ -222,13 +222,13 @@ def plot_acc_loss(model_history, folder_path):
 
 # plot_acc_loss(history_resnet50, '/home/viktoriia.trokhova/plots/resnet')
 
-history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+#history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_inceptionv3, '/home/viktoriia.trokhova/plots/inception')
+#plot_acc_loss(history_inceptionv3, '/home/viktoriia.trokhova/plots/inception')
 
-# history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-# plot_acc_loss(history_densenet121, '/home/viktoriia.trokhova/plots/densenet')
+plot_acc_loss(history_densenet121, '/home/viktoriia.trokhova/plots/densenet')
 
 # history_vit = model_train(model_name = tfa.image.ViTModel(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
