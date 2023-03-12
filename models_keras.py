@@ -226,9 +226,9 @@ def plot_acc_loss(model_history, folder_path):
 
 #plot_acc_loss(history_inceptionv3, '/home/viktoriia.trokhova/plots/inception')
 
-history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+#history_densenet121 = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
-plot_acc_loss(history_densenet121, '/home/viktoriia.trokhova/plots/densenet')
+#plot_acc_loss(history_densenet121, '/home/viktoriia.trokhova/plots/densenet')
 
 # history_vit = model_train(model_name = tfa.image.ViTModel(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
@@ -252,13 +252,13 @@ plot_acc_loss(history_densenet121, '/home/viktoriia.trokhova/plots/densenet')
 # colors_red = ["#331313", "#582626", '#9E1717', '#D35151', '#E9B4B4']
 # colors_green = ['#01411C','#4B6F44','#4F7942','#74C365','#D0F0C0']
 
-#my_model_eff = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f0904dda9b0>.h5')
+my_model_eff = load_model('/home/viktoriia.trokhova/master_4/effnetDA.h5')
 print('efficientnet')
-# pred_eff = my_model_eff.predict(X_val)
-# pred_ready_eff = np.argmax(pred_eff,axis=1)
-# y_test_new_eff = np.argmax(y_val,axis=1)
+pred_eff = my_model_eff.predict(X_val)
+pred_ready_eff = np.argmax(pred_eff,axis=1)
+y_test_new_eff = np.argmax(y_val,axis=1)
 
-# print(classification_report(y_test_new_eff,pred_ready_eff))
+print(classification_report(y_test_new_eff,pred_ready_eff))
 
 # fig,ax=plt.subplots(1,1,figsize=(14,7))
 # sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
@@ -268,18 +268,18 @@ print('efficientnet')
 
 # plt.show()
 
-#test_loss, test_acc = my_model_eff.evaluate(X_val, y_val, verbose=2)
+test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
 #acc = 0.81
 
-# print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-#my_model_res = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07cc32a950>.h5')
+my_model_res = load_model('/home/viktoriia.trokhova/master_4/resnetDA.h5')
 print('resnet')
-# pred_res = my_model_res.predict(X_test)
-# pred_ready_res = np.argmax(pred_res,axis=1)
-# y_test_new_res = np.argmax(y_test,axis=1)
+pred_res = my_model_res.predict(X_test)
+pred_ready_res = np.argmax(pred_res,axis=1)
+y_test_new_res = np.argmax(y_test,axis=1)
 
-# print(classification_report(y_test_new_res,pred_ready_res))
+print(classification_report(y_test_new_res,pred_ready_res))
 
 # fig,ax=plt.subplots(1,1,figsize=(14,7))
 # sns.heatmap(confusion_matrix(y_test_new_res,pred_ready_res),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
@@ -289,17 +289,17 @@ print('resnet')
 
 # plt.show()
 
-#test_loss, test_acc = my_model_res.evaluate(X_val, y_val, verbose=2)
+test_loss, test_acc = my_model_res.evaluate(X_test, y_test, verbose=2)
 
-#print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-#my_model_inception = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f07681711b0>.h5')
+my_model_inception = load_model('/home/viktoriia.trokhova/master_4/inceptionDA.h5')
 print('inception')
-# pred_incep = my_model_inception.predict(X_test)
-# pred_ready_incep = np.argmax(pred_incep,axis=1)
-# y_test_new_incep = np.argmax(y_test,axis=1)
+pred_incep = my_model_inception.predict(X_test)
+pred_ready_incep = np.argmax(pred_incep,axis=1)
+y_test_new_incep = np.argmax(y_test,axis=1)
 
-# print(classification_report(y_test_new_incep,pred_ready_incep))
+print(classification_report(y_test_new_incep,pred_ready_incep))
 
 # fig,ax=plt.subplots(1,1,figsize=(14,7))
 # sns.heatmap(confusion_matrix(y_test_new_incep,pred_ready_incep),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
@@ -309,18 +309,18 @@ print('inception')
 
 # plt.show()
 
-#test_loss, test_acc = my_model_inception.evaluate(X_val, y_val, verbose=2)
+test_loss, test_acc = my_model_inception.evaluate(X_test, y_test, verbose=2)
 
-#print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-#my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/<keras.engine.functional.Functional object at 0x7f06ec417370>.h5')
+my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/densenetDA.h5')
 print('densenet')
-# pred_dense = my_model_densenet.predict(X_test)
-# pred_ready_dense = np.argmax(pred_dense,axis=1)
-# y_test_new_dense = np.argmax(y_test,axis=1)
+pred_dense = my_model_densenet.predict(X_test)
+pred_ready_dense = np.argmax(pred_dense,axis=1)
+y_test_new_dense = np.argmax(y_test,axis=1)
 
 
-# print(classification_report(y_test_new_dense,pred_ready_dense))
+print(classification_report(y_test_new_dense,pred_ready_dense))
 
 # fig,ax=plt.subplots(1,1,figsize=(14,7))
 # sns.heatmap(confusion_matrix(y_test_new_dense,pred_ready_dense),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
@@ -330,9 +330,9 @@ print('densenet')
 
 # plt.show()
 
-#test_loss, test_acc = my_model_densenet.evaluate(X_val, y_val, verbose=2)
+test_loss, test_acc = my_model_densenet.evaluate(X_test, y_test, verbose=2)
 
-#print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 # # inception: <keras.engine.functional.Functional object at 0x7f07681711b0>.h5
 # # densenet: <keras.engine.functional.Functional object at 0x7f06ec417370>.h5
