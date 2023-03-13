@@ -256,7 +256,7 @@ my_model_eff = load_model('/home/viktoriia.trokhova/master_4/effnetDA.h5')
 print('efficientnet')
 pred_eff = my_model_eff.predict(X_test)
 pred_ready_eff = np.argmax(pred_eff,axis=1)
-y_test_new_eff = np.argmax(y_val,axis=1)
+y_test_new_eff = np.argmax(y_test,axis=1)
 
 print(classification_report(y_test_new_eff,pred_ready_eff))
 
