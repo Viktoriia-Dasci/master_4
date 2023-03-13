@@ -254,7 +254,7 @@ def plot_acc_loss(model_history, folder_path):
 
 my_model_eff = load_model('/home/viktoriia.trokhova/master_4/effnetDA.h5')
 print('efficientnet')
-pred_eff = my_model_eff.predict(X_val)
+pred_eff = my_model_eff.predict(X_test)
 pred_ready_eff = np.argmax(pred_eff,axis=1)
 y_test_new_eff = np.argmax(y_val,axis=1)
 
