@@ -211,7 +211,7 @@ def test(model, device, test_loader, criterion):
     return test_loss, test_accuracy
 
 # Train and val the model
-for epoch in range(10):
+for epoch in range(30):
     train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
     val_loss, val_accuracy = validation(model, device, val_loader, criterion)
     print('Epoch: {} \tTrain Loss: {:.6f} \tTrain Accuracy: {:.2f}% \tVal Loss: {:.6f} \tVal Accuracy: {:.2f}%'.format(
