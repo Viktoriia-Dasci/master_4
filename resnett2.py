@@ -57,34 +57,69 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 HGG_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/TrainT2/HGG_t2/*.nii'))
 LGG_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/TrainT2/LGG_t2/*.nii'))
 
-len(HGG_list_t2)
+#train HGG
+HGG_train_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/train/HGG_t2/*.nii'))
+#HGG_mask_train_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/train/HGG_masks/*.nii'))
+#val HGG
+HGG_val_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/val/HGG_t2/*.nii'))
+#HGG_mask_val_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/val/HGG_masks/*.nii'))
+#test HGG
+HGG_test_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/test/HGG_t2/*.nii'))
+#HGG_mask_test_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/test/HGG_masks/*.nii'))
 
-len(LGG_list_t2)
+#train LGG
+LGG_train_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/train/LGG_t2/*.nii'))
+#LGG_mask_train_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/train/LGG_masks/*.nii'))
+#val LGG
+LGG_val_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/val/LGG_t2/*.nii'))
+#LGG_mask_val_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/val/LGG_masks/*.nii'))
+#test LGG
+LGG_test_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/T2_split/test/LGG_t2/*.nii'))
+#LGG_mask_test_list = sorted(glob.glob('/content/drive/MyDrive/T2_split/test/LGG_masks/*.nii'))
 
-HGG = []
-LGG = []
+HGG_train = []
+LGG_train = []
+HGG_val = []
+LGG_val = []
+HGG_test = []
+LGG_test = []
+for img in range(len(HGG_train_list_t2)):   #Using t1_list as all lists are of same size   
+    train_image_t2_HGG = nib.load(HGG_train_list_t2[img]).get_fdata()
+    HGG_train.append(temp_image_t2_HGG)
+
+for img in range(len(LGG_train_list_t2)):
+    train_image_t2_LGG = nib.load(LGG_train_list_t2[img]).get_fdata()
+    LGG_train.append(temp_image_t2_LGG)
+
+for img in range(len(HGG_val_list_t2)):   #Using t1_list as all lists are of same size   
+    val_image_t2_HGG = nib.load(HGG_val_list_t2[img]).get_fdata()
+    HGG_val.append(temp_image_t2_HGG)
+
+for img in range(len(LGG_val_list_t2)):
+    val_image_t2_LGG = nib.load(LGG_val_list_t2[img]).get_fdata()
+    LGG_val.append(temp_image_t2_LGG)
+
 for img in range(len(HGG_list_t2)):   #Using t1_list as all lists are of same size   
-    temp_image_t2_HGG = nib.load(HGG_list_t2[img]).get_fdata()
-    HGG.append(temp_image_t2_HGG)
+    test_image_t2_HGG = nib.load(HGG_test_list_t2[img]).get_fdata()
+    HGG_train.append(temp_image_t2_HGG)
 
 for img in range(len(LGG_list_t2)):
-    temp_image_t2_LGG = nib.load(LGG_list_t2[img]).get_fdata()
-    LGG.append(temp_image_t2_LGG)
-
-
-
-# Combine the HGG and LGG lists
-X = np.array(HGG + LGG)
-y = np.array([0] * len(HGG) + [1] * len(LGG))
+    test_image_t2_LGG = nib.load(LGG_test_list_t2[img]).get_fdata()
+    LGG_train.append(temp_image_t2_LGG)
 
 # Put X and y to device
-X = torch.tensor(X, dtype=torch.float32).to(device)
-y = torch.tensor(y, dtype=torch.long).to(device)
+#X = torch.tensor(X, dtype=torch.float32).to(device)
+#y = torch.tensor(y, dtype=torch.long).to(device)
 
-# Divide the data into train, validation and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+# Combine the HGG and LGG lists
+X_train = np.array(HGG_train + LGG_train)
+y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=1)
+X_val = np.array(HGG_val + LGG_val)
+y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
+
+X_test = np.array(HGG_test + LGG_test)
+y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
 
 
 # Print the shapes of the train and test sets
@@ -94,7 +129,6 @@ print('X_train shape:', X_val.shape)
 print('y_train shape:', y_val.shape)
 print('X_test shape:', X_test.shape)
 print('y_test shape:', y_test.shape)
-
 
 class MyCustomResnet50(nn.Module):
     def __init__(self, pretrained=True):
