@@ -34,8 +34,8 @@ from skimage.color import rgb2gray
 from sklearn.utils import shuffle
 
 
-HGG_list_t2 = sorted(glob.glob('/content/drive/MyDrive/TrainT2/HGG_t2/*.nii'))
-LGG_list_t2 = sorted(glob.glob('/content/drive/MyDrive/TrainT2/LGG_t2/*.nii'))
+HGG_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/TrainT2/HGG_t2/*.nii'))
+LGG_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/TrainT2/LGG_t2/*.nii'))
 
 len(HGG_list_t2)
 
