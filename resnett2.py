@@ -32,6 +32,24 @@ from PIL import Image
 from keras.models import load_model
 from skimage.color import rgb2gray
 from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.transforms as transforms
+import torchvision.datasets as datasets
+from torch.utils.data import DataLoader
+from torchvision import datasets, models, transforms
+from torchvision.models import ResNet50_Weights
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader, TensorDataset
+from torch.nn import functional as F
+
 
 # Define the device to be used for training
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -53,8 +71,7 @@ for img in range(len(LGG_list_t2)):
     temp_image_t2_LGG = nib.load(LGG_list_t2[img]).get_fdata()
     LGG.append(temp_image_t2_LGG)
 
-from sklearn.model_selection import train_test_split
-import numpy as np
+
 
 # Combine the HGG and LGG lists
 X = np.array(HGG + LGG)
@@ -78,14 +95,6 @@ print('y_train shape:', y_val.shape)
 print('X_test shape:', X_test.shape)
 print('y_test shape:', y_test.shape)
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-from torch.utils.data import DataLoader
-from torchvision import datasets, models, transforms
-from torchvision.models import ResNet50_Weights
 
 class MyCustomResnet50(nn.Module):
     def __init__(self, pretrained=True):
@@ -115,13 +124,6 @@ class MyCustomResnet50(nn.Module):
         x = F.relu(self.fc2(x))
 
         return x
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader, TensorDataset
-from torch.nn import functional as F
 
 
 
