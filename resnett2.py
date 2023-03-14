@@ -161,8 +161,6 @@ def train(model, device, train_loader, criterion, optimizer):
     train_correct = 0
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-        print(data)
-        print(target)
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
