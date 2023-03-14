@@ -33,6 +33,8 @@ from keras.models import load_model
 from skimage.color import rgb2gray
 from sklearn.utils import shuffle
 
+# Define the device to be used for training
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 HGG_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/TrainT2/HGG_t2/*.nii'))
 LGG_list_t2 = sorted(glob.glob('/home/viktoriia.trokhova/TrainT2/LGG_t2/*.nii'))
@@ -58,10 +60,15 @@ import numpy as np
 X = np.array(HGG + LGG)
 y = np.array([0] * len(HGG) + [1] * len(LGG))
 
+# Put X and y to device
+X = torch.tensor(X, dtype=torch.float32).to(device)
+y = torch.tensor(y, dtype=torch.long).to(device)
+
 # Divide the data into train, validation and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=1)
+
 
 # Print the shapes of the train and test sets
 print('X_train shape:', X_train.shape)
@@ -116,8 +123,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, TensorDataset
 from torch.nn import functional as F
 
-# Define the device to be used for training
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # Define the transformation to be applied to the images
 transform = transforms.Compose([
