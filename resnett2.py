@@ -33,25 +33,6 @@ from keras.models import load_model
 from skimage.color import rgb2gray
 from sklearn.utils import shuffle
 
-'''#train HGG
-HGG_train_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/train/HGG_t2/*.nii'))
-HGG_mask_train_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/train/HGG_masks/*.nii'))
-#val HGG
-HGG_val_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/val/HGG_t2/*.nii'))
-HGG_mask_val_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/val/HGG_masks/*.nii'))
-#test HGG
-HGG_test_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/test/HGG_t2/*.nii'))
-HGG_mask_test_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/test/HGG_masks/*.nii'))
-
-#train LGG
-LGG_train_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/train/LGG_t2/*.nii'))
-LGG_mask_train_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/train/LGG_masks/*.nii'))
-#val LGG
-LGG_val_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/val/LGG_t2/*.nii'))
-LGG_mask_val_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/val/LGG_masks/*.nii'))
-#test LGG
-LGG_test_list_t2 = sorted(glob.glob('/content/drive/MyDrive/T2_split/test/LGG_t2/*.nii'))
-LGG_mask_test_list = sorted(glob.glob('/content/drive/MyDrive/T2_split/test/LGG_masks/*.nii'))'''
 
 HGG_list_t2 = sorted(glob.glob('/content/drive/MyDrive/TrainT2/HGG_t2/*.nii'))
 LGG_list_t2 = sorted(glob.glob('/content/drive/MyDrive/TrainT2/LGG_t2/*.nii'))
