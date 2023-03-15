@@ -1,0 +1,92 @@
+train_transforms = transforms.Compose([
+      transforms.RandomRotation(0,5),
+      transforms.RandomHorizontalFlip(p=0.5),
+      transforms.RandomVerticalFlip(p=0.5)
+      transforms.ToTensor(),
+      transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+  ])
+
+
+class myDataset_train(Dataset):
+    def __init__(self, transform=False):
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/train/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/train/"
+        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
+        self.img_dim = (224, 224)
+        
+        self.images, self.targets, self.masks = self._get_data_paths()
+
+        self._augment_data()
+        
+        # Shuffle the data
+        self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
+
+
+    def _get_data_paths(self):
+        images, targets, masks = [], [], []
+        for class_path in os.listdir(self.imgs_path):
+            class_name = class_path.split("/")[-1]
+            class_id = self.class_map[class_name]
+            for img_path in sorted(os.listdir(os.path.join(self.imgs_path, class_path))):
+                images.append(os.path.join(self.imgs_path, class_path, img_path))
+                targets.append(class_id)
+            for masks_path in sorted(os.listdir(os.path.join(self.masks_path, class_name))):
+                masks.append(os.path.join(self.masks_path, class_name, masks_path))
+        return images, targets, masks
+
+    def _augment_data(self):
+        # Count the number of samples in each class
+        class_counts = {0: 0, 1: 0}
+        for class_id in self.targets:
+            class_counts[class_id] += 1
+
+        # Determine the target number of samples for each class
+        target_count = min(class_counts.values())
+        print("Target count:", target_count)
+
+        # Augment the images to balance the dataset
+        for i in range(len(self.targets)):
+            if class_counts[self.targets[i]] < target_count:
+                img_path = self.images[i]
+                masks_path = self.masks[i]
+                img = np.load(img_path)
+                msk = np.load(masks_path)
+
+                # Reshape and normalize the images and masks
+                min_max_scaler = MinMaxScaler()
+                reshaped_img = img.reshape(-1, 3)
+                img_t = min_max_scaler.fit_transform(reshaped_img)
+                img = img_t.reshape(img.shape)
+                reshaped_msk = msk.reshape(-1, 3)
+                msk_t = min_max_scaler.fit_transform(reshaped_msk)
+                msk = msk_t.reshape(msk.shape)
+
+                # Convert the images to the correct format
+                img = np.float64(img)
+                img_color = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+                msk = = np.float64(msk)
+                msk_color = cv2.cvtColor(msk, cv2.COLOR_GRAY2RGB)
+                
+
+
+            # Apply normalization to the images and masks
+            state = torch.get_rng_state()
+            img_color = train_transforms(img_color)
+            torch.set_rng_state(state)
+            #msk = torch.from_numpy(msk).float()
+            msk_tensor = train_transforms(msk_color)
+            
+
+            # Add the augmented image and mask to the dataset
+            self.images.append(img_color)
+            self.targets.append(self.targets[i])
+            self.masks.append(msk)
+
+      def __len__(self):
+          return len(self.targets)
+
+      def __getitem__(self, idx):
+          img = self.images[idx]
+          target = self.targets[idx]
+          mask = self.masks[idx]
+          return img, target, mask
