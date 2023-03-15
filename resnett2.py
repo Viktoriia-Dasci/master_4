@@ -130,34 +130,93 @@ print('y_train shape:', y_val.shape)
 print('X_test shape:', X_test.shape)
 print('y_test shape:', y_test.shape)
 
+class SelfAttention(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.query = nn.Conv2d(in_channels, in_channels // 8, kernel_size=1)
+        self.key = nn.Conv2d(in_channels, in_channels // 8, kernel_size=1)
+        self.value = nn.Conv2d(in_channels, in_channels, kernel_size=1)
+        self.softmax = nn.Softmax(dim=-1)
+        self.gamma = nn.Parameter(torch.zeros(1))
+
+    def forward(self, x):
+        batch_size, channels, height, width = x.size()
+        proj_query = self.query(x).view(batch_size, -1, height * width).permute(0, 2, 1)
+        proj_key = self.key(x).view(batch_size, -1, height * width)
+        energy = torch.bmm(proj_query, proj_key)
+        attention = self.softmax(energy)
+        proj_value = self.value(x).view(batch_size, -1, height * width)
+        out = torch.bmm(proj_value, attention.permute(0, 2, 1))
+        out = out.view(batch_size, channels, height, width)
+        out = self.gamma * out + x
+        return out
+
+
 class MyCustomResnet50(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
-
-        # Load the pretrained ResNet50 model
+        
         resnet50 = models.resnet50(pretrained=True)
-
         # Replace the first convolutional layer to handle images with shape (240, 240, 155)
         resnet50.conv1 = nn.Conv2d(155, 64, kernel_size=7, stride=2, padding=3, bias=False)
-
-        # Reuse the other layers from the pretrained ResNet50 model
-        self.features = nn.Sequential(*list(resnet50.children())[:-2])
-        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
-        self.fc1 = nn.Linear(in_features=2048, out_features=128, bias=True)
+        self.features = nn.ModuleList(resnet50.children())[:-2]
+        self.features = nn.Sequential(*self.features)
+        in_features = resnet50.fc.in_features
+        self.attention = SelfAttention(2048)
+        self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc1 = nn.Linear(2048, 128)
         self.fc2 = nn.Linear(128, 2)
 
+    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
+        images_feats = self.features(input_imgs)
+        images_att = self.attention(images_feats)
+        output = self.last_pooling_operation(images_att)
+        output = output.view(input_imgs.size(0), -1)
+        images_outputs = self.fc1(output)
+        output = dropout(images_outputs)
+        images_outputs = F.relu(self.fc2(output))
+        #images_outputs = nn.ReLU(self.fc2(output))
 
 
-    def forward(self, x, dropout = nn.Dropout(p=0.5)
-):
-        x = self.features(x)
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc1(x)
-        x = dropout(x)
-        x = F.relu(self.fc2(x))
+        # # compute gcam for images
+        orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
 
-        return x
+        # #upsample gradcam to (224, 224, 3)
+        gcam_losses = 0.0
+
+        for i in range(batch_size):
+            #print(orig_gradcam_mask[i].shape)
+            img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
+            img_grad_1 = img_grad.cpu()
+            img_grad_2 = img_grad_1.detach().numpy()
+            img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
+            img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
+            img_grad_5 = torch.from_numpy(img_grad_4)
+            img_grad_6 = img_grad_5.to(device)
+            #img_grad_6 = torch.nn.ReLU(inplace=True)(img_grad_6)
+
+
+            #masks to same dimension
+            masks_per = masks[i].permute(1, 2, 0)
+            masks_per = cv2.normalize(masks_per.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
+            img_grad_6 = cv2.normalize(img_grad_6.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
+            masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
+            masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
+
+            gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
+            #print(gcam_loss)
+            #gcam_loss = l1_criterion(img_grad_6, masks_per)
+            gcam_losses += gcam_loss
+
+            # gcam_loss = l1_criterion(img_grad_6, masks_per)
+            # gcam_losses += gcam_loss
+
+            #gcam_losses += gcam_loss.item() * input_imgs.size(0)
+        #gcam_losses = gcam_losses/batch_size
+        xe_loss = xe_criterion(images_outputs, targets)
+        
+
+        return images_outputs, targets, xe_loss, gcam_losses      #return images_outputs
 
 
 
