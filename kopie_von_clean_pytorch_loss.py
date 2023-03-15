@@ -147,20 +147,39 @@ class myDataset_train(Dataset):
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
         
-        
-        # Oversampling
-        class_count = [0, 0]
+        #Oversampling to make the number of samples in both classes the same
+        # Count number of samples in each class
+        class_count = [0] * len(self.class_map)
         for target in self.targets:
             class_count[self.class_map[target]] += 1
 
+        # Determine maximum number of samples in any class
         max_count = max(class_count)
-        for i in range(len(self.targets)):
-            class_id = self.class_map[self.targets[i]]
-            if class_count[class_id] < max_count:
-                self.images.append(self.images[i])
-                self.targets.append(self.targets[i])
-                self.masks.append(self.masks[i])
-                class_count[class_id] += 1
+
+        # Oversample each class to match max_count
+        for class_id in range(len(class_count)):
+            for i in range(len(self.targets)):
+                if self.class_map[self.targets[i]] == class_id:
+                    while class_count[class_id] < max_count:
+                        self.images.append(self.images[i])
+                        self.targets.append(self.targets[i])
+                        self.masks.append(self.masks[i])
+                        class_count[class_id] += 1
+        
+        
+        # Oversampling
+#         class_count = [0, 0]
+#         for target in self.targets:
+#             class_count[self.class_map[target]] += 1
+
+#         max_count = max(class_count)
+#         for i in range(len(self.targets)):
+#             class_id = self.class_map[self.targets[i]]
+#             if class_count[class_id] < max_count:
+#                 self.images.append(self.images[i])
+#                 self.targets.append(self.targets[i])
+#                 self.masks.append(self.masks[i])
+#                 class_count[class_id] += 1
 
     def __len__(self):
         return len(self.images)
