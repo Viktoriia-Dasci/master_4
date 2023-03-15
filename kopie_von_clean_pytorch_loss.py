@@ -146,6 +146,21 @@ class myDataset_train(Dataset):
         # print(len(self.masks))
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
+        
+        
+        # Oversampling
+        class_count = [0, 0]
+        for target in self.targets:
+            class_count[self.class_map[target]] += 1
+
+        max_count = max(class_count)
+        for i in range(len(self.targets)):
+            class_id = self.class_map[self.targets[i]]
+            if class_count[class_id] < max_count:
+                self.images.append(self.images[i])
+                self.targets.append(self.targets[i])
+                self.masks.append(self.masks[i])
+                class_count[class_id] += 1
 
     def __len__(self):
         return len(self.images)
@@ -321,7 +336,18 @@ def load_data(batch_size):
 
     return dataloaders
 
+from collections import Counter
 
+# create dataset object
+dataset = myDataset_train()
+
+# count occurrences of each class
+class_counts = Counter(dataset.targets)
+
+# print number of images in each class
+for class_name, count in class_counts.items():
+    print(f"{class_name}: {count}")
+  
 #unnormalize images
 '''def imshow(image):
     npimg = image.numpy()
