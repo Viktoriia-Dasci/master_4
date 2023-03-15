@@ -85,27 +85,27 @@ HGG_test = []
 LGG_test = []
 for img in range(len(HGG_train_list_t2)):   #Using t1_list as all lists are of same size   
     train_image_t2_HGG = nib.load(HGG_train_list_t2[img]).get_fdata()
-    HGG_train.append(temp_image_t2_HGG)
+    HGG_train.append(train_image_t2_HGG)
 
 for img in range(len(LGG_train_list_t2)):
     train_image_t2_LGG = nib.load(LGG_train_list_t2[img]).get_fdata()
-    LGG_train.append(temp_image_t2_LGG)
+    LGG_train.append(train_image_t2_LGG)
 
 for img in range(len(HGG_val_list_t2)):   #Using t1_list as all lists are of same size   
     val_image_t2_HGG = nib.load(HGG_val_list_t2[img]).get_fdata()
-    HGG_val.append(temp_image_t2_HGG)
+    HGG_val.append(val_image_t2_HGG)
 
 for img in range(len(LGG_val_list_t2)):
     val_image_t2_LGG = nib.load(LGG_val_list_t2[img]).get_fdata()
-    LGG_val.append(temp_image_t2_LGG)
+    LGG_val.append(val_image_t2_LGG)
 
 for img in range(len(HGG_list_t2)):   #Using t1_list as all lists are of same size   
     test_image_t2_HGG = nib.load(HGG_test_list_t2[img]).get_fdata()
-    HGG_train.append(temp_image_t2_HGG)
+    HGG_train.append(test_image_t2_HGG)
 
 for img in range(len(LGG_list_t2)):
     test_image_t2_LGG = nib.load(LGG_test_list_t2[img]).get_fdata()
-    LGG_train.append(temp_image_t2_LGG)
+    LGG_train.append(test_image_t2_LGG)
 
 # Put X and y to device
 #X = torch.tensor(X, dtype=torch.float32).to(device)
