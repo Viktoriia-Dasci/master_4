@@ -34,11 +34,7 @@ from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 
 
-from torchmetrics.classification import ROC
-from torchmetrics import AUROC
 
-import optuna
-from optuna.trial import TrialState
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device
@@ -47,9 +43,9 @@ device
 #drive.mount('/content/drive')
 
 # !pip install segmentation_models_pytorch
-from segmentation_models_pytorch import losses
-dice_loss = losses.DiceLoss('binary')
-foc_loss = losses.FocalLoss('binary')
+# from segmentation_models_pytorch import losses
+# dice_loss = losses.DiceLoss('binary')
+# foc_loss = losses.FocalLoss('binary')
 
 
 """### 2. Create PyTorch data generators"""
@@ -68,7 +64,7 @@ import torchvision.transforms as T
 train_transforms = transforms.Compose([
       transforms.RandomRotation(0,5),
       transforms.RandomHorizontalFlip(p=0.5),
-      transforms.RandomVerticalFlip(p=0.5)
+      transforms.RandomVerticalFlip(p=0.5),
       transforms.ToTensor(),
       transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
   ])
@@ -85,8 +81,8 @@ val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
 
 class myDataset_train(Dataset):
     def __init__(self, transform=False):
-        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/train/"
-        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/train/"
+        self.imgs_path = "/content/drive/MyDrive/Mri_slices_new/train/"
+        self.masks_path = "/content/drive/MyDrive/Mask_slices/train/"
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
         
@@ -104,6 +100,8 @@ class myDataset_train(Dataset):
             class_name = class_path.split("/")[-1]
             class_id = self.class_map[class_name]
             for img_path in sorted(os.listdir(os.path.join(self.imgs_path, class_path))):
+                # print(self.imgs_path)
+                # print(class_path)
                 images.append(os.path.join(self.imgs_path, class_path, img_path))
                 targets.append(class_id)
             for masks_path in sorted(os.listdir(os.path.join(self.masks_path, class_name))):
@@ -140,7 +138,7 @@ class myDataset_train(Dataset):
                 # Convert the images to the correct format
                 img = np.float64(img)
                 img_color = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-                msk = = np.float64(msk)
+                msk = np.float64(msk)
                 msk_color = cv2.cvtColor(msk, cv2.COLOR_GRAY2RGB)
                 
 
@@ -158,22 +156,21 @@ class myDataset_train(Dataset):
             self.targets.append(self.targets[i])
             self.masks.append(msk)
 
-      def __len__(self):
-          return len(self.targets)
+        def __len__(self):
+            return len(self.targets)
 
-      def __getitem__(self, idx):
-          img = self.images[idx]
-          target = self.targets[idx]
-          mask = self.masks[idx]
-          return img, target, mask
-          
-          
+        def __getitem__(self, idx):
+            img = self.images[idx]
+            target = self.targets[idx]
+            mask = self.masks[idx]
+            return img, target, mask
+
 class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/val/"
-        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/val/"
+        self.imgs_path = "/content/drive/MyDrive/Mri_slices_new/val/"
+        self.masks_path = "/content/drive/MyDrive/Mask_slices/val/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -235,8 +232,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/test/"
-        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/test/"
+        self.imgs_path = "/content/drive/MyDrive/Mri_slices_new/test/"
+        self.masks_path = "/content/drive/MyDrive/Mask_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
