@@ -101,11 +101,11 @@ for img in range(len(LGG_val_list_t2)):
 
 for img in range(len(HGG_list_t2)):   #Using t1_list as all lists are of same size   
     test_image_t2_HGG = nib.load(HGG_test_list_t2[img]).get_fdata()
-    HGG_train.append(test_image_t2_HGG)
+    HGG_test.append(test_image_t2_HGG)
 
 for img in range(len(LGG_list_t2)):
     test_image_t2_LGG = nib.load(LGG_test_list_t2[img]).get_fdata()
-    LGG_train.append(test_image_t2_LGG)
+    HGG_test.append(test_image_t2_LGG)
 
 # Put X and y to device
 #X = torch.tensor(X, dtype=torch.float32).to(device)
@@ -194,7 +194,8 @@ model = MyCustomResnet50().to(device)
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.SGD(model.parameters(), lr=0.004)
+
 
 # Define the training loop
 def train(model, device, train_loader, criterion, optimizer):
