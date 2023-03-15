@@ -81,8 +81,8 @@ val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
 
 class myDataset_train(Dataset):
     def __init__(self, transform=False):
-        self.imgs_path = "/content/drive/MyDrive/Mri_slices_new/train/"
-        self.masks_path = "/content/drive/MyDrive/Mask_slices/train/"
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/train/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/train/"
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
         
@@ -169,8 +169,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/content/drive/MyDrive/Mri_slices_new/val/"
-        self.masks_path = "/content/drive/MyDrive/Mask_slices/val/"
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/val/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/val/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -232,8 +232,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/content/drive/MyDrive/Mri_slices_new/test/"
-        self.masks_path = "/content/drive/MyDrive/Mask_slices/test/"
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/test/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
