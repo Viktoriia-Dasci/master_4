@@ -547,7 +547,7 @@ def compute_gradcam(output, feats, target):
 
     return gradcam
 
-model = MyCustomResnet50(pretrained=True).to(device)
+model = MyCustomEfficientNetB1(pretrained=True).to(device)
 
 # # Freeze all layers
 # for param in model.parameters():
