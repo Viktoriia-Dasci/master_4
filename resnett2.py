@@ -251,72 +251,81 @@ test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 # Define the model
 model = MyCustomResnet50().to(device)
 
-# Define the loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.004)
 
 
-# Define the training loop
-def train(model, device, train_loader, criterion, optimizer):
-    model.train()
-    train_loss = 0
-    train_correct = 0
-    for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-        optimizer.zero_grad()
-        output = model(data)
-        loss = criterion(output, target)
-        train_loss += loss.item()
-        pred = output.argmax(dim=1, keepdim=True)
-        train_correct += pred.eq(target.view_as(pred)).sum().item()
-        loss.backward()
-        optimizer.step()
+def train_and_evaluate(model):
+    accuracies = []
+    dataloaders = load_data(batch_size=32)
+    # Freeze all layers
 
-    train_loss /= len(train_loader.dataset)
-    train_accuracy = 100. * train_correct / len(train_loader.dataset)
-    return train_loss, train_accuracy
+    #criterion = nn.CrossEntropyLoss()
 
-# Define the validating loop
-def validation(model, device, val_loader, criterion):
-    model.eval()
-    val_loss = 0
-    val_correct = 0
-    with torch.no_grad():
-        for data, target in val_loader:
-            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-            output = model(data)
-            val_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)
-            val_correct += pred.eq(target.view_as(pred)).sum().item()
 
-    val_loss /= len(val_loader.dataset)
-    val_accuracy = 100. * val_correct / len(val_loader.dataset)
-    return val_loss, val_accuracy
+    optimizer = optim.SGD(model.parameters(), lr=0.004)
+    #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
 
-# Define the testing loop
-def test(model, device, test_loader, criterion):
-    model.eval()
-    test_loss = 0
-    test_correct = 0
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-            output = model(data)
-            test_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)
-            test_correct += pred.eq(target.view_as(pred)).sum().item()
+    for epoch_num in range(EPOCHS):
+            torch.cuda.empty_cache()
+            model.train()
+            total_acc_train = 0
+            total_loss_train = 0
 
-    test_loss /= len(test_loader.dataset)
-    test_accuracy = 100. * test_correct / len(test_loader.dataset)
-    return test_loss, test_accuracy
+            for train_input, train_label, train_mask in dataloaders['Train']:
 
-# Train and val the model
-for epoch in range(30):
-    train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
-    val_loss, val_accuracy = validation(model, device, val_loader, criterion)
-    print('Epoch: {} \tTrain Loss: {:.6f} \tTrain Accuracy: {:.2f}% \tVal Loss: {:.6f} \tVal Accuracy: {:.2f}%'.format(
-        epoch+1, train_loss, train_accuracy, val_loss, val_accuracy))
+                train_label = train_label.long().to(device)
+                train_input = train_input.float().to(device)
+                train_mask = train_mask.to(device)
 
-# Evaluate the model on the test set
-test_loss, test_accuracy = test(model, device, test_loader, criterion)
-print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
+                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
+                
+                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                #batch_loss = xe_loss_.mean()
+                total_loss_train += batch_loss.item()
+                
+                acc = (output.argmax(dim=1) == train_label).sum().item()
+                total_acc_train += acc
+
+                model.zero_grad()
+                batch_loss.backward()
+                optimizer.step()
+            
+            total_acc_val = 0
+            total_loss_val = 0
+
+            model.eval()
+            # with torch.no_grad():
+            
+
+            for val_input, val_label, val_mask in dataloaders['Val']:
+
+                val_label = val_label.long().to(device)
+                val_input = val_input.float().to(device)
+                val_mask = val_mask.to(device)
+                
+
+                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+
+                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                #batch_loss = xe_loss_.mean()
+                total_loss_val += batch_loss.item()
+                
+                acc = (output.argmax(dim=1) == val_label).sum().item()
+                total_acc_val += acc
+        
+            accuracy = total_acc_val/len(image_datasets['Val'])
+            accuracies.append(accuracy)
+            print(accuracy)
+            if len(accuracies) >= 3 and accuracy <= 0.5729:
+                break
+
+#             trial.report(accuracy, epoch_num)
+#             if trial.should_prune():
+#                 raise optuna.exceptions.TrialPruned()
+    final_accuracy = max(accuracies)
+    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+    torch.save(model.state_dict(), PATH)
+  
+    return final_accuracy
+  
+  
+train_and_evaluate(model)
