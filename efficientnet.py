@@ -456,7 +456,7 @@ class MyCustomEfficientNetB1(nn.Module):
         super().__init__()
         
         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
-        self.features = efficientnet_b1.extract_features.cuda()
+        self.features = efficientnet_b1.extract_features
         in_features = efficientnet_b1._fc.in_features
         self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
@@ -465,7 +465,7 @@ class MyCustomEfficientNetB1(nn.Module):
 
 
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
-        images_feats = self.features(input_imgs)
+        images_feats = self.features(input_imgs.cpu())
         images_att = self.attention(images_feats)
         output = self.last_pooling_operation(images_att)
         output = output.view(input_imgs.size(0), -1)
