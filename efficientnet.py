@@ -660,7 +660,7 @@ best_model_wts = {}
 #      return max_accuracy
   
   
-EPOCHS = 30
+EPOCHS = 50
     
 # study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
 # study.optimize(objective, n_trials=30)
