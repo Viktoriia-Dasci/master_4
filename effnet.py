@@ -439,9 +439,9 @@ class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
         
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
-        self.features = efficientnet_b1.extract_features
-        in_features = efficientnet_b1._fc.in_features
+        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
+        self.features = efficientnet_b0.extract_features
+        in_features = efficientnet_b0._fc.in_features
         self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(in_features, 128)
@@ -531,7 +531,7 @@ def compute_gradcam(output, feats, target):
 
     return gradcam
 
-model = MyCustomEfficientNetB1(pretrained=True).to(device)
+model = MyCustomEfficientNetB0(pretrained=True).to(device)
 
 # # Freeze all layers
 # for param in model.parameters():
