@@ -470,7 +470,7 @@ class MyCustomResnet50(nn.Module):
         self.features = nn.Sequential(*list(resnet50.children())[:-2])
         self.spatial_attention = SpatialAttention(2048)
         self.channel_attention = ChannelAttention(2048)
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(2048, 128)
         self.fc2 = nn.Linear(128, 2)
         
