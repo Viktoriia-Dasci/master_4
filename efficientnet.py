@@ -83,7 +83,7 @@ import torchvision.transforms as T
 #         return [t(img) for img in imgs]
 
 train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
-                                       transforms.Resize((224,224)),                                  
+                                       #transforms.Resize((224,224)),                                  
                                        torchvision.transforms.Normalize(
                                            mean=[0.485, 0.456, 0.406],
                                            std=[0.229, 0.224, 0.225],),
@@ -99,7 +99,7 @@ aug_transform = transforms.Compose([
 
 
 val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
-                                      transforms.Resize((224,224)),
+                                      #transforms.Resize((224,224)),
                                       torchvision.transforms.Normalize(
                                           mean=[0.485, 0.456, 0.406],
                                           std=[0.229, 0.224, 0.225],
@@ -456,7 +456,7 @@ class MyCustomEfficientNetB1(nn.Module):
         super().__init__()
         
         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
-        self.features = efficientnet_b1.extract_features
+        self.features = efficientnet_b1.extract_features.cuda()
         in_features = efficientnet_b1._fc.in_features
         self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
