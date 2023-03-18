@@ -14,7 +14,7 @@ from torch import tensor
 import torchvision.models as models
 import torchvision
 from torchvision import datasets, models, transforms
-from torchvision.models import ResNet50_Weights
+from efficientnet_pytorch import EfficientNet
 
 import glob
 import os
