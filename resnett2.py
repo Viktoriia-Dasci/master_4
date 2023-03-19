@@ -251,6 +251,7 @@ test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 # Define the model
 model = MyCustomResnet50().to(device)
 
+EPOCHS=30
 
 
 def train_and_evaluate(model):
