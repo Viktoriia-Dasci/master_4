@@ -232,13 +232,23 @@ def objective(params):
     train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
     return {'loss': 1 - train_accuracy / 100, 'status': 'ok'}
 
+def hyperband_stopping(trials, trial, result, early_stopping_rounds):
+    if len(trials.trials) < early_stopping_rounds:
+        return False
+    best_trial = max(trials.trials, key=lambda t: t['result']['loss'])
+    if trial.number >= best_trial.number + early_stopping_rounds:
+        return True
+    else:
+        return False
+
+
 # Run the Hyperband algorithm to find the best hyperparameters
 best = fmin(fn=objective,
             space=space,
             algo=tpe.suggest,
             max_evals=81,
             rstate=np.random.RandomState(42),
-            early_stop_fn=hyperopt_utils.hyperband_stopping,
+            early_stop_fn=hyperband_stopping,
             verbose=1)
 
 # Update the optimizer with the best hyperparameters
