@@ -47,7 +47,7 @@ foc_loss = losses.FocalLoss('binary')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
-                                      #transforms.Resize((224,224)),
+                                      transforms.Resize((224,224)),
                                       torchvision.transforms.Normalize(
                                           mean=[0.485, 0.456, 0.406],
                                           std=[0.229, 0.224, 0.225],
@@ -131,13 +131,13 @@ class SelfAttention(nn.Module):
         return out
 
 
-class MyCustomEfficientNetB1(nn.Module):
+class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
         
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1').to(device)
-        self.features = efficientnet_b1.extract_features
-        in_features = efficientnet_b1._fc.in_features
+        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
+        self.features = efficientnet_b0.extract_features
+        in_features = efficientnet_b0._fc.in_features
         self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(in_features, 128)
@@ -166,7 +166,7 @@ class MyCustomEfficientNetB1(nn.Module):
             img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
             img_grad_1 = img_grad.cpu()
             img_grad_2 = img_grad_1.detach().numpy()
-            img_grad_3 = cv2.resize(img_grad_2, (240,240), cv2.INTER_LINEAR)
+            img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
             img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
             img_grad_5 = torch.from_numpy(img_grad_4)
             img_grad_6 = img_grad_5.to(device)
