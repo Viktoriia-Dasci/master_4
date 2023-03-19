@@ -166,42 +166,24 @@ train_generator = datagen.flow(
 from sklearn.metrics import f1_score
 import numpy as np
 
-def model_train(model_name, image_size=224):
+
+
+def model_train(model_name, image_size = 224):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=0.79)(model)
-    model = tf.keras.layers.Dense(2, activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
+    model = tf.keras.layers.Dense(2,activation='softmax')(model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     sgd = SGD(learning_rate=0.004)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy'])
     #callbacks
-    tensorboard = TensorBoard(log_dir='logs')
-    checkpoint = ModelCheckpoint(str(model_name) + ".h5", save_best_only=True, mode="max", verbose=1)
-    reduce_lr = ReduceLROnPlateau(monitor='val_F1Score', factor=0.3, patience=2, min_delta=0.001, mode='auto', verbose=1)
-    f1_score_callback = F1ScoreCallback(validation_data=(X_val, y_val))
+    tensorboard = TensorBoard(log_dir = 'logs')
+    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_F1Score",save_best_only=True,mode="auto",verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor = 'val_F1Score', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
-                   callbacks=[tensorboard, checkpoint, reduce_lr, f1_score_callback])
-
-
-
-# def model_train(model_name, image_size = 224):
-#     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
-#     model = model_name.output
-#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-#     model = tf.keras.layers.Dropout(rate=0.79)(model)
-#     model = tf.keras.layers.Dense(2,activation='softmax')(model)
-#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-#     sgd = SGD(learning_rate=0.004)
-#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy'])
-#     #callbacks
-#     tensorboard = TensorBoard(log_dir = 'logs')
-#     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
-#     reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
-#     #fitting the model
-#     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
-#                    callbacks=[tensorboard, checkpoint, reduce_lr]) 
+                   callbacks=[tensorboard, checkpoint, reduce_lr]) 
 
 #     return history
 
