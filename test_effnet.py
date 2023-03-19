@@ -47,7 +47,7 @@ foc_loss = losses.FocalLoss('binary')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
-                                      transforms.Resize((224,224)),
+                                      #transforms.Resize((224,224)),
                                       torchvision.transforms.Normalize(
                                           mean=[0.485, 0.456, 0.406],
                                           std=[0.229, 0.224, 0.225],
