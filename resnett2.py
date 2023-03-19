@@ -271,11 +271,11 @@ def train_and_evaluate(model):
             total_acc_train = 0
             total_loss_train = 0
 
-            for train_input, train_label, train_mask in train_loader:
+            for train_input, train_label in train_loader:
 
                 train_label = train_label.long().to(device)
                 train_input = train_input.float().to(device)
-                train_mask = train_mask.to(device)
+                #train_mask = train_mask.to(device)
 
                 output = model(train_input, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
                 
@@ -297,11 +297,11 @@ def train_and_evaluate(model):
             # with torch.no_grad():
             
 
-            for val_input, val_label, val_mask in val_loader:
+            for val_input, val_label in val_loader:
 
                 val_label = val_label.long().to(device)
                 val_input = val_input.float().to(device)
-                val_mask = val_mask.to(device)
+                #val_mask = val_mask.to(device)
                 
 
                 output = model(val_input, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
