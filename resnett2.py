@@ -226,11 +226,15 @@ space = {
     'momentum': hp.uniform('momentum', 0.1, 0.9)
 }
 
+from hyperopt import Trials
+
 # Define the objective function to minimize
 def objective(params):
     optimizer = optim.SGD(model.parameters(), lr=params['lr'], momentum=params['momentum'])
     train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
     return {'loss': 1 - train_accuracy / 100, 'status': 'ok'}
+
+trials = Trials()  # Define the 'trials' variable
 
 def hyperband_stopping(trials, trial, result, early_stopping_rounds):
     if len(trials.trials) < early_stopping_rounds:
@@ -248,7 +252,7 @@ best = fmin(fn=objective,
             algo=tpe.suggest,
             max_evals=81,
             rstate=np.random.seed(42),
-            early_stop_fn=hyperband_stopping(trials, trial, result, early_stopping_rounds=5),
+            #early_stop_fn=hyperband_stopping,
             verbose=1)
 
 # Update the optimizer with the best hyperparameters
