@@ -274,7 +274,7 @@ def train_and_evaluate(model):
             for train_input, train_label in train_loader:
 
                 train_label = train_label.long().to(device)
-                train_input = train_input.float().to(device)
+                train_input = train_input.permute(0, 3, 1, 2).float().to(device)
                 #train_mask = train_mask.to(device)
 
                 output = model(train_input, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
