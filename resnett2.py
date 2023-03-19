@@ -259,7 +259,7 @@ def train_and_evaluate(model):
     #dataloaders = load_data(batch_size=32)
     # Freeze all layers
 
-    #criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss()
 
 
     optimizer = optim.SGD(model.parameters(), lr=0.004)
@@ -279,7 +279,7 @@ def train_and_evaluate(model):
 
                 output = model(train_input, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
                 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                batch_loss = criterion(train_input, train_label)
                 #batch_loss = xe_loss_.mean()
                 total_loss_train += batch_loss.item()
                 
@@ -306,7 +306,7 @@ def train_and_evaluate(model):
 
                 output = model(val_input, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                batch_loss = criterion(val_input, val_label)
                 #batch_loss = xe_loss_.mean()
                 total_loss_val += batch_loss.item()
                 
