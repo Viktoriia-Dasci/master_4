@@ -180,7 +180,7 @@ def model_train(model_name, image_size = 224):
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_F1Score",save_best_only=True,mode="auto",verbose=1)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_F1Score', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
                    callbacks=[tensorboard, checkpoint, reduce_lr]) 
