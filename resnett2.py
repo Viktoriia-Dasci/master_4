@@ -300,7 +300,7 @@ def train_and_evaluate(model):
             for val_input, val_label in val_loader:
 
                 val_label = val_label.long().to(device)
-                val_input = val_input.float().to(device)
+                val_input = val_input.permute(0, 3, 1, 2).float().to(device)
                 #val_mask = val_mask.to(device)
                 
 
