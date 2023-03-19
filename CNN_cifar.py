@@ -1,6 +1,7 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
 
 def create_model(num_conv_layers, num_pooling_layers, num_dense_layers, input_shape, num_classes, dropout_rate):
     model = Sequential()
