@@ -189,7 +189,6 @@ def model_train(model_name, image_size = 224):
 
     return history
 
-
 def plot_acc_loss(model_history, folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
