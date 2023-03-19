@@ -177,7 +177,7 @@ def model_train(model_name, image_size = 224):
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     sgd = SGD(learning_rate=0.004)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= [tf.keras.metrics.F1Score, tf.keras.metrics.AUC, tf.keras.metrics.Accuracy])
+    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
