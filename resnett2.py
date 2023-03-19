@@ -161,7 +161,7 @@ class MyCustomResnet50(nn.Module):
 
 
 # Define the transformation to be applied to the images
-transform = transforms.Compose([torchvision.transforms.ToTensor(),
+transform = transforms.Compose([transforms.ToTensor(),
                                 transforms.Resize((224,224)),                                  
                                 torchvision.transforms.Normalize(
                                    mean=[0.485, 0.456, 0.406],
@@ -203,7 +203,7 @@ def train(model, device, train_loader, criterion, optimizer):
     train_loss = 0
     train_correct = 0
     for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+        data, target = data.to(device), target.to(device) # Permute dimensions
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
@@ -224,7 +224,7 @@ def validation(model, device, val_loader, criterion):
     val_correct = 0
     with torch.no_grad():
         for data, target in val_loader:
-            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+            data, target = data.to(device), target.to(device) # Permute dimensions
             output = model(data)
             val_loss += criterion(output, target).item()
             pred = output.argmax(dim=1, keepdim=True)
