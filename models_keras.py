@@ -163,25 +163,61 @@ train_generator = datagen.flow(
     X_train, y_train, batch_size=32,
     shuffle=True)
 
+from sklearn.metrics import f1_score
+import numpy as np
 
-def model_train(model_name, image_size = 224):
+class F1ScoreCallback(tf.keras.callbacks.Callback):
+    def __init__(self, validation_data):
+        super(F1ScoreCallback, self).__init__()
+        self.validation_data = validation_data
+
+    def on_epoch_end(self, epoch, logs=None):
+        X_val, y_val = self.validation_data
+        y_pred = np.argmax(self.model.predict(X_val), axis=-1)
+        f1 = f1_score(y_val, y_pred, average='macro')
+        print(f'Validation F1-score: {f1:.4f}')
+        if logs is not None:
+            logs['val_f1_score'] = f1
+
+
+def model_train(model_name, image_size=224):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=0.79)(model)
-    model = tf.keras.layers.Dense(2,activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     sgd = SGD(learning_rate=0.004)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
     #callbacks
-    tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
+    tensorboard = TensorBoard(log_dir='logs')
+    checkpoint = ModelCheckpoint(str(model_name) + ".h5", save_best_only=True, mode="max", verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.3, patience=2, min_delta=0.001, mode='auto', verbose=1)
+    f1_score_callback = F1ScoreCallback(validation_data=(X_val, y_val))
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
-                   callbacks=[tensorboard, checkpoint, reduce_lr]) 
+                   callbacks=[tensorboard, checkpoint, reduce_lr, f1_score_callback])
 
-    return history
+
+
+# def model_train(model_name, image_size = 224):
+#     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dropout(rate=0.79)(model)
+#     model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+#     sgd = SGD(learning_rate=0.004)
+#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy'])
+#     #callbacks
+#     tensorboard = TensorBoard(log_dir = 'logs')
+#     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
+#     reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
+#     #fitting the model
+#     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
+#                    callbacks=[tensorboard, checkpoint, reduce_lr]) 
+
+#     return history
 
 
 def plot_acc_loss(model_history, folder_path):
@@ -214,7 +250,7 @@ def plot_acc_loss(model_history, folder_path):
     
     
     
-# history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
+history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
 # plot_acc_loss(history_effnet, '/home/viktoriia.trokhova/plots/effnet')
 
@@ -252,87 +288,87 @@ def plot_acc_loss(model_history, folder_path):
 # colors_red = ["#331313", "#582626", '#9E1717', '#D35151', '#E9B4B4']
 # colors_green = ['#01411C','#4B6F44','#4F7942','#74C365','#D0F0C0']
 
-my_model_eff = load_model('/home/viktoriia.trokhova/master_4/effnetDA.h5')
-print('efficientnet')
-pred_eff = my_model_eff.predict(X_test)
-pred_ready_eff = np.argmax(pred_eff,axis=1)
-y_test_new_eff = np.argmax(y_test,axis=1)
+# my_model_eff = load_model('/home/viktoriia.trokhova/master_4/effnetDA.h5')
+# print('efficientnet')
+# pred_eff = my_model_eff.predict(X_test)
+# pred_ready_eff = np.argmax(pred_eff,axis=1)
+# y_test_new_eff = np.argmax(y_test,axis=1)
 
-print(classification_report(y_test_new_eff,pred_ready_eff))
+# print(classification_report(y_test_new_eff,pred_ready_eff))
 
-# fig,ax=plt.subplots(1,1,figsize=(14,7))
-# sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
-#            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
-# fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
-#              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+# # fig,ax=plt.subplots(1,1,figsize=(14,7))
+# # sns.heatmap(confusion_matrix(y_test_new_eff,pred_ready_eff),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+# #            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+# # fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+# #              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
 
-# plt.show()
+# # plt.show()
 
-test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
-#acc = 0.81
+# test_loss, test_acc = my_model_eff.evaluate(X_test, y_test, verbose=2)
+# #acc = 0.81
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+# print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-my_model_res = load_model('/home/viktoriia.trokhova/master_4/resnetDA.h5')
-print('resnet')
-pred_res = my_model_res.predict(X_test)
-pred_ready_res = np.argmax(pred_res,axis=1)
-y_test_new_res = np.argmax(y_test,axis=1)
+# my_model_res = load_model('/home/viktoriia.trokhova/master_4/resnetDA.h5')
+# print('resnet')
+# pred_res = my_model_res.predict(X_test)
+# pred_ready_res = np.argmax(pred_res,axis=1)
+# y_test_new_res = np.argmax(y_test,axis=1)
 
-print(classification_report(y_test_new_res,pred_ready_res))
+# print(classification_report(y_test_new_res,pred_ready_res))
 
-# fig,ax=plt.subplots(1,1,figsize=(14,7))
-# sns.heatmap(confusion_matrix(y_test_new_res,pred_ready_res),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
-#            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
-# fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
-#              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+# # fig,ax=plt.subplots(1,1,figsize=(14,7))
+# # sns.heatmap(confusion_matrix(y_test_new_res,pred_ready_res),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+# #            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+# # fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+# #              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
 
-# plt.show()
+# # plt.show()
 
-test_loss, test_acc = my_model_res.evaluate(X_test, y_test, verbose=2)
+# test_loss, test_acc = my_model_res.evaluate(X_test, y_test, verbose=2)
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+# print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-my_model_inception = load_model('/home/viktoriia.trokhova/master_4/inceptionDA.h5')
-print('inception')
-pred_incep = my_model_inception.predict(X_test)
-pred_ready_incep = np.argmax(pred_incep,axis=1)
-y_test_new_incep = np.argmax(y_test,axis=1)
+# my_model_inception = load_model('/home/viktoriia.trokhova/master_4/inceptionDA.h5')
+# print('inception')
+# pred_incep = my_model_inception.predict(X_test)
+# pred_ready_incep = np.argmax(pred_incep,axis=1)
+# y_test_new_incep = np.argmax(y_test,axis=1)
 
-print(classification_report(y_test_new_incep,pred_ready_incep))
+# print(classification_report(y_test_new_incep,pred_ready_incep))
 
-# fig,ax=plt.subplots(1,1,figsize=(14,7))
-# sns.heatmap(confusion_matrix(y_test_new_incep,pred_ready_incep),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
-#            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
-# fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
-#              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+# # fig,ax=plt.subplots(1,1,figsize=(14,7))
+# # sns.heatmap(confusion_matrix(y_test_new_incep,pred_ready_incep),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+# #            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+# # fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+# #              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
 
-# plt.show()
+# # plt.show()
 
-test_loss, test_acc = my_model_inception.evaluate(X_test, y_test, verbose=2)
+# test_loss, test_acc = my_model_inception.evaluate(X_test, y_test, verbose=2)
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+# print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
-my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/densenetDA.h5')
-print('densenet')
-pred_dense = my_model_densenet.predict(X_test)
-pred_ready_dense = np.argmax(pred_dense,axis=1)
-y_test_new_dense = np.argmax(y_test,axis=1)
+# my_model_densenet = load_model('/home/viktoriia.trokhova/master_4/densenetDA.h5')
+# print('densenet')
+# pred_dense = my_model_densenet.predict(X_test)
+# pred_ready_dense = np.argmax(pred_dense,axis=1)
+# y_test_new_dense = np.argmax(y_test,axis=1)
 
 
-print(classification_report(y_test_new_dense,pred_ready_dense))
+# print(classification_report(y_test_new_dense,pred_ready_dense))
 
-# fig,ax=plt.subplots(1,1,figsize=(14,7))
-# sns.heatmap(confusion_matrix(y_test_new_dense,pred_ready_dense),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
-#            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
-# fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
-#              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
+# # fig,ax=plt.subplots(1,1,figsize=(14,7))
+# # sns.heatmap(confusion_matrix(y_test_new_dense,pred_ready_dense),ax=ax,xticklabels=labels,yticklabels=labels,annot=True, fmt='g',
+# #            cmap=colors_green[::-1],alpha=0.7,linewidths=2,linecolor=colors_dark[3])
+# # fig.text(s='Heatmap of the Confusion Matrix',size=18,fontweight='bold',
+# #              fontname='monospace',color=colors_dark[1],y=0.92,x=0.28,alpha=0.8)
 
-# plt.show()
+# # plt.show()
 
-test_loss, test_acc = my_model_densenet.evaluate(X_test, y_test, verbose=2)
+# test_loss, test_acc = my_model_densenet.evaluate(X_test, y_test, verbose=2)
 
-print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
+# print(f' Test accuracy: {test_acc:.3f} \n Test loss {test_loss:.3f}')
 
 # # inception: <keras.engine.functional.Functional object at 0x7f07681711b0>.h5
 # # densenet: <keras.engine.functional.Functional object at 0x7f06ec417370>.h5
