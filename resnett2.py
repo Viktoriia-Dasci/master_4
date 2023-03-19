@@ -147,7 +147,7 @@ class MyCustomResnet50(nn.Module):
 
 
 
-    def forward(self, x, dropout = nn.Dropout(p=0.5)
+    def forward(self, x, dropout = nn.Dropout(p=0.79)
 ):
         x = self.features(x)
         x = self.avgpool(x)
@@ -161,10 +161,11 @@ class MyCustomResnet50(nn.Module):
 
 
 # Define the transformation to be applied to the images
-transform = transforms.Compose([
-    transforms.Resize((240, 240)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+transform = transforms.Compose([torchvision.transforms.ToTensor(),
+                                transforms.Resize((224,224)),                                  
+                                torchvision.transforms.Normalize(
+                                   mean=[0.485, 0.456, 0.406],
+                                   std=[0.229, 0.224, 0.225],),
 ])
 
 # Convert the train, val and test data to PyTorch tensors
