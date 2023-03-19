@@ -249,6 +249,7 @@ best = fmin(fn=objective,
             max_evals=81,
             rstate=np.random.seed(42),
             early_stop_fn=hyperband_stopping,
+            early_stopping_rounds=5,
             verbose=1)
 
 # Update the optimizer with the best hyperparameters
