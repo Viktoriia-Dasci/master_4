@@ -167,7 +167,7 @@ class MyCustomResnet50(nn.Module):
         self.fc1 = nn.Linear(2048, 128)
         self.fc2 = nn.Linear(128, 2)
 
-    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
+    def forward(self, input_imgs, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
         images_feats = self.features(input_imgs)
         images_att = self.attention(images_feats)
         output = self.last_pooling_operation(images_att)
@@ -178,45 +178,45 @@ class MyCustomResnet50(nn.Module):
         #images_outputs = nn.ReLU(self.fc2(output))
 
 
-        # # compute gcam for images
-        orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
+#         # # compute gcam for images
+#         orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
 
-        # #upsample gradcam to (224, 224, 3)
-        gcam_losses = 0.0
+#         # #upsample gradcam to (224, 224, 3)
+#         gcam_losses = 0.0
 
-        for i in range(batch_size):
-            #print(orig_gradcam_mask[i].shape)
-            img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
-            img_grad_1 = img_grad.cpu()
-            img_grad_2 = img_grad_1.detach().numpy()
-            img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
-            img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
-            img_grad_5 = torch.from_numpy(img_grad_4)
-            img_grad_6 = img_grad_5.to(device)
-            #img_grad_6 = torch.nn.ReLU(inplace=True)(img_grad_6)
+#         for i in range(batch_size):
+#             #print(orig_gradcam_mask[i].shape)
+#             img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
+#             img_grad_1 = img_grad.cpu()
+#             img_grad_2 = img_grad_1.detach().numpy()
+#             img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
+#             img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
+#             img_grad_5 = torch.from_numpy(img_grad_4)
+#             img_grad_6 = img_grad_5.to(device)
+#             #img_grad_6 = torch.nn.ReLU(inplace=True)(img_grad_6)
 
 
-            #masks to same dimension
-            masks_per = masks[i].permute(1, 2, 0)
-            masks_per = cv2.normalize(masks_per.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
-            img_grad_6 = cv2.normalize(img_grad_6.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
-            masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
-            masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
+#             #masks to same dimension
+#             masks_per = masks[i].permute(1, 2, 0)
+#             masks_per = cv2.normalize(masks_per.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
+#             img_grad_6 = cv2.normalize(img_grad_6.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
+#             masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
+#             masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
 
-            gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
-            #print(gcam_loss)
-            #gcam_loss = l1_criterion(img_grad_6, masks_per)
-            gcam_losses += gcam_loss
+#             gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
+#             #print(gcam_loss)
+#             #gcam_loss = l1_criterion(img_grad_6, masks_per)
+#             gcam_losses += gcam_loss
 
-            # gcam_loss = l1_criterion(img_grad_6, masks_per)
-            # gcam_losses += gcam_loss
+#             # gcam_loss = l1_criterion(img_grad_6, masks_per)
+#             # gcam_losses += gcam_loss
 
-            #gcam_losses += gcam_loss.item() * input_imgs.size(0)
-        #gcam_losses = gcam_losses/batch_size
-        xe_loss = xe_criterion(images_outputs, targets)
+#             #gcam_losses += gcam_loss.item() * input_imgs.size(0)
+#         #gcam_losses = gcam_losses/batch_size
+#         xe_loss = xe_criterion(images_outputs, targets)
         
 
-        return images_outputs, targets, xe_loss, gcam_losses      #return images_outputs
+        return images_outputs  #return images_outputs
 
 
 
@@ -277,7 +277,7 @@ def train_and_evaluate(model):
                 train_input = train_input.float().to(device)
                 train_mask = train_mask.to(device)
 
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
+                output = model(train_input, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
                 
                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 #batch_loss = xe_loss_.mean()
@@ -304,7 +304,7 @@ def train_and_evaluate(model):
                 val_mask = val_mask.to(device)
                 
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+                output = model(val_input, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
 
                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 #batch_loss = xe_loss_.mean()
