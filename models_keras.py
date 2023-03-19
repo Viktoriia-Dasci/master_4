@@ -166,20 +166,6 @@ train_generator = datagen.flow(
 from sklearn.metrics import f1_score
 import numpy as np
 
-class F1ScoreCallback(tf.keras.callbacks.Callback):
-    def __init__(self, validation_data):
-        super(F1ScoreCallback, self).__init__()
-        self.validation_data = validation_data
-
-    def on_epoch_end(self, epoch, logs=None):
-        X_val, y_val = self.validation_data
-        y_pred = np.argmax(self.model.predict(X_val), axis=-1)
-        f1 = f1_score(y_val, y_pred, average='macro')
-        print(f'Validation F1-score: {f1:.4f}')
-        if logs is not None:
-            logs['val_f1_score'] = f1
-
-
 def model_train(model_name, image_size=224):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
@@ -192,7 +178,7 @@ def model_train(model_name, image_size=224):
     #callbacks
     tensorboard = TensorBoard(log_dir='logs')
     checkpoint = ModelCheckpoint(str(model_name) + ".h5", save_best_only=True, mode="max", verbose=1)
-    reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.3, patience=2, min_delta=0.001, mode='auto', verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor='val_F1Score', factor=0.3, patience=2, min_delta=0.001, mode='auto', verbose=1)
     f1_score_callback = F1ScoreCallback(validation_data=(X_val, y_val))
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
