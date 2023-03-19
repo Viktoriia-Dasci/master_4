@@ -27,7 +27,7 @@ from sklearn.utils import shuffle
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
-from tensorflow_addons.metrics import F1Score
+from tensorflow_addons import metrics
 
 
 
