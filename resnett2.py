@@ -255,7 +255,7 @@ model = MyCustomResnet50().to(device)
 
 def train_and_evaluate(model):
     accuracies = []
-    dataloaders = load_data(batch_size=32)
+    #dataloaders = load_data(batch_size=32)
     # Freeze all layers
 
     #criterion = nn.CrossEntropyLoss()
@@ -270,7 +270,7 @@ def train_and_evaluate(model):
             total_acc_train = 0
             total_loss_train = 0
 
-            for train_input, train_label, train_mask in dataloaders['Train']:
+            for train_input, train_label, train_mask in train_loader:
 
                 train_label = train_label.long().to(device)
                 train_input = train_input.float().to(device)
@@ -296,7 +296,7 @@ def train_and_evaluate(model):
             # with torch.no_grad():
             
 
-            for val_input, val_label, val_mask in dataloaders['Val']:
+            for val_input, val_label, val_mask in val_loader:
 
                 val_label = val_label.long().to(device)
                 val_input = val_input.float().to(device)
