@@ -27,7 +27,7 @@ from sklearn.utils import shuffle
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
-from tensorflow.keras import metrics
+from tensorflow_addons.metrics import F1Score
 
 
 
@@ -177,7 +177,7 @@ def model_train(model_name, image_size = 224):
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     sgd = SGD(learning_rate=0.004)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= [F1Score(num_classes=2)])
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor=metrics.F1Score,save_best_only=True,mode="auto",verbose=1)
