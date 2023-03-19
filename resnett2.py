@@ -247,7 +247,7 @@ best = fmin(fn=objective,
             space=space,
             algo=tpe.suggest,
             max_evals=81,
-            rstate=np.random.RandomState(42),
+            rstate=np.random.seed(42),
             early_stop_fn=hyperband_stopping,
             verbose=1)
 
