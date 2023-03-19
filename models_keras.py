@@ -180,9 +180,9 @@ def model_train(model_name, image_size = 224):
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=5, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
                    callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
