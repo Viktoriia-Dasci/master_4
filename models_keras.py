@@ -180,13 +180,14 @@ def model_train(model_name, image_size = 224):
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= [metrics.F1Score(num_classes=2)])
     #callbacks
     tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor=metrics.F1Score,save_best_only=True,mode="auto",verbose=1)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)
+    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
+    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=5, verbose=1, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
-                   callbacks=[tensorboard, checkpoint, reduce_lr]) 
+                   callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
 
-#     return history
+return history
 
 
 def plot_acc_loss(model_history, folder_path):
