@@ -406,6 +406,21 @@ def build_model(X_train):
 
 model = build_model(X_train)
               
+      
+datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input,
+    rotation_range=5,
+   #width_shift_range=0.1,
+   #height_shift_range=0.1,
+   #shear_range=0.1,
+    vertical_flip=True,
+    horizontal_flip=True,
+    fill_mode='nearest')
+
+train_generator = datagen.flow(
+    X_train, y_train, batch_size=32,
+    shuffle=True)
+
 tensorboard = TensorBoard(log_dir = 'logs')
 checkpoint = ModelCheckpoint(str() + ".h5",monitor="val_auc",save_best_only=True,mode="auto",verbose=1)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)             
