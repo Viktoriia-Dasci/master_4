@@ -216,14 +216,6 @@ X_test, y_test = shuffle(X_test, y_test, random_state=101)
 #     shuffle=True)
 
 
-def get_scaling_coefficients(phi):
-    # phi is a user-defined coefficient that controls the model's depth, width, and resolution
-    # phi = 0 corresponds to the smallest EfficientNet model, phi = 1 corresponds to the largest EfficientNet model
-    # the scaling coefficients are taken from the EfficientNet paper
-    depth_coefficient = 1.2 ** phi
-    width_coefficient = 1.1 ** phi
-    resolution_coefficient = 1.15 ** phi
-    return depth_coefficient, width_coefficient, resolution_coefficient
 
 def build_model(hp):
     model = Sequential()
@@ -231,29 +223,22 @@ def build_model(hp):
     # Define input shape
     input_shape = X_train.shape[1:]
     
-    # Add scaling hyperparameters
-    phi = hp.Choice('phi', values=[0, 1, 2, 3, 4, 5, 6])
-    alpha = hp.Float('alpha', min_value=0.0, max_value=1.0, default=1.0)
-    beta = hp.Float('beta', min_value=0.0, max_value=1.0, default=1.0)
-    
-    # Get scaling coefficients
-    depth_coefficient, width_coefficient, resolution_coefficient = get_scaling_coefficients(phi)
     
     # Add convolutional layers
-    for i in range(int(depth_coefficient)):
-        filters = int(32 * width_coefficient)
-        kernel_size = int(3 * resolution_coefficient)
-        model.add(Conv2D(filters=filters, kernel_size=(kernel_size, kernel_size), activation='relu', input_shape=input_shape))
+    for i in range(hp.Int('num_conv_layers', 5, 10)):
+        filters = hp.Int('filters', 16, 32, 64)
+        kernel_size = hp.Int('kernel_size', 2, 3, 4, 5)
+        model.add(Conv2D(filters=filters, kernel_size=kernel_size, activation='relu', input_shape=X_train.shape[1:]))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(hp.Float('dropout_conv', 0.0, 0.5)))
+        model.add(Dropout(hp.Float('dropout_conv', 0.2, 0.8)))
 
     # Flatten the output for the dense layers
     model.add(Flatten())
 
     # Add dense layers
-    for i in range(hp.Int('num_dense_layers', 1, 3)):
+    for i in range(hp.Int('num_dense_layers', 1, 5)):
         model.add(Dense(units=hp.Int('units_dense', 128, 512, 32), activation='relu'))
-        model.add(Dropout(hp.Float('dropout_dense', 0.0, 0.5)))
+        model.add(Dropout(hp.Float('dropout_dense', 0.2, 0.8)))
 
     # Add final output layer
     model.add(Dense(units=2, activation='softmax'))
@@ -263,6 +248,54 @@ def build_model(hp):
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
+
+# def get_scaling_coefficients(phi):
+#     # phi is a user-defined coefficient that controls the model's depth, width, and resolution
+#     # phi = 0 corresponds to the smallest EfficientNet model, phi = 1 corresponds to the largest EfficientNet model
+#     # the scaling coefficients are taken from the EfficientNet paper
+#     depth_coefficient = 1.2 ** phi
+#     width_coefficient = 1.1 ** phi
+#     resolution_coefficient = 1.15 ** phi
+#     return depth_coefficient, width_coefficient, resolution_coefficient
+
+# def build_model(hp):
+#     model = Sequential()
+    
+#     # Define input shape
+#     input_shape = X_train.shape[1:]
+    
+#     # Add scaling hyperparameters
+# #     phi = hp.Choice('phi', values=[0, 1, 2, 3, 4, 5, 6])
+# #     alpha = hp.Float('alpha', min_value=0.0, max_value=1.0, default=1.0)
+# #     beta = hp.Float('beta', min_value=0.0, max_value=1.0, default=1.0)
+    
+#     # Get scaling coefficients
+# #    depth_coefficient, width_coefficient, resolution_coefficient = get_scaling_coefficients(phi)
+    
+#     # Add convolutional layers
+#     for i in range(hp.Int('num_conv_layers', 5, 10)):
+#         filters = int(32 * width_coefficient)
+#         kernel_size = int(3 * resolution_coefficient)
+#         model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=X_train.shape[1:]))
+#         model.add(MaxPooling2D(pool_size=(2, 2)))
+#         model.add(Dropout(hp.Float('dropout_conv', 0.2, 0.8)))
+
+#     # Flatten the output for the dense layers
+#     model.add(Flatten())
+
+#     # Add dense layers
+#     for i in range(hp.Int('num_dense_layers', 1, 3)):
+#         model.add(Dense(units=hp.Int('units_dense', 128, 512, 32), activation='relu'))
+#         model.add(Dropout(hp.Float('dropout_dense', 0.0, 0.5)))
+
+#     # Add final output layer
+#     model.add(Dense(units=2, activation='softmax'))
+
+#     # Compile the model
+#     optimizer = Adam(learning_rate=hp.Float('learning_rate', 1e-4, 1e-2, sampling='log'))
+#     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
+#     return model
 
 #Define the model-building function
 # def build_model(hp):
