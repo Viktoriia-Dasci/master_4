@@ -218,21 +218,61 @@ X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
 
 # Define the model-building function
+# def build_model(hp):
+#     model = Sequential()
+
+#     # Add convolutional layers
+#     for i in range(hp.Int('num_conv_layers', 1, 3)):
+#         model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=X_train.shape[1:]))
+#         model.add(MaxPooling2D(pool_size=(2, 2)))
+#         model.add(Dropout(hp.Float('dropout_conv', 0.0, 0.5)))
+
+#     # Flatten the output for the dense layers
+#     model.add(Flatten())
+
+#     # Add dense layers
+#     for i in range(hp.Int('num_dense_layers', 1, 3)):
+#         model.add(Dense(units=hp.Int('units_dense', 128, 512, 32), activation='relu'))
+#         model.add(Dropout(hp.Float('dropout_dense', 0.0, 0.5)))
+
+#     # Add final output layer
+#     model.add(Dense(units=2, activation='softmax'))
+
+#     # Compile the model
+#     optimizer = Adam(learning_rate=hp.Float('learning_rate', 1e-4, 1e-2, sampling='log'))
+#     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
+#     return model
+
+
 def build_model(hp):
+    phi = hp.Float('phi', 0.5, 1.5, 0.1)  # Scaling coefficient for network width
+    alpha = hp.Float('alpha', 0.2, 0.8, 0.1)  # Scaling coefficient for resolution
+    rho = hp.Float('rho', 0.2, 0.8, 0.1)  # Scaling coefficient for network depth
+
+    # Calculate network depth, width, and resolution based on scaling coefficients
+    b = round(alpha ** phi)
+    c = round(rho * (2 ** phi) * 32)
+    r = round(224 * alpha ** phi)
+
     model = Sequential()
 
     # Add convolutional layers
-    for i in range(hp.Int('num_conv_layers', 1, 3)):
-        model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=X_train.shape[1:]))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(hp.Float('dropout_conv', 0.0, 0.5)))
+    for i in range(b):
+        if i == 0:
+            model.add(Conv2D(filters=c, kernel_size=(3, 3), strides=(2, 2), padding='same', input_shape=(r, r, 3)))
+        else:
+            model.add(Conv2D(filters=c, kernel_size=(3, 3), strides=(1, 1), padding='same'))
+        model.add(BatchNormalization())
+        model.add(Activation('swish'))
 
-    # Flatten the output for the dense layers
-    model.add(Flatten())
+    # Add pooling and dropout layers
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(hp.Float('dropout_conv', 0.0, 0.5)))
 
     # Add dense layers
     for i in range(hp.Int('num_dense_layers', 1, 3)):
-        model.add(Dense(units=hp.Int('units_dense', 128, 512, 32), activation='relu'))
+        model.add(Dense(units=round(hp.Int('units_dense', 128, 512, 32) * phi), activation='swish'))
         model.add(Dropout(hp.Float('dropout_dense', 0.0, 0.5)))
 
     # Add final output layer
@@ -243,6 +283,8 @@ def build_model(hp):
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
+
+
 
 # Define the Hyperband search object
 tuner = Hyperband(build_model, objective='val_accuracy', max_epochs=40, factor=3, seed=1, hyperparameters=HyperParameters())
