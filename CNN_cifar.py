@@ -1,3 +1,75 @@
+import numpy as np
+import nibabel as nib
+import glob
+import os
+import random
+import tensorflow as tf
+#import splitfolders  # or import split_folders
+from tensorflow.keras.utils import to_categorical
+import seaborn as sns
+from tensorflow.keras.applications import EfficientNetB0
+import matplotlib.pyplot as plt
+from tifffile import imsave
+import cv2
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard, ModelCheckpoint
+from tensorflow.keras.models import Model
+from tensorflow.keras import backend as K
+from tensorflow.keras import layers
+from tensorflow import keras
+from tensorflow.keras.models import Sequential
+import tensorflow_addons as tfa
+from sklearn.metrics import classification_report,confusion_matrix
+from PIL import Image
+from keras.models import load_model
+from skimage.color import rgb2gray
+from sklearn.utils import shuffle
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.imagenet_utils import preprocess_input
+from tensorflow_addons import metrics
+
+
+
+def save_to_dir(slices, path):
+      for i in range(len(slices)):
+          img = slices[i]
+          save_path = path + '/' + str(i)
+          np.save(save_path, img)
+
+def load_from_dir(path):
+      file_paths = glob.glob(os.path.join(path, '*.npy'))
+      print(file_paths)
+
+      slices_list=[]
+      for img in range(len(file_paths)):
+          new_img = np.load(file_paths[img])
+          slices_list.append(new_img)
+
+      return slices_list
+
+def resize(slices_list, image_size):
+    list_new = []
+
+    for img in range(len(slices_list)):
+      img_new=cv2.resize(slices_list[img],(image_size,image_size))
+      #img_new = tf.expand_dims(img_new, axis=2)
+      img_float32 = np.float32(img_new)
+      img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
+      #img_new = np.stack((img_new,)*3, axis=-1) # add 3rd multichannel dimension, e.g. (224,224) to (224,224,3)
+      list_new.append(img_color)
+
+    return list_new
+
+def add_labels(X, y, images_list, label):
+  
+    for img in images_list:
+      X.append(img)
+      y.append(label)
+
+    return X, y
+
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
@@ -48,6 +120,101 @@ from sklearn.metrics import accuracy_score
 # y_train = to_categorical(y_train)
 # y_test = to_categorical(y_test)
 
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/HGG_t2')
+#HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/LGG_t2')
+#LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
+
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/HGG_t2')
+#HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/LGG_t2')
+#LGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/LGG_masks')
+
+HGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_t2')
+#HGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_masks/')
+LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_t2')
+#LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_masks/')
+
+HGG_list_new_train = resize(HGG_list_train, image_size = 224)
+LGG_list_new_train = resize(LGG_list_train, image_size = 224)
+
+HGG_list_new_val = resize(HGG_list_val, image_size = 224)
+LGG_list_new_val = resize(LGG_list_val, image_size = 224)
+#HGG_list_masks_new_val = resize(HGG_list_val_masks, image_size = 224)
+#LGG_list_masks_new_val = resize(LGG_list_val_masks, image_size = 224)
+
+HGG_list_new_test = resize(HGG_list_test, image_size = 224)
+LGG_list_new_test = resize(LGG_list_test, image_size = 224)
+
+
+X_train = []
+y_train = []
+
+X_train, y_train = add_labels(X_train, y_train, HGG_list_new_train, label='HGG')
+X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
+
+X_val = []
+y_val = []
+msk_val = []
+
+X_val, y_val = add_labels(X_val, y_val, HGG_list_new_val, label='HGG')
+X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
+#msk_val = HGG_list_masks_new_val + LGG_list_masks_new_val
+
+
+X_test = []
+y_test = []
+
+X_test, y_test = add_labels(X_test, y_test, HGG_list_new_test, label='HGG')
+X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
+
+X_train = np.array(X_train)
+y_train = np.array(y_train)
+
+X_val = np.array(X_val)
+y_val = np.array(y_val)
+msk_val = np.array(msk_val)
+
+X_test = np.array(X_test)
+y_test = np.array(y_test)
+
+labels = ['HGG', 'LGG']
+y_train_new = []
+for i in y_train:
+    y_train_new.append(labels.index(i))
+y_train = y_train_new
+y_train = tf.keras.utils.to_categorical(y_train)
+
+y_val_new = []
+for i in y_val:
+    y_val_new.append(labels.index(i))
+y_val = y_val_new
+y_val = tf.keras.utils.to_categorical(y_val)
+
+y_test_new = []
+for i in y_test:
+    y_test_new.append(labels.index(i))
+y_test = y_test_new
+y_test = tf.keras.utils.to_categorical(y_test)
+
+X_train, y_train = shuffle(X_train,y_train, random_state=101)
+X_val, y_val = shuffle(X_val,y_val, random_state=101)
+X_test, y_test = shuffle(X_test, y_test, random_state=101)
+
+# datagen = ImageDataGenerator(
+#     preprocessing_function=preprocess_input,
+#     rotation_range=5,
+#    #width_shift_range=0.1,
+#    #height_shift_range=0.1,
+#    #shear_range=0.1,
+#     vertical_flip=True,
+#     horizontal_flip=True,
+#     fill_mode='nearest')
+
+# train_generator = datagen.flow(
+#     X_train, y_train, batch_size=32,
+#     shuffle=True)
+
 
 
 # Define the model-building function
@@ -81,7 +248,7 @@ def build_model(hp):
 tuner = Hyperband(build_model, objective='val_accuracy', max_epochs=40, factor=3, seed=1, hyperparameters=HyperParameters())
 
 # Search for the best hyperparameters
-tuner.search(X_train, y_train, validation_data=(X_test, y_test), callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)])
+tuner.search(X_train, y_train, validation_data=(X_val, y_val), callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)])
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
