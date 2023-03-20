@@ -241,7 +241,7 @@ def build_model(X_train):
 
     # Compile the model
     optimizer = Adam(learning_rate=0.003)
-    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy', 'auc'])
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy', 'AUC'])
 
     return model
 
