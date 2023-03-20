@@ -217,7 +217,7 @@ X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
 
 
-# Define the model-building function
+#Define the model-building function
 # def build_model(hp):
 #     model = Sequential()
 
