@@ -215,7 +215,7 @@ X_test, y_test = shuffle(X_test, y_test, random_state=101)
 #     X_train, y_train, batch_size=32,
 #     shuffle=True)
 
-def build_model(hp):
+def build_model(X_train):
     model = Sequential()
     
     # Define input shape
@@ -241,7 +241,7 @@ def build_model(hp):
 
     # Compile the model
     optimizer = Adam(learning_rate=0.003)
-    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy', 'auc'])
 
     return model
 
@@ -403,9 +403,11 @@ def build_model(hp):
 # # Print the best hyperparameters found by the tuner
 # best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 # print(f'Best hyperparameters: {best_hyperparams}')
+
+model = build_model(X_train)
               
 tensorboard = TensorBoard(log_dir = 'logs')
-checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor="val_accuracy",save_best_only=True,mode="auto",verbose=1)
+checkpoint = ModelCheckpoint(str() + ".h5",monitor="val_auc",save_best_only=True,mode="auto",verbose=1)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)             
 history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
                    callbacks=[tensorboard, checkpoint, reduce_lr]) 
