@@ -169,25 +169,66 @@ import numpy as np
 
 
 
-def model_train(model_name, image_size = 224):
-    #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+# def model_train(model_name, image_size = 224):
+#     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dropout(rate=0.79)(model)
+#     model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+#     sgd = SGD(learning_rate=0.004)
+#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC', 'precision', 'recall'])
+#     #callbacks
+#     tensorboard = TensorBoard(log_dir = 'logs')
+#     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+#     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+#     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+#     #fitting the model
+#     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
+#                    callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
+#    return history
+
+import tensorflow as tf
+from tensorflow.keras.optimizers import SGD
+from kerastuner.tuners import Hyperband
+from kerastuner.engine.hyperparameters import HyperParameters
+
+def build_model(hp):
+    model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=0.79)(model)
+    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.0, max_value=0.9, step=0.1))(model)
+    for i in range(hp.Int('num_layers', min_value=1, max_value=4)):
+        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    sgd = SGD(learning_rate=0.004)
+    sgd = SGD(learning_rate=hp.Choice('learning_rate', values=[0.001, 0.01, 0.1]))
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC', 'precision', 'recall'])
-    #callbacks
-    tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
-    #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
-                   callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
+    return model
 
-    return history
+tuner = Hyperband(
+    build_model,
+    objective='val_auc',
+    max_epochs=50,
+    factor=3,
+    hyperband_iterations=2,
+    directory='my_dir',
+    project_name='my_project'
+)
+
+tuner.search(
+    train_generator,
+    validation_data=(X_val, y_val),
+    steps_per_epoch=len(X_val) / 32,
+    epochs=50,
+    verbose=1,
+    callbacks=[tensorboard]
+)
+
+# Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
+
 
 def plot_acc_loss(model_history, folder_path):
     if not os.path.exists(folder_path):
@@ -219,7 +260,7 @@ def plot_acc_loss(model_history, folder_path):
     
     
     
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
+#history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
 # plot_acc_loss(history_effnet, '/home/viktoriia.trokhova/plots/effnet')
 
