@@ -177,7 +177,7 @@ import numpy as np
 #     model = tf.keras.layers.Dense(2,activation='softmax')(model)
 #     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
 #     sgd = SGD(learning_rate=0.004)
-#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC', 'precision', 'recall'])
+#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
 #     #callbacks
 #     tensorboard = TensorBoard(log_dir = 'logs')
 #     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
