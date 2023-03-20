@@ -75,35 +75,35 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchN
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 
-def create_model(num_conv_layers, num_pooling_layers, num_dense_layers, input_shape, num_classes, dropout_rate):
-    model = Sequential()
+# def create_model(num_conv_layers, num_pooling_layers, num_dense_layers, input_shape, num_classes, dropout_rate):
+#     model = Sequential()
     
-    # Add convolutional layers
-    for i in range(num_conv_layers):
-        model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=input_shape))
-        model.add(BatchNormalization())
+#     # Add convolutional layers
+#     for i in range(num_conv_layers):
+#         model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=input_shape))
+#         model.add(BatchNormalization())
     
-    # Add pooling layers
-    for i in range(num_pooling_layers):
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+#     # Add pooling layers
+#     for i in range(num_pooling_layers):
+#         model.add(MaxPooling2D(pool_size=(2, 2)))
     
-    # Flatten the output for the dense layers
-    model.add(Flatten())
+#     # Flatten the output for the dense layers
+#     model.add(Flatten())
     
-    # Add dense layers
-    for i in range(num_dense_layers):
-        model.add(Dense(units=128, activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(dropout_rate))
+#     # Add dense layers
+#     for i in range(num_dense_layers):
+#         model.add(Dense(units=128, activation='relu'))
+#         model.add(BatchNormalization())
+#         model.add(Dropout(dropout_rate))
     
-    # Add final output layer
-    model.add(Dense(units=num_classes, activation='softmax'))
+#     # Add final output layer
+#     model.add(Dense(units=num_classes, activation='softmax'))
     
-    # Compile the model
-    optimizer = Adam(learning_rate=0.001)
-    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+#     # Compile the model
+#     optimizer = Adam(learning_rate=0.001)
+#     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
     
-    return model
+#     return model
 
 
 from tensorflow.keras.models import Sequential
