@@ -227,8 +227,8 @@ def build_model(hp):
     # Add convolutional layers
     for i in range(hp.Int('num_conv_layers', 5, 10)):
         filters = hp.Int('filters', 16, 32, 64)
-        kernel_size = hp.Int('kernel_size', 2, 3, 4, 5)
-        model.add(Conv2D(filters=filters, kernel_size=kernel_size, activation='relu', input_shape=X_train.shape[1:]))
+        #kernel_size = hp.Int('kernel_size', 2, 3, 4, 5)
+        model.add(Conv2D(filters=filters, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(hp.Float('dropout_conv', 0.2, 0.8)))
 
