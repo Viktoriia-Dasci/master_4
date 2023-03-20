@@ -236,7 +236,7 @@ def build_model(hp):
         model.add(Dropout(hp.Float('dropout_dense', 0.0, 0.5)))
 
     # Add final output layer
-    model.add(Dense(units=10, activation='softmax'))
+    model.add(Dense(units=2, activation='softmax'))
 
     # Compile the model
     optimizer = Adam(learning_rate=hp.Float('learning_rate', 1e-4, 1e-2, sampling='log'))
