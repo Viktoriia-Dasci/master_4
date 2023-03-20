@@ -242,7 +242,7 @@ def build_model(hp):
     depth = int(121 * alpha)
     filters = int(32 * beta)
     #input_shape = (int(224 * gamma), int(224 * gamma), 3)
-
+    input_shape = (224, 224, 3)
     # Build the DenseNet base model with pre-trained weights
     base_model = DenseNet121(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
 
