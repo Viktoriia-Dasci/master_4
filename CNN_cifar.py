@@ -43,10 +43,12 @@ from keras_tuner import Hyperband
 from keras_tuner.engine.hyperparameters import HyperParameters
 from sklearn.metrics import accuracy_score
 
-# Load the CIFAR-10 dataset
-(X_train, y_train), (X_test, y_test) = cifar10.load_data()
-y_train = to_categorical(y_train)
-y_test = to_categorical(y_test)
+# # Load the CIFAR-10 dataset
+# (X_train, y_train), (X_test, y_test) = cifar10.load_data()
+# y_train = to_categorical(y_train)
+# y_test = to_categorical(y_test)
+
+
 
 # Define the model-building function
 def build_model(hp):
