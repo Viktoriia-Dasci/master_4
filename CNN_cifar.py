@@ -215,39 +215,104 @@ X_test, y_test = shuffle(X_test, y_test, random_state=101)
 #     X_train, y_train, batch_size=32,
 #     shuffle=True)
 
-def build_model(X_train):
-    model = Sequential()
-    
-    # Define input shape
-    input_shape = X_train.shape[1:]
-    
-    
-    # Add convolutional layers
-    model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
-    model.add(Dropout(0.15))
-    model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+from keras.layers import Input, Dense, GlobalAveragePooling2D, Conv2D, Concatenate, MaxPooling2D
+from keras.models import Model
+from keras.applications.densenet import DenseNet121
+from keras.optimizers import Adam
+from kerastuner.tuners import Hyperband
+from kerastuner.engine.hyperparameters import HyperParameters
 
 
-    # Flatten the output for the dense layers
-    model.add(Flatten())
+def build_model(hp):
+    """
+    Builds a DenseNet model with scaled depth, width, and resolution.
 
+    Args:
+        hp: A HyperParameters instance representing the hyperparameters to tune.
 
-    model.add(Dense(units=416, activation='relu'))
-    model.add(Dense(units=416, activation='relu'))
-    model.add(Dense(units=416, activation='relu'))
-    model.add(Dropout(0.12))
+    Returns:
+        A Keras model instance.
+    """
+    # Define the hyperparameters to tune
+    alpha = hp.Float("alpha", 0.5, 2.0, step=0.1)
+    beta = hp.Float("beta", 0.5, 2.0, step=0.1)
+    #gamma = hp.Float("gamma", 0.5, 2.0, step=0.1)
 
-    # Add final output layer
-    model.add(Dense(units=2, activation='softmax'))
+    # Calculate the new depth, width, and resolution based on the scaling coefficients
+    depth = int(121 * alpha)
+    filters = int(32 * beta)
+    #input_shape = (int(224 * gamma), int(224 * gamma), 3)
 
-    # Compile the model
-    optimizer = Adam(learning_rate=0.003)
-    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy', 'AUC'])
+    # Build the DenseNet base model with pre-trained weights
+    base_model = DenseNet121(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+
+    # Add a global average pooling layer and a dense output layer
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(num_classes, activation='softmax')(x)
+
+    # Construct the scaled model by stacking dense blocks with transition layers
+    inputs = Input(shape=input_shape)
+    x = inputs
+    for i in range(len(base_model.layers)):
+        if "conv" in base_model.layers[i].name:
+            x = Conv2D(filters=int(filters), kernel_size=(3, 3), padding="same", activation="relu")(x)
+        else:
+            x = base_model.layers[i](x)
+        if "block" in base_model.layers[i].name:
+            filters = filters * beta
+            for j in range(int(depth / 6)):
+                y = x
+                y = Conv2D(filters=int(filters), kernel_size=(1, 1), padding="same", activation="relu")(y)
+                y = Conv2D(filters=int(filters), kernel_size=(3, 3), padding="same", activation="relu")(y)
+                x = Concatenate()([x, y])
+            if i != len(base_model.layers) - 1:
+                x = Conv2D(filters=int(filters), kernel_size=(1, 1), padding="same", activation="relu")(x)
+                x = MaxPooling2D(pool_size=(2, 2))(x)
+
+    model = Model(inputs=inputs, outputs=x)
+
+    # Compile the model with Adam optimizer and categorical cross-entropy loss
+    model.compile(optimizer=Adam(),
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
 
     return model
+
+
+# def build_model(X_train):
+#     model = Sequential()
+    
+#     # Define input shape
+#     input_shape = X_train.shape[1:]
+    
+    
+#     # Add convolutional layers
+#     model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
+#     model.add(MaxPooling2D(pool_size=(2, 2)))
+#     model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
+#     model.add(Dropout(0.15))
+#     model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
+#     model.add(MaxPooling2D(pool_size=(2, 2)))
+
+
+#     # Flatten the output for the dense layers
+#     model.add(Flatten())
+
+
+#     model.add(Dense(units=416, activation='relu'))
+#     model.add(Dense(units=416, activation='relu'))
+#     model.add(Dense(units=416, activation='relu'))
+#     model.add(Dropout(0.12))
+
+#     # Add final output layer
+#     model.add(Dense(units=2, activation='softmax'))
+
+#     # Compile the model
+#     optimizer = Adam(learning_rate=0.003)
+#     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy', 'AUC'])
+
+#     return model
 
 # def build_model(hp):
 #     model = Sequential()
@@ -398,35 +463,35 @@ def build_model(X_train):
 
 
 
-# # Define the Hyperband search object
-# tuner = Hyperband(build_model, objective='val_accuracy', max_epochs=40, factor=3, seed=1, hyperparameters=HyperParameters())
+# Define the Hyperband search object
+tuner = Hyperband(build_model, objective='val_accuracy', max_epochs=40, factor=3, seed=1, hyperparameters=HyperParameters())
 
-# # Search for the best hyperparameters
-# tuner.search(X_train, y_train, validation_data=(X_val, y_val), callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)])
+# Search for the best hyperparameters
+tuner.search(X_train, y_train, validation_data=(X_val, y_val), callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)])
 
-# # Print the best hyperparameters found by the tuner
-# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-# print(f'Best hyperparameters: {best_hyperparams}')
+# Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
 
-model = build_model(X_train)
+# model = build_model(X_train)
               
       
-datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input,
-    rotation_range=5,
-   #width_shift_range=0.1,
-   #height_shift_range=0.1,
-   #shear_range=0.1,
-    vertical_flip=True,
-    horizontal_flip=True,
-    fill_mode='nearest')
+# datagen = ImageDataGenerator(
+#     preprocessing_function=preprocess_input,
+#     rotation_range=5,
+#    #width_shift_range=0.1,
+#    #height_shift_range=0.1,
+#    #shear_range=0.1,
+#     vertical_flip=True,
+#     horizontal_flip=True,
+#     fill_mode='nearest')
 
-train_generator = datagen.flow(
-    X_train, y_train, batch_size=32,
-    shuffle=True)
+# train_generator = datagen.flow(
+#     X_train, y_train, batch_size=32,
+#     shuffle=True)
 
-tensorboard = TensorBoard(log_dir = 'logs')
-checkpoint = ModelCheckpoint(str() + ".h5",monitor="val_auc",save_best_only=True,mode="auto",verbose=1)
-reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)             
-history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
-                   callbacks=[tensorboard, checkpoint, reduce_lr]) 
+# tensorboard = TensorBoard(log_dir = 'logs')
+# checkpoint = ModelCheckpoint(str() + ".h5",monitor="val_auc",save_best_only=True,mode="auto",verbose=1)
+# reduce_lr = ReduceLROnPlateau(monitor = 'val_accuracy', factor = 0.3, patience = 2, min_delta = 0.001, mode='auto',verbose=1)             
+# history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 32, epochs=30, verbose=1,
+#                    callbacks=[tensorboard, checkpoint, reduce_lr]) 
