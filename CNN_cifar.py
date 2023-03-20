@@ -234,7 +234,7 @@ def build_model(hp):
 
 
     model.add(Dense(units=416, activation='relu'))
-    model.add(Dropout(0.12)
+    model.add(Dropout(0.12))
 
     # Add final output layer
     model.add(Dense(units=2, activation='softmax'))
