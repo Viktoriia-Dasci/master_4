@@ -221,8 +221,7 @@ tuner.search(
     validation_data=(X_val, y_val),
     steps_per_epoch=len(X_val) / 32,
     epochs=50,
-    verbose=1,
-    callbacks=[tensorboard]
+    verbose=1
 )
 
 # Print the best hyperparameters found by the tuner
