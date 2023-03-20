@@ -209,11 +209,9 @@ def build_model(hp):
 tuner = Hyperband(
     build_model,
     objective='val_accuracy',
-    max_epochs=50,
+    max_epochs=100,
     factor=3,
-    hyperband_iterations=2,
-    directory='my_dir',
-    project_name='my_project'
+    hyperband_iterations=10
 )
 
 tuner.search(
