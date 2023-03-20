@@ -226,13 +226,17 @@ def build_model(X_train):
     model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
-    model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
     model.add(Dropout(0.15))
+    model.add(Conv2D(filters=16, kernel_size=(3,3), activation='relu', input_shape=X_train.shape[1:]))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
 
     # Flatten the output for the dense layers
     model.add(Flatten())
 
 
+    model.add(Dense(units=416, activation='relu'))
+    model.add(Dense(units=416, activation='relu'))
     model.add(Dense(units=416, activation='relu'))
     model.add(Dropout(0.12))
 
