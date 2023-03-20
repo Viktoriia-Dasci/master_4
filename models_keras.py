@@ -203,7 +203,7 @@ def build_model(hp):
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     sgd = SGD(learning_rate=hp.Choice('learning_rate', values=[0.001, 0.01, 0.1]))
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC', 'precision', 'recall'])
+    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     return model
 
 tuner = Hyperband(
