@@ -249,7 +249,7 @@ def build_model(hp):
     # Add a global average pooling layer and a dense output layer
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
-    x = Dense(num_classes, activation='softmax')(x)
+    x = Dense(2, activation='softmax')(x)
 
     # Construct the scaled model by stacking dense blocks with transition layers
     inputs = Input(shape=input_shape)
