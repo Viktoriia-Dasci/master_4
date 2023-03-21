@@ -209,6 +209,7 @@ def build_model(hp):
 tuner = Hyperband(
     build_model,
     objective='val_accuracy',
+    overwrite=True,
     max_epochs=100,
     factor=3,
     hyperband_iterations=10
