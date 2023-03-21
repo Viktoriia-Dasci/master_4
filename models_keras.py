@@ -193,7 +193,7 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
-def build_model(hp):
+def model_resnet(hp):
     model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
@@ -207,7 +207,7 @@ def build_model(hp):
     return model
 
 tuner = Hyperband(
-    build_model,
+    model_resnet,
     objective='val_accuracy',
     overwrite=True,
     max_epochs=100,
