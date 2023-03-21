@@ -209,7 +209,7 @@ def model_resnet(hp):
 tuner = Hyperband(
     model_resnet,
     objective='val_accuracy',
-    overwrite=True,
+    #overwrite=True,
     max_epochs=100,
     factor=3,
     hyperband_iterations=10
