@@ -240,7 +240,7 @@ best_model.fit(
     epochs=50,
     validation_data=(X_val, y_val),
     verbose=1,
-    callbacks=[tensorboard, checkpoint, early_stop, reduce_lr]
+    callbacks=[checkpoint, early_stop, reduce_lr]
 )
 
 def plot_acc_loss(model_history, folder_path):
