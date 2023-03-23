@@ -215,18 +215,28 @@ tuner = Hyperband(
     hyperband_iterations=10
 )
 
-tuner.search(
-    train_generator,
-    validation_data=(X_val, y_val),
-    steps_per_epoch=len(X_val) / 32,
-    epochs=50,
-    verbose=1
-)
+# tuner.search(
+#     train_generator,
+#     validation_data=(X_val, y_val),
+#     steps_per_epoch=len(X_val) / 32,
+#     epochs=50,
+#     verbose=1
+# )
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 print(f'Best hyperparameters: {best_hyperparams}')
 
+# Get the best model found by the tuner
+best_model = tuner.get_best_models(1)[0]
+
+# Fit the model to the training data for 50 epochs using the best hyperparameters
+best_model.fit(
+    train_generator,
+    epochs=50,
+    validation_data=(X_val, y_val),
+    verbose=1
+)
 
 def plot_acc_loss(model_history, folder_path):
     if not os.path.exists(folder_path):
