@@ -234,7 +234,7 @@ print(f'Best hyperparameters: {best_hyperparams}')
 # Get the best model found by the tuner
 best_model = tuner.get_best_models(1)[0]
 
-checkpoint = ModelCheckpoint(str(resnet) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
 early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
