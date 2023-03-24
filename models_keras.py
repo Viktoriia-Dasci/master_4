@@ -234,14 +234,14 @@ def model_effnet(hp):
 
 
 # Define hp before calling tuner.search()
-hp = kt.HyperParameters()
+hp = HyperParameters()
 
 # Add hyperparameters to search space
 hp.Choice('optimizer', values=['adam', 'sgd'])
 hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
 hp.Choice('batch_size', values=[16, 32, 64])
 
-tuner = kt.Hyperband(
+tuner = Hyperband(
     model_effnet,
     objective='val_accuracy',
     max_epochs=100,
