@@ -221,7 +221,7 @@ def model_effnet(hp):
     learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
     batch_size = hp.Choice('batch_size', values=[16, 32, 64])
     
-    Set optimizer parameters based on user's selection
+    #Set optimizer parameters based on user's selection
     if optimizer == 'adam':
         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     else:
