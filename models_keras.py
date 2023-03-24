@@ -219,7 +219,7 @@ def model_effnet(hp):
     # Define optimizer and batch size
     optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
     learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    batch_size = hp.Choice('batch_size', values=[16, 32, 64, 128])
+    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
     
     # Set optimizer parameters based on user's selection
     if optimizer == 'adam':
@@ -234,8 +234,8 @@ def model_effnet(hp):
 
 
 tuner = Hyperband(
-    model_resnet,
-    objective='val_accuracy',
+    model_effnet,
+    objective='val_auc',
     #overwrite=True,
     max_epochs=100,
     factor=3,
@@ -245,7 +245,7 @@ tuner = Hyperband(
 tuner.search(
     train_generator,
     validation_data=(X_val, y_val),
-    steps_per_epoch=len(X_val) / 32,
+    steps_per_epoch=len(X_val) / hp.Choice('batch_size', values=[16, 32, 64]),
     epochs=50,
     verbose=1
 )
