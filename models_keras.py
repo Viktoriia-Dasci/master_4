@@ -217,15 +217,15 @@ def model_effnet(hp):
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
-    #optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
-    #learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    #batch_size = hp.Choice('batch_size', values=[16, 32, 64])
+    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
+    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
+    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
     
-    # Set optimizer parameters based on user's selection
-#     if optimizer == 'adam':
-#         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-#     else:
-#         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+    Set optimizer parameters based on user's selection
+    if optimizer == 'adam':
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    else:
+        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', 'AUC'])
@@ -234,12 +234,12 @@ def model_effnet(hp):
 
 
 # Define hp before calling tuner.search()
-hp = HyperParameters()
+# hp = HyperParameters()
 
-# Add hyperparameters to search space
-hp.Choice('optimizer', values=['adam', 'sgd'])
-hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-hp.Choice('batch_size', values=[16, 32, 64])
+# # Add hyperparameters to search space
+# hp.Choice('optimizer', values=['adam', 'sgd'])
+# hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
+# hp.Choice('batch_size', values=[16, 32, 64])
 
 tuner = Hyperband(
     model_effnet,
@@ -255,8 +255,8 @@ tuner.search(train_generator,
              validation_data=(X_val, y_val),
              steps_per_epoch=len(train_generator),
              epochs=50,
-             verbose=1,
-             batch_size=hp.Choice('batch_size', values=[16, 32, 64]))
+             verbose=1
+             )
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
