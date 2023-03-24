@@ -243,7 +243,7 @@ tuner = Hyperband(
 )
 
 tuner.search(train_generator,
-             validation_data=val_generator,
+             validation_data=(X_val, y_val),
              steps_per_epoch=len(train_generator),
              epochs=50,
              verbose=1,
