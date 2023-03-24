@@ -193,18 +193,45 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
-def model_resnet(hp):
-    model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+# def model_resnet(hp):
+#     model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.0, max_value=0.9, step=0.1))(model)
+#     for i in range(hp.Int('num_layers', min_value=1, max_value=4)):
+#        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
+#     model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+#     sgd = SGD(learning_rate=hp.Choice('learning_rate', values=[0.001, 0.01, 0.1]))
+#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
+#     return model
+
+def model_effnet(hp):
+    model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.0, max_value=0.9, step=0.1))(model)
-    for i in range(hp.Int('num_layers', min_value=1, max_value=4)):
-       model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
+    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+    for i in range(hp.Int('num_layers', min_value=1, max_value=3)):
+        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    sgd = SGD(learning_rate=hp.Choice('learning_rate', values=[0.001, 0.01, 0.1]))
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
+    
+    # Define optimizer and batch size
+    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
+    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
+    batch_size = hp.Choice('batch_size', values=[16, 32, 64, 128])
+    
+    # Set optimizer parameters based on user's selection
+    if optimizer == 'adam':
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    else:
+        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+    
+    # Compile the model with the optimizer and metrics
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', 'AUC'])
+    
     return model
+
 
 tuner = Hyperband(
     model_resnet,
@@ -215,33 +242,33 @@ tuner = Hyperband(
     hyperband_iterations=10
 )
 
-# tuner.search(
-#     train_generator,
-#     validation_data=(X_val, y_val),
-#     steps_per_epoch=len(X_val) / 32,
-#     epochs=50,
-#     verbose=1
-# )
+tuner.search(
+    train_generator,
+    validation_data=(X_val, y_val),
+    steps_per_epoch=len(X_val) / 32,
+    epochs=50,
+    verbose=1
+)
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 print(f'Best hyperparameters: {best_hyperparams}')
 
 # Get the best model found by the tuner
-best_model = tuner.get_best_models(1)[0]
+#best_model = tuner.get_best_models(1)[0]
 
-checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+# checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+# early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+# reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
-# Fit the model to the training data for 50 epochs using the best hyperparameters
-best_model.fit(
-    train_generator,
-    epochs=50,
-    validation_data=(X_val, y_val),
-    verbose=1,
-    callbacks=[checkpoint, early_stop, reduce_lr]
-)
+# # Fit the model to the training data for 50 epochs using the best hyperparameters
+# best_model.fit(
+#     train_generator,
+#     epochs=50,
+#     validation_data=(X_val, y_val),
+#     verbose=1,
+#     callbacks=[checkpoint, early_stop, reduce_lr]
+# )
 
 def plot_acc_loss(model_history, folder_path):
     if not os.path.exists(folder_path):
