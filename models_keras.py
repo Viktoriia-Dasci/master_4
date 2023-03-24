@@ -242,13 +242,13 @@ tuner = Hyperband(
     hyperband_iterations=10
 )
 
-tuner.search(
-    train_generator,
-    validation_data=(X_val, y_val),
-    steps_per_epoch=len(X_val) / hp.Choice('batch_size', values=[16, 32, 64]),
-    epochs=50,
-    verbose=1
-)
+tuner.search(train_generator,
+             validation_data=val_generator,
+             steps_per_epoch=len(train_generator),
+             epochs=50,
+             verbose=1,
+             batch_size=batch_size)
+
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
