@@ -235,7 +235,7 @@ def model_effnet(hp):
 
 tuner = Hyperband(
     model_effnet,
-    objective='val_auc',
+    objective='val_accuracy',
     #overwrite=True,
     max_epochs=100,
     factor=3,
