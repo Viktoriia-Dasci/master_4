@@ -139,7 +139,7 @@ from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, B
 import torch.nn as nn
 
 def custom_3d_cnn(input_shape=(240, 240, 155, 1)):
-    inputs = nn.Input(shape=input_shape)
+    inputs = nn.Parameter(torch.randn((1, *input_shape)))
 
     # Layer 1
     conv1 = nn.Conv3d(32, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(inputs)
