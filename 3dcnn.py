@@ -49,6 +49,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, TensorDataset
 from torch.nn import functional as F
 
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.imagenet_utils import preprocess_input
 
 # Define the device to be used for training
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -138,6 +140,20 @@ from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, B
 
 #import torch.nn as nn
 
+datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input,
+    rotation_range=5,
+   #width_shift_range=0.1,
+   #height_shift_range=0.1,
+   #shear_range=0.1,
+    vertical_flip=True,
+    horizontal_flip=True,
+    fill_mode='nearest')
+
+train_generator = datagen.flow(
+    X_train, y_train, batch_size=32,
+    shuffle=True)
+
 def custom_3d_cnn(input_shape=(240, 240, 155, 1)):
     inputs = Input(shape=input_shape)
 
@@ -191,8 +207,32 @@ def custom_3d_cnn(input_shape=(240, 240, 155, 1)):
     return model
 
 
-
-
-
 model = custom_3d_cnn()
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'AUC'])
+
+datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input,
+    rotation_range=5,
+   #width_shift_range=0.1,
+   #height_shift_range=0.1,
+   #shear_range=0.1,
+    vertical_flip=True,
+    horizontal_flip=True,
+    fill_mode='nearest')
+
+train_generator = datagen.flow(
+    X_train, y_train, batch_size=32,
+    shuffle=True)
+
+checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+
+# Fit the model to the training data for 50 epochs using the best hyperparameters
+model.fit(
+    train_generator,
+    epochs=50,
+    validation_data=(X_val, y_val),
+    verbose=1,
+    callbacks=[checkpoint, early_stop, reduce_lr]
+)
