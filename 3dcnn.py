@@ -220,8 +220,17 @@ train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
+import torch
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 # Define the model
-model = custom_3d_cnn().to(device)
+model = custom_3d_cnn()
+
+# Move the model to the device
+model = model.to(device)
+
+# Define the model
+#model = custom_3d_cnn().to(device)
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
