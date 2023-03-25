@@ -211,19 +211,19 @@ model = custom_3d_cnn()
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'AUC'])
 
 
-datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input,
-    rotation_range=5,
-   #width_shift_range=0.1,
-   #height_shift_range=0.1,
-   #shear_range=0.1,
-    vertical_flip=True,
-    horizontal_flip=True,
-    fill_mode='nearest')
+# datagen = ImageDataGenerator(
+#     preprocessing_function=preprocess_input,
+#     rotation_range=5,
+#    #width_shift_range=0.1,
+#    #height_shift_range=0.1,
+#    #shear_range=0.1,
+#     vertical_flip=True,
+#     horizontal_flip=True,
+#     fill_mode='nearest')
 
-train_generator = datagen.flow(
-    np.reshape(X_train, (X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3])),
-    y_train, batch_size=32, shuffle=True)
+# train_generator = datagen.flow(
+#     np.reshape(X_train, (X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3])),
+#     y_train, batch_size=32, shuffle=True)
 
 
 checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
@@ -232,7 +232,7 @@ reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, m
 
 # Fit the model to the training data for 50 epochs using the best hyperparameters
 model.fit(
-    train_generator,
+    train_data = (X_train, y_train),
     epochs=50,
     validation_data=(X_val, y_val),
     verbose=1,
