@@ -136,57 +136,60 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, BatchNormalization, Flatten, Dense, Softmax
 
 
+import torch.nn as nn
+
 def custom_3d_cnn(input_shape=(240, 240, 155, 1)):
-    inputs = Input(shape=input_shape)
+    inputs = nn.Input(shape=input_shape)
 
     # Layer 1
-    conv1 = Conv3D(32, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(inputs)
-    bn1 = BatchNormalization()(conv1)
+    conv1 = nn.Conv3d(32, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(inputs)
+    bn1 = nn.BatchNorm3d()(conv1)
 
     # Layer 2
-    conv2 = Conv3D(64, kernel_size=(3, 3, 3), padding='same')(bn1)
-    mp2 = MaxPooling3D(pool_size=(2, 2, 2))(conv2)
-    bn2 = BatchNormalization()(mp2)
+    conv2 = nn.Conv3d(64, kernel_size=(3, 3, 3), padding='same')(bn1)
+    mp2 = nn.MaxPool3d(pool_size=(2, 2, 2))(conv2)
+    bn2 = nn.BatchNorm3d()(mp2)
 
     # Layer 3
-    conv3 = Conv3D(128, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn2)
-    mp3 = MaxPooling3D(pool_size=(2, 2, 2))(conv3)
-    bn3 = BatchNormalization()(mp3)
+    conv3 = nn.Conv3d(128, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn2)
+    mp3 = nn.MaxPool3d(pool_size=(2, 2, 2))(conv3)
+    bn3 = nn.BatchNorm3d()(mp3)
 
     # Layer 4
-    conv4 = Conv3D(256, kernel_size=(3, 3, 3), padding='same')(bn3)
-    mp4 = MaxPooling3D(pool_size=(2, 2, 2))(conv4)
-    bn4 = BatchNormalization()(mp4)
+    conv4 = nn.Conv3d(256, kernel_size=(3, 3, 3), padding='same')(bn3)
+    mp4 = nn.MaxPool3d(pool_size=(2, 2, 2))(conv4)
+    bn4 = nn.BatchNorm3d()(mp4)
 
     # Layer 5
-    conv5 = Conv3D(256, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn4)
-    bn5 = BatchNormalization()(conv5)
+    conv5 = nn.Conv3d(256, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn4)
+    bn5 = nn.BatchNorm3d()(conv5)
 
     # Layer 6
-    conv6 = Conv3D(128, kernel_size=(3, 3, 3), padding='same')(UpSampling3D(size=(2, 2, 2))(bn5))
-    bn6 = BatchNormalization()(conv6)
+    conv6 = nn.Conv3d(128, kernel_size=(3, 3, 3), padding='same')(nn.Upsample(size=(2, 2, 2))(bn5))
+    bn6 = nn.BatchNorm3d()(conv6)
 
     # Layer 7
-    conv7 = Conv3D(64, kernel_size=(3, 3, 3), padding='same')(UpSampling3D(size=(2, 2, 2))(bn6))
-    bn7 = BatchNormalization()(conv7)
+    conv7 = nn.Conv3d(64, kernel_size=(3, 3, 3), padding='same')(nn.Upsample(size=(2, 2, 2))(bn6))
+    bn7 = nn.BatchNorm3d()(conv7)
 
     # Layer 8
-    conv8 = Conv3D(32, kernel_size=(3, 3, 3), padding='same')(bn7)
+    conv8 = nn.Conv3d(32, kernel_size=(3, 3, 3), padding='same')(bn7)
 
     # Layer 9
-    flatten = Flatten()(conv8)
-    fc1 = Dense(256)(flatten)
+    flatten = nn.Flatten()(conv8)
+    fc1 = nn.Linear(256)(flatten)
 
     # Layer 10
-    fc2 = Dense(256)(fc1)
+    fc2 = nn.Linear(256)(fc1)
 
     # Layer 11
-    softmax = Softmax()(fc2)
+    softmax = nn.Softmax()(fc2)
 
     # Create model
-    model = Model(inputs=inputs, outputs=softmax)
+    model = nn.Model(inputs=inputs, outputs=softmax)
 
     return model
+
 
 
 
