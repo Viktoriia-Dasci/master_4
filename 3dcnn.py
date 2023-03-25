@@ -210,6 +210,7 @@ def custom_3d_cnn(input_shape=(240, 240, 155, 1)):
 model = custom_3d_cnn()
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'AUC'])
 
+
 datagen = ImageDataGenerator(
     preprocessing_function=preprocess_input,
     rotation_range=5,
@@ -221,8 +222,9 @@ datagen = ImageDataGenerator(
     fill_mode='nearest')
 
 train_generator = datagen.flow(
-    X_train, y_train, batch_size=32,
-    shuffle=True)
+    np.reshape(X_train, (X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3])),
+    y_train, batch_size=32, shuffle=True)
+
 
 checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
 early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
