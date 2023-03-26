@@ -231,10 +231,35 @@ early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1,
 reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
 # Fit the model to the training data for 50 epochs using the best hyperparameters
-model.fit(
-    train_data = (X_train, y_train),
-    epochs=50,
-    validation_data=(X_val, y_val),
-    verbose=1,
-    callbacks=[checkpoint, early_stop, reduce_lr]
-)
+# model.fit(
+#     train_data = (X_train, y_train),
+#     epochs=50,
+#     validation_data=(X_val, y_val),
+#     verbose=1,
+#     callbacks=[checkpoint, early_stop, reduce_lr]
+# )
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Define data generator with desired augmentation
+datagen = ImageDataGenerator(rotation_range=5,
+                             #width_shift_range=0.1,
+                             #height_shift_range=0.1,
+                             #zoom_range=0.1,
+                             horizontal_flip=True,
+                             vertical_flip=True)
+
+# Fit the data generator to the training data
+datagen.fit(X_train)
+
+# Define the batch size and number of epochs
+batch_size = 16
+epochs = 50
+
+# Fit the model using the augmented data
+history = model.fit(datagen.flow(X_train, y_train, batch_size=batch_size),
+                    steps_per_epoch=len(X_train) // batch_size,
+                    epochs=epochs,
+                    validation_data=(X_val, y_val),
+                    callbacks=[checkpoint, early_stop, reduce_lr])
+
