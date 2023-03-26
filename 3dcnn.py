@@ -114,11 +114,11 @@ for img in range(len(LGG_list_t2)):
 
 # Combine the HGG and LGG lists
 X_train = np.array(HGG_train + LGG_train)
-X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3], 1))
+#X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3], 1))
 y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 
 X_val = np.array(HGG_val + LGG_val)
-X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], X_val.shape[2], X_val.shape[3], 1))
+#X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], X_val.shape[2], X_val.shape[3], 1))
 y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
 
 X_test = np.array(HGG_test + LGG_test)
