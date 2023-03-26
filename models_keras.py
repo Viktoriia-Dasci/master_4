@@ -251,32 +251,32 @@ tuner = Hyperband(
     project_name='intro_to_kt'
 )
 
-tuner.search(train_generator,
-             validation_data=(X_val, y_val),
-             steps_per_epoch=len(train_generator),
-             epochs=50,
-             verbose=1
-             )
+# tuner.search(train_generator,
+#              validation_data=(X_val, y_val),
+#              steps_per_epoch=len(train_generator),
+#              epochs=50,
+#              verbose=1
+#              )
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 print(f'Best hyperparameters: {best_hyperparams}')
 
 # Get the best model found by the tuner
-#best_model = tuner.get_best_models(1)[0]
+best_model = tuner.get_best_models(1)[0]
 
-# checkpoint = ModelCheckpoint("resnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-# early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-# reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+checkpoint = ModelCheckpoint("effnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
-# # Fit the model to the training data for 50 epochs using the best hyperparameters
-# best_model.fit(
-#     train_generator,
-#     epochs=50,
-#     validation_data=(X_val, y_val),
-#     verbose=1,
-#     callbacks=[checkpoint, early_stop, reduce_lr]
-# )
+# Fit the model to the training data for 50 epochs using the best hyperparameters
+best_model.fit(
+    train_generator,
+    epochs=50,
+    validation_data=(X_val, y_val),
+    verbose=1,
+    callbacks=[checkpoint, early_stop, reduce_lr]
+)
 
 def plot_acc_loss(model_history, folder_path):
     if not os.path.exists(folder_path):
