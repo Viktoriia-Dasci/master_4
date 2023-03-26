@@ -254,6 +254,7 @@ datagen = ImageDataGenerator(
 
 # add a new dimension with size 1 to the data
 X_train_augmented = X_train[..., np.newaxis]
+X_train_augmented = X_train_augmented[0]
 
 # fit the model using the generator
 history = model.fit(
