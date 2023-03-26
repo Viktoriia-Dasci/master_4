@@ -241,25 +241,24 @@ reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, m
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-# Define data generator with desired augmentation
-datagen = ImageDataGenerator(rotation_range=5,
-                             #width_shift_range=0.1,
-                             #height_shift_range=0.1,
-                             #zoom_range=0.1,
-                             horizontal_flip=True,
-                             vertical_flip=True)
+# create an instance of ImageDataGenerator with data augmentation
+datagen = ImageDataGenerator(
+    rotation_range=5,
+    #width_shift_range=0.1,
+    #height_shift_range=0.1,
+    #shear_range=0.1,
+    #zoom_range=0.1,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
 
-# Fit the data generator to the training data
-datagen.fit(X_train)
+# add a new dimension with size 1 to the data
+X_train_augmented = X_train[..., np.newaxis]
 
-# Define the batch size and number of epochs
-batch_size = 16
-epochs = 50
-
-# Fit the model using the augmented data
-history = model.fit(datagen.flow(X_train, y_train, batch_size=batch_size),
-                    steps_per_epoch=len(X_train) // batch_size,
-                    epochs=epochs,
-                    validation_data=(X_val, y_val),
-                    callbacks=[checkpoint, early_stop, reduce_lr])
+# fit the model using the generator
+history = model.fit(
+    datagen.flow(X_train_augmented, y_train, batch_size=32),
+    validation_data=(X_val, y_val),
+    epochs=10
+)
 
