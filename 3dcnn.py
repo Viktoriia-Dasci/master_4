@@ -140,19 +140,19 @@ from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, B
 
 #import torch.nn as nn
 
-datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input,
-    rotation_range=5,
-   #width_shift_range=0.1,
-   #height_shift_range=0.1,
-   #shear_range=0.1,
-    vertical_flip=True,
-    horizontal_flip=True,
-    fill_mode='nearest')
+# datagen = ImageDataGenerator(
+#     preprocessing_function=preprocess_input,
+#     rotation_range=5,
+#    #width_shift_range=0.1,
+#    #height_shift_range=0.1,
+#    #shear_range=0.1,
+#     vertical_flip=True,
+#     horizontal_flip=True,
+#     fill_mode='nearest')
 
-train_generator = datagen.flow(
-    X_train, y_train, batch_size=32,
-    shuffle=True)
+# train_generator = datagen.flow(
+#     X_train, y_train, batch_size=32,
+#     shuffle=True)
 
 def custom_3d_cnn(input_shape=(240, 240, 155, 1)):
     inputs = Input(shape=input_shape)
