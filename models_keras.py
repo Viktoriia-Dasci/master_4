@@ -271,6 +271,7 @@ tuner = Hyperband(
     model_densenet,
     objective='val_accuracy',
     max_epochs=100,
+    overwrite=True,
     factor=3,
     hyperband_iterations=10
 )
