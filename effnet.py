@@ -353,12 +353,12 @@ from collections import Counter
 # create dataset object
 dataset = myDataset_train()
 
-# count occurrences of each class
-class_counts = Counter(dataset.targets)
+# # count occurrences of each class
+# class_counts = Counter(dataset.targets)
 
-# print number of images in each class
-for class_name, count in class_counts.items():
-    print(f"{class_name}: {count}")
+# # print number of images in each class
+# for class_name, count in class_counts.items():
+#     print(f"{class_name}: {count}")
   
 #unnormalize images
 '''def imshow(image):
