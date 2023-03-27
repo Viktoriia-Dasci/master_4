@@ -442,7 +442,7 @@ class MyCustomEfficientNetB0(nn.Module):
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
         self.features = efficientnet_b0.extract_features
         in_features = efficientnet_b0._fc.in_features
-        #self.attention = SelfAttention(in_features)
+        self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(in_features, 32)
         self.fc2 = nn.Linear(32, 128)
@@ -451,8 +451,8 @@ class MyCustomEfficientNetB0(nn.Module):
 
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
         images_feats = self.features(input_imgs)
-        #images_att = self.attention(images_feats)
-        output = self.last_pooling_operation(images_feats)
+        images_att = self.attention(images_feats)
+        output = self.last_pooling_operation(images_att)
         output = output.view(input_imgs.size(0), -1)
         output = dropout(output)
         output = self.fc1(output)
@@ -648,23 +648,23 @@ def objective(trial):
   
 EPOCHS = 50
     
-# study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-# study.optimize(objective, n_trials=30)
-# pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
-# complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+study.optimize(objective, n_trials=30)
+pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
-# print("Study statistics: ")
-# print("  Number of finished trials: ", len(study.trials))
-# print("  Number of pruned trials: ", len(pruned_trials))
-# print("  Number of complete trials: ", len(complete_trials))
+print("Study statistics: ")
+print("  Number of finished trials: ", len(study.trials))
+print("  Number of pruned trials: ", len(pruned_trials))
+print("  Number of complete trials: ", len(complete_trials))
 
-# print("Best trial:")
-# trial = study.best_trial
-# print("  Value: ", trial.value)
+print("Best trial:")
+trial = study.best_trial
+print("  Value: ", trial.value)
 
-# print("  Params: ")
-# for key, value in trial.params.items():
-#     print("    {}: {}".format(key, value))
+print("  Params: ")
+for key, value in trial.params.items():
+    print("    {}: {}".format(key, value))
 
 
 # from torch.optim.lr_scheduler import ReduceLROnPlateau
