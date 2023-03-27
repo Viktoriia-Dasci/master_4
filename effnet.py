@@ -669,7 +669,7 @@ EPOCHS = 50
 
 from sklearn.metrics import roc_auc_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from pytorchtools import EarlyStopping  # custom EarlyStopping class
+from pytorchtools.early_stopping import EarlyStopping
 import matplotlib.pyplot as plt
 
 # define early stopping and lr scheduler
