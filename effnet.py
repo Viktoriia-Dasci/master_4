@@ -442,10 +442,11 @@ class MyCustomEfficientNetB0(nn.Module):
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
         self.features = efficientnet_b0.extract_features
         in_features = efficientnet_b0._fc.in_features
-        self.attention = SelfAttention(in_features)
+        #self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(in_features, 128)
-        self.fc2 = nn.Linear(128, 2)
+        self.fc1 = nn.Linear(in_features, 32)
+        self.fc2 = nn.Linear(32, 128)
+        self.fc3 = nn.Linear(128, 2)
 
 
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
@@ -453,9 +454,10 @@ class MyCustomEfficientNetB0(nn.Module):
         images_att = self.attention(images_feats)
         output = self.last_pooling_operation(images_att)
         output = output.view(input_imgs.size(0), -1)
-        images_outputs = self.fc1(output)
-        output = dropout(images_outputs)
-        images_outputs = F.relu(self.fc2(output))
+        output = dropout(output)
+        output = self.fc1(output)
+        output = self.fc2(output)
+        output = self.fc3(output)
         #images_outputs = nn.ReLU(self.fc2(output))
 
 
@@ -667,13 +669,12 @@ EPOCHS = 50
 
 def train_and_evaluate(model):
     accuracies = []
-    dataloaders = load_data(batch_size=32)
+    dataloaders = load_data(batch_size=64)
     # Freeze all layers
 
     #criterion = nn.CrossEntropyLoss()
 
-
-    optimizer = optim.SGD(model.parameters(), lr=0.004)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
     #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
 
     for epoch_num in range(EPOCHS):
@@ -688,7 +689,7 @@ def train_and_evaluate(model):
                 train_input = train_input.float().to(device)
                 train_mask = train_mask.to(device)
 
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
+                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.5))
                 
                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 #batch_loss = xe_loss_.mean()
@@ -715,7 +716,7 @@ def train_and_evaluate(model):
                 val_mask = val_mask.to(device)
                 
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.5))
 
                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 #batch_loss = xe_loss_.mean()
