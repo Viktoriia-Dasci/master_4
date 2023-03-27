@@ -451,8 +451,8 @@ class MyCustomEfficientNetB0(nn.Module):
 
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
         images_feats = self.features(input_imgs)
-        images_att = self.attention(images_feats)
-        output = self.last_pooling_operation(images_att)
+        #images_att = self.attention(images_feats)
+        output = self.last_pooling_operation(images_feats)
         output = output.view(input_imgs.size(0), -1)
         output = dropout(output)
         output = self.fc1(output)
