@@ -457,7 +457,7 @@ class MyCustomEfficientNetB0(nn.Module):
         output = dropout(output)
         output = self.fc1(output)
         output = self.fc2(output)
-        output = self.fc3(output)
+        images_outputs = self.fc3(output)
         #images_outputs = nn.ReLU(self.fc2(output))
 
 
