@@ -435,7 +435,7 @@ class SelfAttention(nn.Module):
         return out
 
 
-from torch import load_state_dict
+#from torch import load_state_dict
 
 class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True):
@@ -443,8 +443,7 @@ class MyCustomEfficientNetB0(nn.Module):
 
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
         if pretrained:
-            state_dict = torch.load('effnet.h5')
-            efficientnet_b0.load_state_dict(state_dict)
+            efficientnet_b0.load_state_dict(torch.load('"/home/viktoriia.trokhova/master_4/effnet.h5'))
         self.features = efficientnet_b0.extract_features
         in_features = efficientnet_b0._fc.in_features
         #self.attention = SelfAttention(in_features)
