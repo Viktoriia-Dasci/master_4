@@ -667,102 +667,89 @@ EPOCHS = 50
 #     print("    {}: {}".format(key, value))
 
 
-from sklearn.metrics import roc_auc_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from pytorchtools.early_stopping import EarlyStopping
-import matplotlib.pyplot as plt
+from sklearn.metrics import roc_auc_score
 
-# define early stopping and lr scheduler
-early_stopping = EarlyStopping(patience=patience, verbose=True)
-lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
+def train_with_early_stopping(model, dataloaders, optimizer, criterion, device, patience, PATH):
+    # define early stopping and lr scheduler
+    best_val_auc = 0.0
+    early_stopping_counter = 0
+    lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
 
-best_val_auc = 0.0
+    for epoch_num in range(EPOCHS):
+        torch.cuda.empty_cache()
+        model.train()
+        total_loss_train = 0
 
-# Initialize lists to store training and validation losses and accuracies for each epoch
-train_losses = []
-train_accuracies = []
-val_losses = []
-val_accuracies = []
+        for train_input, train_label, train_mask in dataloaders['Train']:
+            train_label = train_label.long().to(device)
+            train_input = train_input.float().to(device)
+            train_mask = train_mask.to(device)
 
-for epoch_num in range(EPOCHS):
-    torch.cuda.empty_cache()
-    model.train()
-    total_loss_train = 0
-    correct = 0
-    total = 0
-
-    for train_input, train_label, train_mask in dataloaders['Train']:
-
-        train_label = train_label.long().to(device)
-        train_input = train_input.float().to(device)
-        train_mask = train_mask.to(device)
-
-        output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.5))
-
-        batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-        total_loss_train += batch_loss.item()
-
-        # calculate accuracy
-        _, predicted = torch.max(output.data, 1)
-        correct += (predicted == train_label).sum().item()
-        total += train_label.size(0)
-
-        model.zero_grad()
-        batch_loss.backward()
-        optimizer.step()
-
-    train_losses.append(total_loss_train/len(dataloaders['Train']))
-    train_accuracies.append(100 * correct / total)
-
-    total_targets_val = []
-    total_preds_val = []
-    total_loss_val = 0
-    correct = 0
-    total = 0
-
-    model.eval()
-
-    with torch.no_grad():
-
-        for val_input, val_label, val_mask in dataloaders['Val']:
-
-            val_label = val_label.long().to(device)
-            val_input = val_input.float().to(device)
-            val_mask = val_mask.to(device)
-
-            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.5))
+            optimizer.zero_grad()
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(0.5))
 
             batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-            total_loss_val += batch_loss.item()
+            total_loss_train += batch_loss.item()
 
-            # calculate accuracy
-            _, predicted = torch.max(output.data, 1)
-            correct += (predicted == val_label).sum().item()
-            total += val_label.size(0)
+            batch_loss.backward()
+            optimizer.step()
 
-            targets_ = targets_.detach().cpu().numpy()
-            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
-            total_targets_val.extend(targets_)
-            total_preds_val.extend(preds_)
+        total_loss_val = 0
+        total_targets_val = []
+        total_preds_val = []
+        correct = 0
+        total = 0
 
-        val_auc = roc_auc_score(total_targets_val, total_preds_val)
-        print("Validation AUC: {:.4f}".format(val_auc))
-        val_losses.append(total_loss_val/len(dataloaders['Val']))
-        val_accuracies.append(100 * correct / total)
+        model.eval()
 
-    # update lr_scheduler
-    lr_scheduler.step(total_loss_val)
+        with torch.no_grad():
+            for val_input, val_label, val_mask in dataloaders['Val']:
+                val_label = val_label.long().to(device)
+                val_input = val_input.float().to(device)
+                val_mask = val_mask.to(device)
 
-    # check if early stopping criteria is met
-    if early_stopping.should_stop(val_auc):
-        print("Early stopping.")
-        break
+                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(0.5))
 
-    # save model if val_auc is the best so far
-    if best_val_auc < val_auc:
-        PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
-        best_val_auc = val_auc
-        torch.save(model.state_dict(), PATH)
+                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+                total_loss_val += batch_loss.item()
+
+                # calculate accuracy
+                _, predicted = torch.max(output.data, 1)
+                correct += (predicted == val_label).sum().item()
+                total += val_label.size(0)
+
+                targets_ = targets_.detach().cpu().numpy()
+                preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
+                total_targets_val.extend(targets_)
+                total_preds_val.extend(preds_)
+
+            val_auc = roc_auc_score(total_targets_val, total_preds_val)
+            print("Validation AUC: {:.4f}".format(val_auc))
+
+        # update lr_scheduler
+        lr_scheduler.step(total_loss_val)
+
+        # check if early stopping criteria is met
+        if val_auc > best_val_auc:
+            early_stopping_counter = 0
+            best_val_auc = val_auc
+            # save model if val_auc is the best so far
+            torch.save(model.state_dict(), PATH)
+        else:
+            early_stopping_counter += 1
+
+        if early_stopping_counter >= patience:
+            print("Early stopping.")
+            break
+
+    return best_val_auc
+
+  
+patience = 10
+PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
+best_val_auc = train_with_early_stopping(model, dataloaders, optimizer, criterion, device, patience, PATH)
+
 
 
         
