@@ -443,7 +443,7 @@ class MyCustomEfficientNetB0(nn.Module):
 
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
         if pretrained:
-            efficientnet_b0.load_state_dict(torch.load('"/home/viktoriia.trokhova/master_4/effnet.h5'))
+            efficientnet_b0.load_state_dict(torch.load('/home/viktoriia.trokhova/master_4/effnet.h5'))
         self.features = efficientnet_b0.extract_features
         in_features = efficientnet_b0._fc.in_features
         #self.attention = SelfAttention(in_features)
