@@ -444,7 +444,7 @@ class MyCustomEfficientNetB0(nn.Module):
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0').to(device)
         self.features = efficientnet_b0.extract_features
         in_features = efficientnet_b0._fc.in_features
-        #self.attention = SelfAttention(in_features)
+        self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(in_features, 128)
         self.fc2 = nn.Linear(128, 32)
