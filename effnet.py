@@ -677,10 +677,17 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
     early_stopping_counter = 0
     lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
 
+    train_losses = []
+    val_losses = []
+    train_accuracies = []
+    val_accuracies = []
+
     for epoch_num in range(EPOCHS):
         torch.cuda.empty_cache()
         model.train()
         total_loss_train = 0
+        total_preds_train = []
+        total_targets_train = []
 
         for train_input, train_label, train_mask in dataloaders['Train']:
             train_label = train_label.long().to(device)
@@ -693,8 +700,20 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
             batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
             total_loss_train += batch_loss.item()
 
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct = (predicted == train_label).sum().item()
+            total_preds_train.extend(predicted.cpu().numpy())
+            total_targets_train.extend(train_label.cpu().numpy())
+
             batch_loss.backward()
             optimizer.step()
+
+        train_loss = total_loss_train / len(dataloaders['Train'])
+        train_losses.append(train_loss)
+        train_accuracy = accuracy_score(total_targets_train, total_preds_train)
+        print(train_accuracy)
+        train_accuracies.append(train_accuracy)
 
         total_loss_val = 0
         total_targets_val = []
@@ -704,7 +723,6 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
 
         model.eval()
 
-        #with torch.no_grad():
         for val_input, val_label, val_mask in dataloaders['Val']:
             val_label = val_label.long().to(device)
             val_input = val_input.float().to(device)
@@ -725,11 +743,17 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
             total_targets_val.extend(targets_)
             total_preds_val.extend(preds_)
 
+        val_loss = total_loss_val / len(dataloaders['Val'])
+        val_losses.append(val_loss)
+        val_accuracy = correct / total
+        print(val_accuracy)
+        val_accuracies.append(val_accuracy)
+
         val_auc = roc_auc_score(total_targets_val, total_preds_val)
-        print("Validation AUC: {:.4f}".format(val_auc))
+        print("Epoch: {} - Validation AUC: {:.4f}".format(epoch_num+1, val_auc))
 
         # update lr_scheduler
-        lr_scheduler.step(total_loss_val)
+        lr_scheduler.step(val_loss)
 
         # check if early stopping criteria is met
         if val_auc > best_val_auc:
