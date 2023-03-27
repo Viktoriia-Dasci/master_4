@@ -667,78 +667,124 @@ EPOCHS = 50
 #     print("    {}: {}".format(key, value))
 
 
-def train_and_evaluate(model):
-    accuracies = []
-    dataloaders = load_data(batch_size=64)
-    # Freeze all layers
+from sklearn.metrics import roc_auc_score
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from pytorchtools import EarlyStopping  # custom EarlyStopping class
+import matplotlib.pyplot as plt
 
-    #criterion = nn.CrossEntropyLoss()
+# define early stopping and lr scheduler
+early_stopping = EarlyStopping(patience=patience, verbose=True)
+lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
 
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
+best_val_auc = 0.0
 
-    for epoch_num in range(EPOCHS):
-            torch.cuda.empty_cache()
-            model.train()
-            total_acc_train = 0
-            total_loss_train = 0
+# Initialize lists to store training and validation losses and accuracies for each epoch
+train_losses = []
+train_accuracies = []
+val_losses = []
+val_accuracies = []
 
-            for train_input, train_label, train_mask in dataloaders['Train']:
+for epoch_num in range(EPOCHS):
+    torch.cuda.empty_cache()
+    model.train()
+    total_loss_train = 0
+    correct = 0
+    total = 0
 
-                train_label = train_label.long().to(device)
-                train_input = train_input.float().to(device)
-                train_mask = train_mask.to(device)
+    for train_input, train_label, train_mask in dataloaders['Train']:
 
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.5))
-                
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                #batch_loss = xe_loss_.mean()
-                total_loss_train += batch_loss.item()
-                
-                acc = (output.argmax(dim=1) == train_label).sum().item()
-                total_acc_train += acc
+        train_label = train_label.long().to(device)
+        train_input = train_input.float().to(device)
+        train_mask = train_mask.to(device)
 
-                model.zero_grad()
-                batch_loss.backward()
-                optimizer.step()
-            
-            total_acc_val = 0
-            total_loss_val = 0
+        output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.5))
 
-            model.eval()
-            # with torch.no_grad():
-            
+        batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+        total_loss_train += batch_loss.item()
 
-            for val_input, val_label, val_mask in dataloaders['Val']:
+        # calculate accuracy
+        _, predicted = torch.max(output.data, 1)
+        correct += (predicted == train_label).sum().item()
+        total += train_label.size(0)
 
-                val_label = val_label.long().to(device)
-                val_input = val_input.float().to(device)
-                val_mask = val_mask.to(device)
-                
+        model.zero_grad()
+        batch_loss.backward()
+        optimizer.step()
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.5))
+    train_losses.append(total_loss_train/len(dataloaders['Train']))
+    train_accuracies.append(100 * correct / total)
 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                #batch_loss = xe_loss_.mean()
-                total_loss_val += batch_loss.item()
-                
-                acc = (output.argmax(dim=1) == val_label).sum().item()
-                total_acc_val += acc
+    total_targets_val = []
+    total_preds_val = []
+    total_loss_val = 0
+    correct = 0
+    total = 0
+
+    model.eval()
+
+    with torch.no_grad():
+
+        for val_input, val_label, val_mask in dataloaders['Val']:
+
+            val_label = val_label.long().to(device)
+            val_input = val_input.float().to(device)
+            val_mask = val_mask.to(device)
+
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.5))
+
+            batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+            total_loss_val += batch_loss.item()
+
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct += (predicted == val_label).sum().item()
+            total += val_label.size(0)
+
+            targets_ = targets_.detach().cpu().numpy()
+            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
+            total_targets_val.extend(targets_)
+            total_preds_val.extend(preds_)
+
+        val_auc = roc_auc_score(total_targets_val, total_preds_val)
+        print("Validation AUC: {:.4f}".format(val_auc))
+        val_losses.append(total_loss_val/len(dataloaders['Val']))
+        val_accuracies.append(100 * correct / total)
+
+    # update lr_scheduler
+    lr_scheduler.step(total_loss_val)
+
+    # check if early stopping criteria is met
+    if early_stopping.should_stop(val_auc):
+        print("Early stopping.")
+        break
+
+    # save model if val_auc is the best so far
+    if best_val_auc < val_auc:
+        PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
+        best_val_auc = val_auc
+        torch.save(model.state_dict(), PATH)
+
+
         
-            accuracy = total_acc_val/len(image_datasets['Val'])
-            accuracies.append(accuracy)
-            print(accuracy)
-            if len(accuracies) >= 3 and accuracy <= 0.5729:
-                break
+# plot loss and accuracy for each epoch
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_losses, label='Train')
+plt.plot(val_losses, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/effnet/loss.png")  # save plot to given path
 
-#             trial.report(accuracy, epoch_num)
-#             if trial.should_prune():
-#                 raise optuna.exceptions.TrialPruned()
-    final_accuracy = max(accuracies)
-    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-    torch.save(model.state_dict(), PATH)
-  
-    return final_accuracy
-  
-  
-train_and_evaluate(model)
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_accuracies, label='Train')
+plt.plot(val_accuracies, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/effnet/accuracy.png")  # save plot to given path
+
+    
