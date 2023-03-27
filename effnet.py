@@ -671,6 +671,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.metrics import roc_auc_score
 
 def train_with_early_stopping(model, dataloaders, optimizer, criterion, device, patience, PATH):
+    dataloaders = load_data(batch_size=64)
     # define early stopping and lr scheduler
     best_val_auc = 0.0
     early_stopping_counter = 0
