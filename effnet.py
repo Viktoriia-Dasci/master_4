@@ -704,17 +704,12 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
 
             # calculate accuracy
             _, predicted = torch.max(output.data, 1)
-#             correct = (predicted == train_label).sum().item()
-#             total_preds_train.extend(predicted.cpu().numpy())
-#             total_targets_train.extend(train_label.cpu().numpy())
              correct_train += (predicted == labels).sum().item()
              total_train += labels.size(0)
 
             batch_loss.backward()
             optimizer.step()
-           
-
-
+          
 
         train_loss = total_loss_train / len(dataloaders['Train'])
         train_losses.append(train_loss)
