@@ -704,29 +704,29 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
 
         model.eval()
 
-        with torch.no_grad():
-            for val_input, val_label, val_mask in dataloaders['Val']:
-                val_label = val_label.long().to(device)
-                val_input = val_input.float().to(device)
-                val_mask = val_mask.to(device)
+        #with torch.no_grad():
+        for val_input, val_label, val_mask in dataloaders['Val']:
+            val_label = val_label.long().to(device)
+            val_input = val_input.float().to(device)
+            val_mask = val_mask.to(device)
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(0.5))
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(0.5))
 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                total_loss_val += batch_loss.item()
+            batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+            total_loss_val += batch_loss.item()
 
-                # calculate accuracy
-                _, predicted = torch.max(output.data, 1)
-                correct += (predicted == val_label).sum().item()
-                total += val_label.size(0)
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct += (predicted == val_label).sum().item()
+            total += val_label.size(0)
 
-                targets_ = targets_.detach().cpu().numpy()
-                preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
-                total_targets_val.extend(targets_)
-                total_preds_val.extend(preds_)
+            targets_ = targets_.detach().cpu().numpy()
+            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
+            total_targets_val.extend(targets_)
+            total_preds_val.extend(preds_)
 
-            val_auc = roc_auc_score(total_targets_val, total_preds_val)
-            print("Validation AUC: {:.4f}".format(val_auc))
+        val_auc = roc_auc_score(total_targets_val, total_preds_val)
+        print("Validation AUC: {:.4f}".format(val_auc))
 
         # update lr_scheduler
         lr_scheduler.step(total_loss_val)
