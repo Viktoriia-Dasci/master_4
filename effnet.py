@@ -670,7 +670,7 @@ EPOCHS = 50
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.metrics import roc_auc_score
 
-def train_with_early_stopping(model, dataloaders, optimizer, criterion, device, patience, PATH):
+def train_with_early_stopping(model, optimizer, patience, PATH):
     dataloaders = load_data(batch_size=64)
     # define early stopping and lr scheduler
     best_val_auc = 0.0
@@ -749,9 +749,7 @@ def train_with_early_stopping(model, dataloaders, optimizer, criterion, device, 
   
 patience = 10
 PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
-best_val_auc = train_with_early_stopping(model, dataloaders, optimizer, criterion, device, patience, PATH)
-
-
+best_val_auc = train_with_early_stopping(model, optimizer = optim.Adam(model.parameters(), lr=0.001), patience=10, PATH= '/home/viktoriia.trokhova/model_weights/model_effnet.pt')
 
         
 # plot loss and accuracy for each epoch
