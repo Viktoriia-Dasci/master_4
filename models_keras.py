@@ -251,62 +251,62 @@ tuner = Hyperband(
     project_name='intro_to_kt'
 )
 
-# tuner.search(train_generator,
-#              validation_data=(X_val, y_val),
-#              steps_per_epoch=len(train_generator),
-#              epochs=50,
-#              verbose=1
-#              )
+tuner.search(train_generator,
+             validation_data=(X_val, y_val),
+             steps_per_epoch=len(train_generator),
+             epochs=50,
+             verbose=1
+             )
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 print(f'Best hyperparameters: {best_hyperparams}')
 
-# Get the best model found by the tuner
-best_model = tuner.get_best_models(1)[0]
+# # Get the best model found by the tuner
+# best_model = tuner.get_best_models(1)[0]
 
-checkpoint = ModelCheckpoint("effnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+# checkpoint = ModelCheckpoint("effnet" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+# early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+# reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
-# Fit the model to the training data for 50 epochs using the best hyperparameters
-best_model.fit(
-    train_generator,
-    epochs=50,
-    validation_data=(X_val, y_val),
-    verbose=1,
-    callbacks=[checkpoint, early_stop, reduce_lr]
-)
+# # Fit the model to the training data for 50 epochs using the best hyperparameters
+# history_neweffnet = best_model.fit(
+#     train_generator,
+#     epochs=50,
+#     validation_data=(X_val, y_val),
+#     verbose=1,
+#     callbacks=[checkpoint, early_stop, reduce_lr]
+# )
 
-def plot_acc_loss(model_history, folder_path):
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+# def plot_acc_loss(model_history, folder_path):
+#     if not os.path.exists(folder_path):
+#         os.makedirs(folder_path)
 
-    loss = model_history.history['loss']
-    val_loss = model_history.history['val_loss']
-    epochs = range(1, len(loss) + 1)
-    plt.plot(epochs, loss, 'y', label='Training loss')
-    plt.plot(epochs, val_loss, 'r', label='Validation loss')
-    plt.title('Training and validation loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.savefig(os.path.join(folder_path, 'loss.png'))
-    plt.close()
+#     loss = model_history.history['loss']
+#     val_loss = model_history.history['val_loss']
+#     epochs = range(1, len(loss) + 1)
+#     plt.plot(epochs, loss, 'y', label='Training loss')
+#     plt.plot(epochs, val_loss, 'r', label='Validation loss')
+#     plt.title('Training and validation loss')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Loss')
+#     plt.legend()
+#     plt.savefig(os.path.join(folder_path, 'loss.png'))
+#     plt.close()
 
-    acc = model_history.history['accuracy']
-    val_acc = model_history.history['val_accuracy']
+#     acc = model_history.history['accuracy']
+#     val_acc = model_history.history['val_accuracy']
 
-    plt.plot(epochs, acc, 'y', label='Training accuracy')
-    plt.plot(epochs, val_acc, 'r', label='Validation accuracy')
-    plt.title('Training and validation accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.savefig(os.path.join(folder_path, 'accuracy.png'))
-    plt.close()
+#     plt.plot(epochs, acc, 'y', label='Training accuracy')
+#     plt.plot(epochs, val_acc, 'r', label='Validation accuracy')
+#     plt.title('Training and validation accuracy')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Accuracy')
+#     plt.legend()
+#     plt.savefig(os.path.join(folder_path, 'accuracy.png'))
+#     plt.close()
     
-    
+#plot_acc_loss(history_neweffnet,  '/home/viktoriia.trokhova/plots/effnet')
     
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
