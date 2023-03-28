@@ -324,23 +324,23 @@ class myDataset_test(Dataset):
     
         return img_tensor, class_id, msk_tensor
 
-image_datasets = {
-    'Train': 
-    myDataset_train(),
-    'Val': 
-    myDataset_val(transform = val_transforms)
-}
+# image_datasets = {
+#     'Train': 
+#     myDataset_train(),
+#     'Val': 
+#     myDataset_val(transform = val_transforms)
+# }
 
 def load_data(batch_size):
 
     dataloaders = {
         'Train':
-        torch.utils.data.DataLoader(myDataset_train(),
+        torch.utils.data.DataLoader(myDataset_val(),
                                     batch_size=batch_size,
                                     shuffle=True,
                                     num_workers=0), 
         'Val':
-        torch.utils.data.DataLoader(myDataset_val(transform = val_transforms),
+        torch.utils.data.DataLoader(myDataset_test(transform = val_transforms),
                                     batch_size=batch_size,
                                     shuffle=False,
                                     num_workers=0)  
@@ -446,9 +446,9 @@ class MyCustomEfficientNetB0(nn.Module):
         in_features = efficientnet_b0._fc.in_features
         self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(in_features, 128)
-        self.fc2 = nn.Linear(128, 32)
-        self.fc3 = nn.Linear(32, 2)
+        self.fc1 = nn.Linear(in_features, 2)
+#       self.fc2 = nn.Linear(128, 32)
+#       self.fc3 = nn.Linear(32, 2)
 
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
         images_feats = self.features(input_imgs)
@@ -456,9 +456,9 @@ class MyCustomEfficientNetB0(nn.Module):
         output = self.last_pooling_operation(images_att)
         output = output.view(input_imgs.size(0), -1)
         output = dropout(output)
-        output = self.fc1(output)
-        output = self.fc2(output)
-        images_outputs = self.fc3(output)
+        output = nn.ReLU(self.fc1(output))
+        #output = self.fc2(output)
+        #images_outputs = self.fc3(output)
         #images_outputs = nn.ReLU(self.fc2(output))
 
 
@@ -564,7 +564,7 @@ def train_and_evaluate(param, model, trial):
     accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
     # Freeze all layers
-    EPOCHS = 5
+    EPOCHS = 3
     #criterion = nn.CrossEntropyLoss()
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
 
@@ -647,7 +647,7 @@ def objective(trial):
      return max_accuracy
   
   
-EPOCHS = 5
+EPOCHS = 3
     
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
 study.optimize(objective, n_trials=30)
