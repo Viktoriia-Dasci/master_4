@@ -102,8 +102,8 @@ class myDataset_train(Dataset):
 
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/train/"  
-        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/train/" 
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/val/"  
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/val/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -211,8 +211,8 @@ class myDataset_val(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/val/"
-        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/val/"
+        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/test/"
+        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -324,23 +324,23 @@ class myDataset_test(Dataset):
     
         return img_tensor, class_id, msk_tensor
 
-# image_datasets = {
-#     'Train': 
-#     myDataset_train(),
-#     'Val': 
-#     myDataset_val(transform = val_transforms)
-# }
+image_datasets = {
+    'Train': 
+    myDataset_train(),
+    'Val': 
+    myDataset_val(transform = val_transforms)
+}
 
 def load_data(batch_size):
 
     dataloaders = {
         'Train':
-        torch.utils.data.DataLoader(myDataset_val(),
+        torch.utils.data.DataLoader(myDataset_train(),
                                     batch_size=batch_size,
                                     shuffle=True,
                                     num_workers=0), 
         'Val':
-        torch.utils.data.DataLoader(myDataset_test(transform = val_transforms),
+        torch.utils.data.DataLoader(myDataset_val(transform = val_transforms),
                                     batch_size=batch_size,
                                     shuffle=False,
                                     num_workers=0)  
