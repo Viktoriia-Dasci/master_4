@@ -456,7 +456,7 @@ class MyCustomEfficientNetB0(nn.Module):
         output = self.last_pooling_operation(images_att)
         output = output.view(input_imgs.size(0), -1)
         output = dropout(output)
-        output = nn.ReLU(self.fc1(output))
+        images_outputs = nn.ReLU(self.fc1(output))
         #output = self.fc2(output)
         #images_outputs = self.fc3(output)
         #images_outputs = nn.ReLU(self.fc2(output))
