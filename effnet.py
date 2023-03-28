@@ -437,6 +437,38 @@ class SelfAttention(nn.Module):
 
 #from torch import load_state_dict
 
+
+# import torch.nn as nn
+# from efficientnet_pytorch import EfficientNet
+
+# class MyCustomEfficientNetB0(nn.Module):
+#     def __init__(self, pretrained=True, num_fc_layers=1, fc_units=512, num_classes=2):
+#         super().__init__()
+
+#         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
+#         self.features = efficientnet_b0.extract_features
+#         in_features = efficientnet_b0._fc.in_features
+#         self.attention = SelfAttention(in_features)
+#         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
+#         self.fc_layers = nn.ModuleList()
+#         for i in range(num_fc_layers):
+#             if i == 0:
+#                 self.fc_layers.append(nn.Linear(in_features, fc_units))
+#             else:
+#                 self.fc_layers.append(nn.Linear(fc_units, fc_units))
+#             self.fc_layers.append(nn.ReLU(inplace=True))
+#         self.fc_layers.append(nn.Linear(fc_units, num_classes))
+
+#     def forward(self, x):
+#         x = self.features(x)
+#         x = self.attention(x)
+#         x = self.last_pooling_operation(x)
+#         x = x.view(x.size(0), -1)
+#         for layer in self.fc_layers:
+#             x = layer(x)
+#         return x
+
+
 class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
