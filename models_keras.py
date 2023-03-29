@@ -187,7 +187,8 @@ def model_train(model_name, image_size = 224):
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 64, epochs=30, verbose=1,
                    callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
-   return history
+  
+    return history
 
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
