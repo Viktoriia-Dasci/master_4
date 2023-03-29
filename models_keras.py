@@ -174,7 +174,7 @@ def model_train(model_name, image_size = 224):
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=0.5)(model)
-    model = tf.keras.layers.Dense(128, activation='relu)(model)
+    model = tf.keras.layers.Dense(128, activation='relu')(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     adam = tf.keras.optimizers.Adam(learning_rate=0.001)
