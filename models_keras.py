@@ -185,7 +185,7 @@ def model_train(model_name, image_size = 224):
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(X_val) / 64, epochs=30, verbose=1,
+    history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(train_generator), epochs=30, verbose=1,
                    callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
   
     return history
