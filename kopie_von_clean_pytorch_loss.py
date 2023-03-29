@@ -573,126 +573,16 @@ TPR = []
 Thresholds = []
 best_model_wts = {}
 
-# Train and evaluate the accuracy of neural network with the addition of pruning mechanism
-# Train and evaluate the accuracy of neural network with the addition of pruning mechanism
-# def train_and_evaluate(param, model, trial):
-#     accuracies = []
-#     dataloaders = load_data(batch_size=param['batch_size'])
-#     # Freeze all layers
+#Train and evaluate the accuracy of neural network with the addition of pruning mechanism
 
-#     #criterion = nn.CrossEntropyLoss()
-#     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
-
-#     for epoch_num in range(EPOCHS):
-#             torch.cuda.empty_cache()
-#             model.train()
-#             total_acc_train = 0
-#             total_loss_train = 0
-
-#             for train_input, train_label, train_mask in dataloaders['Train']:
-
-#                 train_label = train_label.long().to(device)
-#                 train_input = train_input.float().to(device)
-#                 train_mask = train_mask.to(device)
-
-#                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
-                
-#                 batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
-#                 total_loss_train += batch_loss.item()
-                
-#                 acc = (output.argmax(dim=1) == train_label).sum().item()
-#                 total_acc_train += acc
-
-#                 model.zero_grad()
-#                 batch_loss.backward()
-#                 optimizer.step()
-            
-#             total_acc_val = 0
-#             total_loss_val = 0
-
-#             model.eval()
-#             # with torch.no_grad():
-            
-
-#             for val_input, val_label, val_mask in dataloaders['Val']:
-
-#                 val_label = val_label.long().to(device)
-#                 val_input = val_input.float().to(device)
-#                 val_mask = val_mask.to(device)
-                
-
-#                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(param['drop_out']))
-
-#                 batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
-#                 total_loss_val += batch_loss.item()
-                
-#                 acc = (output.argmax(dim=1) == val_label).sum().item()
-#                 total_acc_val += acc
-        
-#             accuracy = total_acc_val/len(image_datasets['Val'])
-#             accuracies.append(accuracy)
-#             print(accuracy)
-#             if len(accuracies) >= 3 and accuracy <= 0.5729:
-#                 break
-
-#             trial.report(accuracy, epoch_num)
-#             if trial.should_prune():
-#                 raise optuna.exceptions.TrialPruned()
-#     final_accuracy = max(accuracies)
-#     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-#     torch.save(model.state_dict(), PATH)
-  
-#     return final_accuracy
-  
-# # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
-# def objective(trial):
-
-#      params = {
-#               'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
-#               'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
-#               'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
-#               'lambda_val': trial.suggest_float("lambda_val", 0.0, 1.0),
-#                'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
-#               }
-    
-#      model = MyCustomResnet50(pretrained=True).to(device)
-
-#      max_accuracy = train_and_evaluate(params, model, trial)
-
-#      return max_accuracy
-  
-  
-EPOCHS = 30
-    
-# study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-# study.optimize(objective, n_trials=30)
-# pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
-# complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
-
-# print("Study statistics: ")
-# print("  Number of finished trials: ", len(study.trials))
-# print("  Number of pruned trials: ", len(pruned_trials))
-# print("  Number of complete trials: ", len(complete_trials))
-
-# print("Best trial:")
-# trial = study.best_trial
-# print("  Value: ", trial.value)
-
-# print("  Params: ")
-# for key, value in trial.params.items():
-#     print("    {}: {}".format(key, value))
-
-
-def train_and_evaluate(model):
+def train_and_evaluate(param, model, trial):
     accuracies = []
-    dataloaders = load_data(batch_size=32)
+    dataloaders = load_data(batch_size=param['batch_size'])
     # Freeze all layers
-
+    EPOCHS = 3
+    
     #criterion = nn.CrossEntropyLoss()
-
-
-    optimizer = optim.SGD(model.parameters(), lr=0.004)
-    #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
+    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
 
     for epoch_num in range(EPOCHS):
             torch.cuda.empty_cache()
@@ -706,10 +596,9 @@ def train_and_evaluate(model):
                 train_input = train_input.float().to(device)
                 train_mask = train_mask.to(device)
 
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
+                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
                 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                #batch_loss = xe_loss_.mean()
+                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
                 total_loss_train += batch_loss.item()
                 
                 acc = (output.argmax(dim=1) == train_label).sum().item()
@@ -733,10 +622,9 @@ def train_and_evaluate(model):
                 val_mask = val_mask.to(device)
                 
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(param['drop_out']))
 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                #batch_loss = xe_loss_.mean()
+                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
                 total_loss_val += batch_loss.item()
                 
                 acc = (output.argmax(dim=1) == val_label).sum().item()
@@ -748,14 +636,127 @@ def train_and_evaluate(model):
             if len(accuracies) >= 3 and accuracy <= 0.5729:
                 break
 
-#             trial.report(accuracy, epoch_num)
-#             if trial.should_prune():
-#                 raise optuna.exceptions.TrialPruned()
+            trial.report(accuracy, epoch_num)
+            if trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
     final_accuracy = max(accuracies)
     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
     torch.save(model.state_dict(), PATH)
   
     return final_accuracy
   
+# Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
+def objective(trial):
+
+     params = {
+              'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
+              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
+              'lambda_val': trial.suggest_float("lambda_val", 0.0, 1.0),
+               'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
+              }
+    
+     model = MyCustomResnet50(pretrained=True).to(device)
+
+     max_accuracy = train_and_evaluate(params, model, trial)
+
+     return max_accuracy
   
-train_and_evaluate(model)
+  
+EPOCHS = 3
+    
+# study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+# study.optimize(objective, n_trials=30)
+# pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+# complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+
+# print("Study statistics: ")
+# print("  Number of finished trials: ", len(study.trials))
+# print("  Number of pruned trials: ", len(pruned_trials))
+# print("  Number of complete trials: ", len(complete_trials))
+
+# print("Best trial:")
+# trial = study.best_trial
+# print("  Value: ", trial.value)
+
+# print("  Params: ")
+# for key, value in trial.params.items():
+#     print("    {}: {}".format(key, value))
+
+
+# def train_and_evaluate(model):
+#     accuracies = []
+#     dataloaders = load_data(batch_size=32)
+#     # Freeze all layers
+
+#     #criterion = nn.CrossEntropyLoss()
+
+
+#     optimizer = optim.SGD(model.parameters(), lr=0.004)
+#     #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
+
+#     for epoch_num in range(EPOCHS):
+#             torch.cuda.empty_cache()
+#             model.train()
+#             total_acc_train = 0
+#             total_loss_train = 0
+
+#             for train_input, train_label, train_mask in dataloaders['Train']:
+
+#                 train_label = train_label.long().to(device)
+#                 train_input = train_input.float().to(device)
+#                 train_mask = train_mask.to(device)
+
+#                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
+                
+#                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+#                 #batch_loss = xe_loss_.mean()
+#                 total_loss_train += batch_loss.item()
+                
+#                 acc = (output.argmax(dim=1) == train_label).sum().item()
+#                 total_acc_train += acc
+
+#                 model.zero_grad()
+#                 batch_loss.backward()
+#                 optimizer.step()
+            
+#             total_acc_val = 0
+#             total_loss_val = 0
+
+#             model.eval()
+#             # with torch.no_grad():
+            
+
+#             for val_input, val_label, val_mask in dataloaders['Val']:
+
+#                 val_label = val_label.long().to(device)
+#                 val_input = val_input.float().to(device)
+#                 val_mask = val_mask.to(device)
+                
+
+#                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+
+#                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+#                 #batch_loss = xe_loss_.mean()
+#                 total_loss_val += batch_loss.item()
+                
+#                 acc = (output.argmax(dim=1) == val_label).sum().item()
+#                 total_acc_val += acc
+        
+#             accuracy = total_acc_val/len(image_datasets['Val'])
+#             accuracies.append(accuracy)
+#             print(accuracy)
+#             if len(accuracies) >= 3 and accuracy <= 0.5729:
+#                 break
+
+# #             trial.report(accuracy, epoch_num)
+# #             if trial.should_prune():
+# #                 raise optuna.exceptions.TrialPruned()
+#     final_accuracy = max(accuracies)
+#     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+#     torch.save(model.state_dict(), PATH)
+  
+#     return final_accuracy
+  
+  
+# train_and_evaluate(model)
