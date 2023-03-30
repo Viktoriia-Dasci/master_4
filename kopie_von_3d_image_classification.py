@@ -339,94 +339,94 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, BatchNormalization, Flatten, Dense, Softmax
 
-# def get_model(width=240, height=240, depth=150):
-#     """Build a 3D convolutional neural network model."""
+def get_model(width=240, height=240, depth=150):
+    """Build a 3D convolutional neural network model."""
 
-#     inputs = keras.Input((width, height, depth, 1))
-
-#     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
-#     x = layers.MaxPool3D(pool_size=2)(x)
-#     x = layers.BatchNormalization()(x)
-
-#     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x)
-#     x = layers.MaxPool3D(pool_size=2)(x)
-#     x = layers.BatchNormalization()(x)
-
-#     x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)
-#     x = layers.MaxPool3D(pool_size=2)(x)
-#     x = layers.BatchNormalization()(x)
-
-#     x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)
-#     x = layers.MaxPool3D(pool_size=2)(x)
-#     x = layers.BatchNormalization()(x)
-
-#     x = layers.GlobalAveragePooling3D()(x)
-#     x = layers.Dense(units=512, activation="relu")(x)
-#     x = layers.Dropout(0.3)(x)
-
-#     outputs = layers.Dense(units=1, activation="sigmoid")(x)
-
-#     # Define the model.
-#     model = keras.Model(inputs, outputs, name="3dcnn")
-#     return model
-
-
-# # Build model.
-# model = get_model(width=128, height=128, depth=64)
-# model.summary()
-
-def custom_3d_cnn(width=240, height=240, depth=150):
     inputs = keras.Input((width, height, depth, 1))
 
-    # Layer 1
-    conv1 = Conv3D(32, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(inputs)
-    bn1 = BatchNormalization()(conv1)
+    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
+    x = layers.MaxPool3D(pool_size=2)(x)
+    x = layers.BatchNormalization()(x)
 
-    # Layer 2
-    conv2 = Conv3D(64, kernel_size=(3, 3, 3), padding='same')(bn1)
-    mp2 = MaxPooling3D(pool_size=(2, 2, 2))(conv2)
-    bn2 = BatchNormalization()(mp2)
+    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x)
+    x = layers.MaxPool3D(pool_size=2)(x)
+    x = layers.BatchNormalization()(x)
 
-    # Layer 3
-    conv3 = Conv3D(128, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn2)
-    mp3 = MaxPooling3D(pool_size=(2, 2, 2))(conv3)
-    bn3 = BatchNormalization()(mp3)
+    x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)
+    x = layers.MaxPool3D(pool_size=2)(x)
+    x = layers.BatchNormalization()(x)
 
-    # Layer 4
-    conv4 = Conv3D(256, kernel_size=(3, 3, 3), padding='same')(bn3)
-    mp4 = MaxPooling3D(pool_size=(2, 2, 2))(conv4)
-    bn4 = BatchNormalization()(mp4)
+    x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)
+    x = layers.MaxPool3D(pool_size=2)(x)
+    x = layers.BatchNormalization()(x)
 
-    # Layer 5
-    conv5 = Conv3D(256, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn4)
-    bn5 = BatchNormalization()(conv5)
-
-    # Layer 6
-    conv6 = Conv3D(128, kernel_size=(3, 3, 3), padding='same')(UpSampling3D(size=(2, 2, 2))(bn5))
-    bn6 = BatchNormalization()(conv6)
-
-    # Layer 7
-    conv7 = Conv3D(64, kernel_size=(3, 3, 3), padding='same')(UpSampling3D(size=(2, 2, 2))(bn6))
-    bn7 = BatchNormalization()(conv7)
-
-    # Layer 8
-    x = Conv3D(32, kernel_size=(3, 3, 3), padding='same')(bn7)
-
-    # Layer 9
-    #flatten = Flatten()(conv8)
     x = layers.GlobalAveragePooling3D()(x)
     x = layers.Dense(units=512, activation="relu")(x)
-    x = layers.Dropout(0.8)(x)
+    x = layers.Dropout(0.3)(x)
 
     outputs = layers.Dense(units=1, activation="sigmoid")(x)
 
     # Define the model.
     model = keras.Model(inputs, outputs, name="3dcnn")
-
     return model
 
-model = custom_3d_cnn()
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'AUC'])
+
+# Build model.
+model = get_model(width=128, height=128, depth=64)
+model.summary()
+
+# def custom_3d_cnn(width=240, height=240, depth=150):
+#     inputs = keras.Input((width, height, depth, 1))
+
+#     # Layer 1
+#     conv1 = Conv3D(32, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(inputs)
+#     bn1 = BatchNormalization()(conv1)
+
+#     # Layer 2
+#     conv2 = Conv3D(64, kernel_size=(3, 3, 3), padding='same')(bn1)
+#     mp2 = MaxPooling3D(pool_size=(2, 2, 2))(conv2)
+#     bn2 = BatchNormalization()(mp2)
+
+#     # Layer 3
+#     conv3 = Conv3D(128, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn2)
+#     mp3 = MaxPooling3D(pool_size=(2, 2, 2))(conv3)
+#     bn3 = BatchNormalization()(mp3)
+
+#     # Layer 4
+#     conv4 = Conv3D(256, kernel_size=(3, 3, 3), padding='same')(bn3)
+#     mp4 = MaxPooling3D(pool_size=(2, 2, 2))(conv4)
+#     bn4 = BatchNormalization()(mp4)
+
+#     # Layer 5
+#     conv5 = Conv3D(256, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same')(bn4)
+#     bn5 = BatchNormalization()(conv5)
+
+#     # Layer 6
+#     conv6 = Conv3D(128, kernel_size=(3, 3, 3), padding='same')(UpSampling3D(size=(2, 2, 2))(bn5))
+#     bn6 = BatchNormalization()(conv6)
+
+#     # Layer 7
+#     conv7 = Conv3D(64, kernel_size=(3, 3, 3), padding='same')(UpSampling3D(size=(2, 2, 2))(bn6))
+#     bn7 = BatchNormalization()(conv7)
+
+#     # Layer 8
+#     x = Conv3D(32, kernel_size=(3, 3, 3), padding='same')(bn7)
+
+#     # Layer 9
+#     #flatten = Flatten()(conv8)
+#     x = layers.GlobalAveragePooling3D()(x)
+#     x = layers.Dense(units=512, activation="relu")(x)
+#     x = layers.Dropout(0.8)(x)
+
+#     outputs = layers.Dense(units=1, activation="sigmoid")(x)
+
+#     # Define the model.
+#     model = keras.Model(inputs, outputs, name="3dcnn")
+
+#     return model
+
+# model = custom_3d_cnn()
+# model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'AUC'])
 
 """## Train model"""
 
