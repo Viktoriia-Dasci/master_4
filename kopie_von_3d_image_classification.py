@@ -148,7 +148,7 @@ def process_scan(path):
     # Normalize
     volume = normalize(volume)
     # Resize width, height and depth
-    #volume = resize_volume(volume)
+    volume = resize_volume(volume)
     return volume
 
 """Let's read the paths of the CT scans from the class directories."""
