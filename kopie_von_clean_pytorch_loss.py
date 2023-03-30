@@ -683,6 +683,7 @@ best_model_wts = {}
 # for key, value in trial.params.items():
 #     print("    {}: {}".format(key, value))
 
+EPOCHS = 30
 
 def train_and_evaluate(model):
     accuracies = []
