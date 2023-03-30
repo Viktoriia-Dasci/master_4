@@ -759,4 +759,4 @@ def train_and_evaluate(model):
     return final_accuracy
   
   
-# train_and_evaluate(model)
+train_and_evaluate(model)
