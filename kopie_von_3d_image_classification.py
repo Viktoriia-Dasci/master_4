@@ -39,8 +39,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from google.colab import drive
-drive.mount('/content/drive')
+# from google.colab import drive
+# drive.mount('/content/drive')
 
 """## Downloading the MosMedData: Chest CT Scans with COVID-19 Related Findings
 
