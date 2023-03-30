@@ -156,25 +156,25 @@ def process_scan(path):
 # Folder "CT-0" consist of CT scans having normal lung tissue,
 # no CT-signs of viral pneumonia.
 HGG_train_paths = [
-    os.path.join(os.getcwd(), "/content/drive/MyDrive/T2_split/train/HGG_t2", x)
-    for x in os.listdir("/content/drive/MyDrive/T2_split/train/HGG_t2")
+    os.path.join(os.getcwd(), "/home/viktoriia.trokhova/T2_split/train/HGG_t2", x)
+    for x in os.listdir("/home/viktoriia.trokhova/T2_split/train/HGG_t2")
 ]
 # Folder "CT-23" consist of CT scans having several ground-glass opacifications,
 # involvement of lung parenchyma.
 LGG_train_paths = [
-    os.path.join(os.getcwd(), "/content/drive/MyDrive/T2_split/train/LGG_t2", x)
-    for x in os.listdir("/content/drive/MyDrive/T2_split/train/LGG_t2")
+    os.path.join(os.getcwd(), "/home/viktoriia.trokhova/T2_split/train/LGG_t2", x)
+    for x in os.listdir("/home/viktoriia.trokhova/T2_split/train/LGG_t2")
 ]
 
 HGG_val_paths = [
-    os.path.join(os.getcwd(), "/content/drive/MyDrive/T2_split/val/HGG_t2", x)
-    for x in os.listdir("/content/drive/MyDrive/T2_split/val/HGG_t2")
+    os.path.join(os.getcwd(), "/home/viktoriia.trokhova/T2_split/val/HGG_t2", x)
+    for x in os.listdir("/home/viktoriia.trokhova/T2_split/val/HGG_t2")
 ]
 # Folder "CT-23" consist of CT scans having several ground-glass opacifications,
 # involvement of lung parenchyma.
 LGG_val_paths = [
-    os.path.join(os.getcwd(), "/content/drive/MyDrive/T2_split/val/LGG_t2", x)
-    for x in os.listdir("/content/drive/MyDrive/T2_split/val/LGG_t2")
+    os.path.join(os.getcwd(), "/home/viktoriia.trokhova/T2_split/val/LGG_t2", x)
+    for x in os.listdir("/home/viktoriia.trokhova/T2_split/val/LGG_t2")
 ]
 
 print("CT scans with normal lung tissue: " + str(len(HGG_train_paths)))
@@ -271,7 +271,7 @@ training and validation data are already rescaled to have values between 0 and 1
 train_loader = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 validation_loader = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 
-batch_size = 8
+batch_size = 16
 # Augment the on the fly during training.
 train_dataset = (
     train_loader.shuffle(len(x_train))
@@ -289,44 +289,44 @@ validation_dataset = (
 
 """Visualize an augmented CT scan."""
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-data = train_dataset.take(1)
-images, labels = list(data)[0]
-images = images.numpy()
-image = images[0]
-print("Dimension of the CT scan is:", image.shape)
-plt.imshow(np.squeeze(image[:, :, 30]), cmap="gray")
+# data = train_dataset.take(1)
+# images, labels = list(data)[0]
+# images = images.numpy()
+# image = images[0]
+# print("Dimension of the CT scan is:", image.shape)
+# plt.imshow(np.squeeze(image[:, :, 30]), cmap="gray")
 
-"""Since a CT scan has many slices, let's visualize a montage of the slices."""
+# """Since a CT scan has many slices, let's visualize a montage of the slices."""
 
-def plot_slices(num_rows, num_columns, width, height, data):
-    """Plot a montage of 20 CT slices"""
-    data = np.rot90(np.array(data))
-    data = np.transpose(data)
-    data = np.reshape(data, (num_rows, num_columns, width, height))
-    rows_data, columns_data = data.shape[0], data.shape[1]
-    heights = [slc[0].shape[0] for slc in data]
-    widths = [slc.shape[1] for slc in data[0]]
-    fig_width = 12.0
-    fig_height = fig_width * sum(heights) / sum(widths)
-    f, axarr = plt.subplots(
-        rows_data,
-        columns_data,
-        figsize=(fig_width, fig_height),
-        gridspec_kw={"height_ratios": heights},
-    )
-    for i in range(rows_data):
-        for j in range(columns_data):
-            axarr[i, j].imshow(data[i][j], cmap="gray")
-            axarr[i, j].axis("off")
-    plt.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
-    plt.show()
+# def plot_slices(num_rows, num_columns, width, height, data):
+#     """Plot a montage of 20 CT slices"""
+#     data = np.rot90(np.array(data))
+#     data = np.transpose(data)
+#     data = np.reshape(data, (num_rows, num_columns, width, height))
+#     rows_data, columns_data = data.shape[0], data.shape[1]
+#     heights = [slc[0].shape[0] for slc in data]
+#     widths = [slc.shape[1] for slc in data[0]]
+#     fig_width = 12.0
+#     fig_height = fig_width * sum(heights) / sum(widths)
+#     f, axarr = plt.subplots(
+#         rows_data,
+#         columns_data,
+#         figsize=(fig_width, fig_height),
+#         gridspec_kw={"height_ratios": heights},
+#     )
+#     for i in range(rows_data):
+#         for j in range(columns_data):
+#             axarr[i, j].imshow(data[i][j], cmap="gray")
+#             axarr[i, j].axis("off")
+#     plt.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
+#    plt.show()
 
 
 # Visualize montage of slices.
 # 4 rows and 10 columns for 100 slices of the CT scan.
-plot_slices(4, 10, 128, 128, image[:, :, :40])
+#plot_slices(4, 10, 128, 128, image[:, :, :40])
 
 """## Define a 3D convolutional neural network
 
@@ -339,41 +339,41 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, BatchNormalization, Flatten, Dense, Softmax
 
-def get_model(width=240, height=240, depth=150):
-    """Build a 3D convolutional neural network model."""
+# def get_model(width=240, height=240, depth=150):
+#     """Build a 3D convolutional neural network model."""
 
-    inputs = keras.Input((width, height, depth, 1))
+#     inputs = keras.Input((width, height, depth, 1))
 
-    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
+#     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
+#     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
+#     x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
+#     x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
 
-    x = layers.GlobalAveragePooling3D()(x)
-    x = layers.Dense(units=512, activation="relu")(x)
-    x = layers.Dropout(0.3)(x)
+#     x = layers.GlobalAveragePooling3D()(x)
+#     x = layers.Dense(units=512, activation="relu")(x)
+#     x = layers.Dropout(0.3)(x)
 
-    outputs = layers.Dense(units=1, activation="sigmoid")(x)
+#     outputs = layers.Dense(units=1, activation="sigmoid")(x)
 
-    # Define the model.
-    model = keras.Model(inputs, outputs, name="3dcnn")
-    return model
+#     # Define the model.
+#     model = keras.Model(inputs, outputs, name="3dcnn")
+#     return model
 
 
-# Build model.
-model = get_model(width=128, height=128, depth=64)
-model.summary()
+# # Build model.
+# model = get_model(width=128, height=128, depth=64)
+# model.summary()
 
 def custom_3d_cnn(width=240, height=240, depth=150):
     inputs = keras.Input((width, height, depth, 1))
@@ -471,28 +471,28 @@ Since the validation set is class-balanced, accuracy provides an unbiased repres
 of the model's performance.
 """
 
-fig, ax = plt.subplots(1, 2, figsize=(20, 3))
-ax = ax.ravel()
+# fig, ax = plt.subplots(1, 2, figsize=(20, 3))
+# ax = ax.ravel()
 
-for i, metric in enumerate(["acc", "loss"]):
-    ax[i].plot(model.history.history[metric])
-    ax[i].plot(model.history.history["val_" + metric])
-    ax[i].set_title("Model {}".format(metric))
-    ax[i].set_xlabel("epochs")
-    ax[i].set_ylabel(metric)
-    ax[i].legend(["train", "val"])
+# for i, metric in enumerate(["acc", "loss"]):
+#     ax[i].plot(model.history.history[metric])
+#     ax[i].plot(model.history.history["val_" + metric])
+#     ax[i].set_title("Model {}".format(metric))
+#     ax[i].set_xlabel("epochs")
+#     ax[i].set_ylabel(metric)
+#     ax[i].legend(["train", "val"])
 
-"""## Make predictions on a single CT scan"""
+# """## Make predictions on a single CT scan"""
 
-# Commented out IPython magic to ensure Python compatibility.
-# Load best weights.
-model.load_weights("3d_image_classification.h5")
-prediction = model.predict(np.expand_dims(x_val[0], axis=0))[0]
-scores = [1 - prediction[0], prediction[0]]
+# # Commented out IPython magic to ensure Python compatibility.
+# # Load best weights.
+# model.load_weights("3d_image_classification.h5")
+# prediction = model.predict(np.expand_dims(x_val[0], axis=0))[0]
+# scores = [1 - prediction[0], prediction[0]]
 
-class_names = ["normal", "abnormal"]
-for score, name in zip(scores, class_names):
-    print(
-        "This model is %.2f percent confident that CT scan is %s"
-#         % ((100 * score), name)
-    )
+# class_names = ["normal", "abnormal"]
+# for score, name in zip(scores, class_names):
+#     print(
+#         "This model is %.2f percent confident that CT scan is %s"
+# #         % ((100 * score), name)
+#     )
