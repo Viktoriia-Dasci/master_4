@@ -385,40 +385,72 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from kerastuner.tuners import RandomSearch
 
-def build_model(hp):
-    """Build a 3D convolutional neural network model."""
+# def build_model(hp):
+#     """Build a 3D convolutional neural network model."""
 
-    inputs = keras.Input(shape=(128, 128, 64, 1))
+#     inputs = keras.Input(shape=(128, 128, 64, 1))
 
-    # Add the specified number of Conv3D layers
-    num_conv_layers = hp.Int('num_conv_layers', min_value=3, max_value=10, step=1)
-    x = inputs
-    for i in range(num_conv_layers):
-        x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), 
-                          kernel_size=3,
-                          padding="same",
-                          activation="relu")(x)
-        x = layers.MaxPool3D(pool_size=2, padding="same")(x)
-        x = layers.BatchNormalization()(x)
+#     # Add the specified number of Conv3D layers
+#     num_conv_layers = hp.Int('num_conv_layers', min_value=3, max_value=10, step=1)
+#     x = inputs
+#     for i in range(num_conv_layers):
+#         x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), 
+#                           kernel_size=3,
+#                           padding="same",
+#                           activation="relu")(x)
+#         x = layers.MaxPool3D(pool_size=2, padding="same")(x)
+#         x = layers.BatchNormalization()(x)
 
-    x = layers.GlobalAveragePooling3D()(x)
-    x = layers.Dense(units=hp.Int('dense_units', min_value=32, max_value=512, step=32),
-                      activation="relu")(x)
-    x = layers.Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(x)
+#     x = layers.GlobalAveragePooling3D()(x)
+#     x = layers.Dense(units=hp.Int('dense_units', min_value=32, max_value=512, step=32),
+#                       activation="relu")(x)
+#     x = layers.Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(x)
 
-    outputs = layers.Dense(units=1, activation="sigmoid")(x)
+#     outputs = layers.Dense(units=1, activation="sigmoid")(x)
 
-    # Define the model.
-    model = keras.Model(inputs, outputs, name="3dcnn")
+#     # Define the model.
+#     model = keras.Model(inputs, outputs, name="3dcnn")
 
-    # Compile the model.
-    optimizer = keras.optimizers.Adam(hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='LOG'))
-    loss_fn = keras.losses.BinaryCrossentropy(from_logits=True)
-    model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'])
+#     # Compile the model.
+#     optimizer = keras.optimizers.Adam(hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='LOG'))
+#     loss_fn = keras.losses.BinaryCrossentropy(from_logits=True)
+#     model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'])
     
+#     return model
+
+
+def build_model(hp):  # random search passes this hyperparameter() object 
+    model = keras.models.Sequential()
+
+    model.add(Conv3D(hp.Int('input_units',
+                                min_value=32,
+                                max_value=256,
+                                step=32), (3, 3, 3), input_shape=(128, 128, 64, 1))
+
+    model.add(Activation('relu'))
+    model.add(MaxPool3D(pool_size=2))
+
+    for i in range(hp.Int('n_layers', 1, 4)):  # adding variation of layers.
+        model.add(Conv2D(hp.Int(f'conv_{i}_units',
+                                min_value=32,
+                                max_value=256,
+                                step=32), (3, 3, 3)))
+        model.add(Activation('relu'))
+    model.add(MaxPool3D(pool_size=2))
+
+    model.add(Flatten())
+    for i in range(hp.Int('n_connections', 1, 4)):
+        model.add(Dense(hp.Choice(f'n_nodes',
+                                  values=[128, 256, 512])))
+        model.add(Activation('relu'))
+    model.add(Dense(2))
+    model.add(Activation("softmax"))
+
+    model.compile(optimizer="adam",
+                  loss="categorical_crossentropy",
+                  metrics=["accuracy"])
+
     return model
-
-
 
 
 
