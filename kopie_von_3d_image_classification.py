@@ -450,7 +450,7 @@ def build_model(hp):  # random search passes this hyperparameter() object
         model.add(Activation('relu'))
     
     model.add(layers.GlobalAveragePooling3D())
-    model.add(Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))
+    model.add(Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1)))
 
     model.add(Dense(1))
     model.add(Activation("sigmoid"))
