@@ -448,11 +448,15 @@ def build_model(hp):  # random search passes this hyperparameter() object
         model.add(Dense(hp.Choice(f'n_nodes',
                                   values=[128, 256, 512])))
         model.add(Activation('relu'))
-    model.add(Dense(2))
-    model.add(Activation("softmax"))
+    
+    model.add(layers.GlobalAveragePooling3D())
+    model.add(Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))
+
+    model.add(Dense(1))
+    model.add(Activation("sigmoid"))
 
     model.compile(optimizer="adam",
-                  loss="categorical_crossentropy",
+                  loss=keras.losses.BinaryCrossentropy(),
                   metrics=["accuracy"])
 
     return model
