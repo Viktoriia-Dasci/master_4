@@ -398,7 +398,7 @@ def build_model(hp):
                           kernel_size=3,
                           padding="same",
                           activation="relu")(x)
-        x = layers.MaxPool3D(pool_size=2)(x)
+        x = layers.MaxPool3D(pool_size=2, padding="same")(x)
         x = layers.BatchNormalization()(x)
 
     x = layers.GlobalAveragePooling3D()(x)
@@ -416,6 +416,7 @@ def build_model(hp):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model
+
 
 
 
