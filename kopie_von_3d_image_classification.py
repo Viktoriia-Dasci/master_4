@@ -419,6 +419,11 @@ from kerastuner.tuners import RandomSearch
 #     return model
 
 
+import numpy as np
+from tensorflow import keras
+from keras.utils import np_utils
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Activation
+
 def build_model(hp):  # random search passes this hyperparameter() object 
     model = keras.models.Sequential()
 
