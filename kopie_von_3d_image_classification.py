@@ -394,7 +394,7 @@ def build_model(hp):
     num_conv_layers = hp.Int('num_conv_layers', min_value=3, max_value=10, step=1)
     x = inputs
     for i in range(num_conv_layers):
-        x = layers.Conv3D(filters=tf.cast(hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), tf.int32), 
+        x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), 
                           kernel_size=3,
                           padding="same",
                           activation="relu")(x)
@@ -412,10 +412,12 @@ def build_model(hp):
     model = keras.Model(inputs, outputs, name="3dcnn")
 
     # Compile the model.
-    model.compile(optimizer=keras.optimizers.Adam(hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='LOG')),
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
+    optimizer = keras.optimizers.Adam(hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='LOG'))
+    loss_fn = keras.losses.BinaryCrossentropy(from_logits=True)
+    model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'])
+    
     return model
+
 
 
 
