@@ -381,17 +381,22 @@ from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
 
+from tensorflow import keras
+from tensorflow.keras import layers
+from kerastuner.tuners import RandomSearch
+
 def build_model(hp):
     """Build a 3D convolutional neural network model."""
 
-    inputs = keras.Input(shape=(128,128,64,1))
+    inputs = keras.Input(shape=(128, 128, 64, 1))
 
     # Add the specified number of Conv3D layers
     num_conv_layers = hp.Int('num_conv_layers', min_value=3, max_value=10, step=1)
     x = inputs
     for i in range(num_conv_layers):
-        x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=32, max_value=256, step=32), 
+        x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), 
                           kernel_size=hp.Choice('kernel_size_' + str(i+1), values=[3, 5]),
+                          padding="same",
                           activation="relu")(x)
         x = layers.MaxPool3D(pool_size=2)(x)
         x = layers.BatchNormalization()(x)
@@ -411,6 +416,7 @@ def build_model(hp):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model
+
 
 
 import tensorflow as tf
