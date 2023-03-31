@@ -396,7 +396,7 @@ def build_model(hp):
     for i in range(num_conv_layers):
         x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), 
                           kernel_size=hp.Choice('kernel_size_' + str(i+1), values=[3, 5]),
-                          padding="same",
+                          padding="valid",
                           activation="relu")(x)
         x = layers.MaxPool3D(pool_size=2)(x)
         x = layers.BatchNormalization()(x)
@@ -416,6 +416,7 @@ def build_model(hp):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model
+
 
 
 
