@@ -387,7 +387,7 @@ def build_model(hp):
     inputs = keras.Input(shape=(128,128,64,1))
 
     # Add the specified number of Conv3D layers
-    num_conv_layers = hp.Int('num_conv_layers', min_value=1, max_value=4, step=1)
+    num_conv_layers = hp.Int('num_conv_layers', min_value=3, max_value=10, step=1)
     x = inputs
     for i in range(num_conv_layers):
         x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=32, max_value=256, step=32), 
