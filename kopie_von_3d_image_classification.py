@@ -396,7 +396,7 @@ def build_model(hp):
     for i in range(num_conv_layers):
         x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=16, max_value=128, step=16), 
                           kernel_size=3,
-                          padding="valid",
+                          padding="same",
                           activation="relu")(x)
         x = layers.MaxPool3D(pool_size=2)(x)
         x = layers.BatchNormalization()(x)
