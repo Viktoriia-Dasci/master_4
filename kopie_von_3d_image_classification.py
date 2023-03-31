@@ -425,7 +425,7 @@ def build_model(hp):  # random search passes this hyperparameter() object
     model.add(Conv3D(hp.Int('input_units',
                                 min_value=32,
                                 max_value=256,
-                                step=32), (3, 3, 3), input_shape=(128, 128, 64, 1))
+                                step=32), (3, 3, 3), input_shape=(128, 128, 64, 1)))
 
     model.add(Activation('relu'))
     model.add(MaxPool3D(pool_size=2))
