@@ -339,41 +339,107 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, BatchNormalization, Flatten, Dense, Softmax
 
-def get_model(width=240, height=240, depth=150):
+# def get_model(width=240, height=240, depth=150):
+#     """Build a 3D convolutional neural network model."""
+
+#     inputs = keras.Input((width, height, depth, 1))
+
+#     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
+
+#     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
+
+#     x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
+
+#     x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)
+#     x = layers.MaxPool3D(pool_size=2)(x)
+#     x = layers.BatchNormalization()(x)
+
+#     x = layers.GlobalAveragePooling3D()(x)
+#     x = layers.Dense(units=512, activation="relu")(x)
+#     x = layers.Dropout(0.3)(x)
+
+#     outputs = layers.Dense(units=1, activation="sigmoid")(x)
+
+#     # Define the model.
+#     model = keras.Model(inputs, outputs, name="3dcnn")
+#     return model
+
+from tensorflow import keras
+from tensorflow.keras import layers
+from kerastuner.tuners import RandomSearch
+
+
+import tensorflow as tf
+from tensorflow.keras.optimizers import SGD
+from kerastuner.tuners import Hyperband
+from kerastuner.engine.hyperparameters import HyperParameters
+
+
+def build_model(hp):
     """Build a 3D convolutional neural network model."""
 
-    inputs = keras.Input((width, height, depth, 1))
+    inputs = keras.Input(shape=(128,128,64,1))
 
-    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
-
-    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
-
-    x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
-
-    x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)
-    x = layers.MaxPool3D(pool_size=2)(x)
-    x = layers.BatchNormalization()(x)
+    # Add the specified number of Conv3D layers
+    num_conv_layers = hp.Int('num_conv_layers', min_value=1, max_value=4, step=1)
+    x = inputs
+    for i in range(num_conv_layers):
+        x = layers.Conv3D(filters=hp.Int('filters_' + str(i+1), min_value=32, max_value=256, step=32), 
+                          kernel_size=hp.Choice('kernel_size_' + str(i+1), values=[3, 5]),
+                          activation="relu")(x)
+        x = layers.MaxPool3D(pool_size=2)(x)
+        x = layers.BatchNormalization()(x)
 
     x = layers.GlobalAveragePooling3D()(x)
-    x = layers.Dense(units=512, activation="relu")(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dense(units=hp.Int('dense_units', min_value=32, max_value=512, step=32),
+                      activation="relu")(x)
+    x = layers.Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(x)
 
     outputs = layers.Dense(units=1, activation="sigmoid")(x)
 
     # Define the model.
     model = keras.Model(inputs, outputs, name="3dcnn")
+
+    # Compile the model.
+    model.compile(optimizer=keras.optimizers.Adam(hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='LOG')),
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
     return model
 
 
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from kerastuner.tuners import Hyperband
+
+# Define the hyperparameters search space
+tuner = Hyperband(
+    build_model,
+    objective='val_accuracy',
+    max_epochs=20,
+    factor=3,
+    seed=42,
+    directory='hyperband_dir',
+    project_name='3dcnn_hyperband')
+
+
+# Run the hyperparameter search
+tuner.search(train_dataset, epochs=20, validation_data=validation_dataset)
+
+# Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
+
+
 # Build model.
-model = get_model(width=128, height=128, depth=64)
-model.summary()
+# model = get_model(width=128, height=128, depth=64)
+# model.summary()
 
 # def custom_3d_cnn(width=240, height=240, depth=150):
 #     inputs = keras.Input((width, height, depth, 1))
@@ -435,28 +501,28 @@ model.summary()
 # lr_schedule = keras.optimizers.schedules.ExponentialDecay(
 #     initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True
 # )
-model.compile(
-    loss="binary_crossentropy",
-    optimizer=keras.optimizers.SGD(learning_rate=0.0001),
-    metrics=['accuracy', 'AUC'],
-)
+# model.compile(
+#     loss="binary_crossentropy",
+#     optimizer=keras.optimizers.SGD(learning_rate=0.0001),
+#     metrics=['accuracy', 'AUC'],
+# )
 
-# Define callbacks.
-checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    "3d_image_classification.h5", save_best_only=True
-)
-early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_auc", patience=15)
+# # Define callbacks.
+# checkpoint_cb = keras.callbacks.ModelCheckpoint(
+#     "3d_image_classification.h5", save_best_only=True
+# )
+# early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_auc", patience=15)
 
-# Train the model, doing validation at the end of each epoch
-epochs = 100
-model.fit(
-    train_dataset,
-    validation_data=validation_dataset,
-    epochs=epochs,
-    shuffle=True,
-    verbose=2,
-    callbacks=[checkpoint_cb, early_stopping_cb],
-)
+# # Train the model, doing validation at the end of each epoch
+# epochs = 100
+# model.fit(
+#     train_dataset,
+#     validation_data=validation_dataset,
+#     epochs=epochs,
+#     shuffle=True,
+#     verbose=2,
+#     callbacks=[checkpoint_cb, early_stopping_cb],
+# )
 
 """It is important to note that the number of samples is very small (only 200) and we don't
 specify a random seed. As such, you can expect significant variance in the results. The full dataset
