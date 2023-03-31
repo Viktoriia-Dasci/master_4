@@ -433,15 +433,15 @@ def build_model(hp):  # random search passes this hyperparameter() object
                                 step=32), (3, 3, 3), input_shape=(128, 128, 64, 1)))
 
     model.add(Activation('relu'))
-    model.add(MaxPool3D(pool_size=2))
+    model.add(MaxPooling3D(pool_size=2))
 
     for i in range(hp.Int('n_layers', 1, 4)):  # adding variation of layers.
-        model.add(Conv2D(hp.Int(f'conv_{i}_units',
+        model.add(Conv3D(hp.Int(f'conv_{i}_units',
                                 min_value=32,
                                 max_value=256,
                                 step=32), (3, 3, 3)))
         model.add(Activation('relu'))
-    model.add(MaxPool3D(pool_size=2))
+    model.add(MaxPooling3D(pool_size=2))
 
     model.add(Flatten())
     for i in range(hp.Int('n_connections', 1, 4)):
