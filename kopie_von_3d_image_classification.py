@@ -422,24 +422,24 @@ from kerastuner.tuners import RandomSearch
 import numpy as np
 from tensorflow import keras
 from keras.utils import np_utils
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Activation
+from tensorflow.keras.layers import Conv3D, MaxPooling3D, Dense, Flatten, Activation
 
-def build_model(hp):  # random search passes this hyperparameter() object 
+def build_model(hp):
     model = keras.models.Sequential()
 
     model.add(Conv3D(hp.Int('input_units',
-                                min_value=32,
+                                min_value=16,
                                 max_value=256,
-                                step=32), (3, 3, 3), input_shape=(128, 128, 64, 1)))
+                                step=16), (3, 3, 3), input_shape=(128, 128, 64, 1)))
 
     model.add(Activation('relu'))
     model.add(MaxPooling3D(pool_size=2))
 
-    for i in range(hp.Int('n_layers', 1, 4)):  # adding variation of layers.
+    for i in range(hp.Int('n_layers', 3, 9)):  # adding variation of layers.
         model.add(Conv3D(hp.Int(f'conv_{i}_units',
-                                min_value=32,
+                                min_value=16,
                                 max_value=256,
-                                step=32), (3, 3, 3)))
+                                step=16), (3, 3, 3)))
         model.add(Activation('relu'))
     model.add(MaxPooling3D(pool_size=2))
 
@@ -449,15 +449,14 @@ def build_model(hp):  # random search passes this hyperparameter() object
                                   values=[128, 256, 512])))
         model.add(Activation('relu'))
     
-    model.add(layers.GlobalAveragePooling3D())
-    model.add(Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1)))
-
+    #model.add(layers.GlobalAveragePooling3D())
+    model.add(layers.Dropout(hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1)))
     model.add(Dense(1))
     model.add(Activation("sigmoid"))
 
-    model.compile(optimizer="adam",
+    model.compile(optimizer= keras.optimizers.Adam(hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='LOG')),
                   loss=keras.losses.BinaryCrossentropy(),
-                  metrics=["accuracy"])
+                  metrics=["accuracy", "AUC"])
 
     return model
 
@@ -467,17 +466,19 @@ def build_model(hp):  # random search passes this hyperparameter() object
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from kerastuner.tuners import Hyperband
+from keras_tuner.tuners import Hyperband
+import keras_tuner
 
 # Define the hyperparameters search space
 tuner = Hyperband(
     build_model,
-    objective='val_accuracy',
+    objective=keras_tuner.Objective("val_auc", direction="max"),
     max_epochs=20,
+    overwrite=True,
     factor=3,
-    seed=42,
-    directory='hyperband_dir',
-    project_name='3dcnn_hyperband')
+    seed=12)
+    #directory='hyperband_dir',
+    #poject_name='3dcnn_hyperband')
 
 
 # Run the hyperparameter search
