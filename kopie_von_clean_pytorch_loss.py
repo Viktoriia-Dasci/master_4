@@ -683,7 +683,7 @@ best_model_wts = {}
 # for key, value in trial.params.items():
 #     print("    {}: {}".format(key, value))
 
-EPOCHS = 30
+EPOCHS = 50
 
 def train_and_evaluate(model):
     accuracies = []
@@ -735,7 +735,7 @@ def train_and_evaluate(model):
                 val_mask = val_mask.to(device)
                 
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.26))
 
                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
                 #batch_loss = xe_loss_.mean()
