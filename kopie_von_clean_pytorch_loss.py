@@ -685,79 +685,211 @@ best_model_wts = {}
 
 EPOCHS = 50
 
-def train_and_evaluate(model):
-    accuracies = []
+# def train_and_evaluate(model):
+#     accuracies = []
+#     dataloaders = load_data(batch_size=8)
+#     # Freeze all layers
+
+#     #criterion = nn.CrossEntropyLoss()
+
+
+#     optimizer = optim.SGD(model.parameters(), lr=0.004)
+#     #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
+
+#     for epoch_num in range(EPOCHS):
+#             torch.cuda.empty_cache()
+#             model.train()
+#             total_acc_train = 0
+#             total_loss_train = 0
+
+#             for train_input, train_label, train_mask in dataloaders['Train']:
+
+#                 train_label = train_label.long().to(device)
+#                 train_input = train_input.float().to(device)
+#                 train_mask = train_mask.to(device)
+
+#                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
+                
+#                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+#                 #batch_loss = xe_loss_.mean()
+#                 total_loss_train += batch_loss.item()
+                
+#                 acc = (output.argmax(dim=1) == train_label).sum().item()
+#                 total_acc_train += acc
+
+#                 model.zero_grad()
+#                 batch_loss.backward()
+#                 optimizer.step()
+            
+#             total_acc_val = 0
+#             total_loss_val = 0
+
+#             model.eval()
+#             # with torch.no_grad():
+            
+
+#             for val_input, val_label, val_mask in dataloaders['Val']:
+
+#                 val_label = val_label.long().to(device)
+#                 val_input = val_input.float().to(device)
+#                 val_mask = val_mask.to(device)
+                
+
+#                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+
+#                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+#                 #batch_loss = xe_loss_.mean()
+#                 total_loss_val += batch_loss.item()
+                
+#                 acc = (output.argmax(dim=1) == val_label).sum().item()
+#                 total_acc_val += acc
+        
+#             accuracy = total_acc_val/len(image_datasets['Val'])
+#             accuracies.append(accuracy)
+#             print(accuracy)
+#             if len(accuracies) >= 3 and accuracy <= 0.5729:
+#                 break
+
+# #             trial.report(accuracy, epoch_num)
+# #             if trial.should_prune():
+# #                 raise optuna.exceptions.TrialPruned()
+#     final_accuracy = max(accuracies)
+#     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+#     torch.save(model.state_dict(), PATH)
+  
+#     return final_accuracy
+  
+  
+# train_and_evaluate(model)
+
+
+#optimizer = optim.SGD(model.parameters(), lr=0.004)
+
+def train_with_early_stopping(model, optimizer, patience, PATH):
     dataloaders = load_data(batch_size=8)
-    # Freeze all layers
+    # define early stopping and lr scheduler
+    best_val_auc = 0.0
+    early_stopping_counter = 0
+    lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
 
-    #criterion = nn.CrossEntropyLoss()
-
-
-    optimizer = optim.SGD(model.parameters(), lr=0.004)
-    #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
+    train_losses = []
+    val_losses = []
+    train_accuracies = []
+    val_accuracies = []
 
     for epoch_num in range(EPOCHS):
-            torch.cuda.empty_cache()
-            model.train()
-            total_acc_train = 0
-            total_loss_train = 0
+        torch.cuda.empty_cache()
+        model.train()
+        total_loss_train = 0
+        total_preds_train = []
+        total_targets_train = []
+        correct_train = 0
+        total_train = 0
 
-            for train_input, train_label, train_mask in dataloaders['Train']:
+        for train_input, train_label, train_mask in dataloaders['Train']:
+            train_label = train_label.long().to(device)
+            train_input = train_input.float().to(device)
+            train_mask = train_mask.to(device)
 
-                train_label = train_label.long().to(device)
-                train_input = train_input.float().to(device)
-                train_mask = train_mask.to(device)
+            optimizer.zero_grad()
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(0.79))
 
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
-                
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                #batch_loss = xe_loss_.mean()
-                total_loss_train += batch_loss.item()
-                
-                acc = (output.argmax(dim=1) == train_label).sum().item()
-                total_acc_train += acc
+            batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+            total_loss_train += batch_loss.item()
 
-                model.zero_grad()
-                batch_loss.backward()
-                optimizer.step()
-            
-            total_acc_val = 0
-            total_loss_val = 0
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct_train += (predicted == train_label).sum().item()
+            total_train += train_label.size(0)
 
-            model.eval()
-            # with torch.no_grad():
-            
+            batch_loss.backward()
+            optimizer.step()
+          
 
-            for val_input, val_label, val_mask in dataloaders['Val']:
+        train_loss = total_loss_train / len(dataloaders['Train'])
+        train_losses.append(train_loss)
+        train_accuracy = correct_train / total_train
+        print('train_acc:', train_accuracy)
+        train_accuracies.append(train_accuracy)
 
-                val_label = val_label.long().to(device)
-                val_input = val_input.float().to(device)
-                val_mask = val_mask.to(device)
-                
+        total_loss_val = 0
+        total_targets_val = []
+        total_preds_val = []
+        correct = 0
+        total = 0
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
+        model.eval()
 
-                batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-                #batch_loss = xe_loss_.mean()
-                total_loss_val += batch_loss.item()
-                
-                acc = (output.argmax(dim=1) == val_label).sum().item()
-                total_acc_val += acc
+        for val_input, val_label, val_mask in dataloaders['Val']:
+            val_label = val_label.long().to(device)
+            val_input = val_input.float().to(device)
+            val_mask = val_mask.to(device)
+
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(0.79))
+
+            batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
+            total_loss_val += batch_loss.item()
+
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct += (predicted == val_label).sum().item()
+            total += val_label.size(0)
+
+            targets_ = targets_.detach().cpu().numpy()
+            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
+            total_targets_val.extend(targets_)
+            total_preds_val.extend(preds_)
+
+        val_loss = total_loss_val / len(dataloaders['Val'])
+        val_losses.append(val_loss)
+        val_accuracy = correct / total
+        print(val_accuracy)
+        val_accuracies.append(val_accuracy)
+
+        val_auc = roc_auc_score(total_targets_val, total_preds_val)
+        print("Epoch: {} - Validation AUC: {:.4f}".format(epoch_num+1, val_auc))
+
+        # update lr_scheduler
+        lr_scheduler.step(val_loss)
+
+        # check if early stopping criteria is met
+        if val_auc > best_val_auc:
+            early_stopping_counter = 0
+            best_val_auc = val_auc
+            # save model if val_auc is the best so far
+            torch.save(model.state_dict(), PATH)
+        else:
+            early_stopping_counter += 1
+
+        if early_stopping_counter >= patience:
+            print("Early stopping.")
+            break
+
+    return best_val_auc
+
+  
+patience = 10
+PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
+best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.004), patience=10, PATH= '/home/viktoriia.trokhova/model_weights/model_resnet.pt')
+
         
-            accuracy = total_acc_val/len(image_datasets['Val'])
-            accuracies.append(accuracy)
-            print(accuracy)
-            if len(accuracies) >= 3 and accuracy <= 0.5729:
-                break
+# plot loss and accuracy for each epoch
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_losses, label='Train')
+plt.plot(val_losses, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet/loss.png")  # save plot to given path
 
-#             trial.report(accuracy, epoch_num)
-#             if trial.should_prune():
-#                 raise optuna.exceptions.TrialPruned()
-    final_accuracy = max(accuracies)
-    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-    torch.save(model.state_dict(), PATH)
-  
-    return final_accuracy
-  
-  
-train_and_evaluate(model)
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_accuracies, label='Train')
+plt.plot(val_accuracies, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet/accuracy.png")  # save plot to given path
