@@ -41,6 +41,9 @@ from sklearn import preprocessing as p
 from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from sklearn.metrics import roc_auc_score
+
 
 from torchmetrics.classification import ROC
 from torchmetrics import AUROC
