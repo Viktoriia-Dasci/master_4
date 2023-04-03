@@ -768,17 +768,17 @@ EPOCHS = 50
 
 #optimizer = optim.SGD(model.parameters(), lr=0.004)
 
+train_losses = []
+val_losses = []
+train_accuracies = []
+val_accuracies = []
+
 def train_with_early_stopping(model, optimizer, patience, PATH):
     dataloaders = load_data(batch_size=8)
     # define early stopping and lr scheduler
     best_val_auc = 0.0
     early_stopping_counter = 0
     lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
-
-    train_losses = []
-    val_losses = []
-    train_accuracies = []
-    val_accuracies = []
 
     for epoch_num in range(EPOCHS):
         torch.cuda.empty_cache()
@@ -867,6 +867,9 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
         if early_stopping_counter >= patience:
             print("Early stopping.")
             break
+        
+        
+    
 
     return best_val_auc
 
