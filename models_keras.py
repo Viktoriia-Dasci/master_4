@@ -200,7 +200,7 @@ def model_effnet(hp):
     model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dense(128), activation='relu')(model)
+    model = tf.keras.layers.Dense(128, activation='relu')(model)
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
