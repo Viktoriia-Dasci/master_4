@@ -161,7 +161,7 @@ datagen = ImageDataGenerator(
     fill_mode='nearest')
 
 train_generator = datagen.flow(
-    X_train, y_train, batch_size=64,
+    X_train, y_train,
     shuffle=True)
 
 from sklearn.metrics import f1_score
@@ -169,31 +169,57 @@ import numpy as np
 
 
 
-def model_train(model_name, image_size = 224):
-    #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
-    model = model_name.output
-    model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=0.5)(model)
-    model = tf.keras.layers.Dense(128, activation='relu')(model)
-    model = tf.keras.layers.Dense(2,activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
-    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
-    #callbacks
-    tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
-    #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(train_generator), epochs=30, verbose=1,
-                   callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
+
+# def model_train(model_name, image_size = 224):
+#     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dropout(rate=0.5)(model)
+#     model = tf.keras.layers.Dense(128, activation='relu')(model)
+#     model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+#     adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+#     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
+#     #callbacks
+#     tensorboard = TensorBoard(log_dir = 'logs')
+#     checkpoint = ModelCheckpoint(str(model_name) + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+#     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+#     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+#     #fitting the model
+#     history = model.fit(train_generator, validation_data=(X_val, y_val), steps_per_epoch=len(train_generator), epochs=30, verbose=1,
+#                    callbacks=[tensorboard, checkpoint, early_stop, reduce_lr])
   
-    return history
+#     return history
 
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
+
+def model_effnet(hp):
+    model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
+    model = model_name.output
+    model = tf.keras.layers.GlobalAveragePooling2D()(model)
+    model = tf.keras.layers.Dense(128), activation='relu')(model)
+    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+    model = tf.keras.layers.Dense(2,activation='softmax')(model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+    
+    # Define optimizer and batch size
+    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
+    learning_rate = hp.Float('learning_rate', min_value=0.0001, max_value=0.01)
+    batch_size = hp.Choice('batch_size', values=[8, 16, 32, 64])
+    
+    #Set optimizer parameters based on user's selection
+    if optimizer == 'adam':
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    else:
+        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+    
+    # Compile the model with the optimizer and metrics
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', 'AUC'])
+    
+    return model
 
 # def model_resnet(hp):
 #     model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
@@ -268,25 +294,25 @@ from kerastuner.engine.hyperparameters import HyperParameters
 # # hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
 # # hp.Choice('batch_size', values=[16, 32, 64])
 
-# tuner = Hyperband(
-#     model_densenet,
-#     objective='val_accuracy',
-#     max_epochs=100,
-#     overwrite=True,
-#     factor=3,
-#     hyperband_iterations=10
-# )
+tuner = Hyperband(
+    model_densenet,
+    objective='val_accuracy',
+    max_epochs=50,
+    overwrite=True,
+    factor=3,
+    hyperband_iterations=10
+)
 
-# tuner.search(train_generator,
-#              validation_data=(X_val, y_val),
-#              steps_per_epoch=len(train_generator),
-#              epochs=50,
-#              verbose=1
-#              )
+tuner.search(train_generator,
+             validation_data=(X_val, y_val),
+             steps_per_epoch=len(train_generator),
+             epochs=50,
+             verbose=1
+             )
 
-# # Print the best hyperparameters found by the tuner
-# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-# print(f'Best hyperparameters: {best_hyperparams}')
+# Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
 
 # # Get the best model found by the tuner
 # best_model = tuner.get_best_models(1)[0]
