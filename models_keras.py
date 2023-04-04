@@ -295,7 +295,7 @@ def model_effnet(hp):
 # # hp.Choice('batch_size', values=[16, 32, 64])
 
 tuner = Hyperband(
-    model_densenet,
+    model_effnet,
     objective='val_accuracy',
     max_epochs=50,
     overwrite=True,
