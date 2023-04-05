@@ -191,6 +191,7 @@ import numpy as np
   
 #     return history
 
+import keras_tuner
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
