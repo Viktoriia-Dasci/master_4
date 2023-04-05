@@ -193,8 +193,8 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
-from kerastuner.tuners import Hyperband
-from kerastuner.engine.hyperparameters import HyperParameters
+#from kerastuner.tuners import Hyperband
+#from kerastuner.engine.hyperparameters import HyperParameters
 
 def model_effnet(hp):
     model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
