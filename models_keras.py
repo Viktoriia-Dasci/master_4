@@ -299,17 +299,16 @@ tuner = Hyperband(
     model_effnet,
     objective=keras_tuner.Objective("val_auc", direction="max"),
     max_epochs=50,
-    overwrite=True,
     factor=3,
     hyperband_iterations=10
 )
 
-tuner.search(train_generator,
-             validation_data=(X_val, y_val),
-             steps_per_epoch=len(train_generator),
-             epochs=50,
-             verbose=1
-             )
+# tuner.search(train_generator,
+#              validation_data=(X_val, y_val),
+#              steps_per_epoch=len(train_generator),
+#              epochs=50,
+#              verbose=1
+#              )
 
 # Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
