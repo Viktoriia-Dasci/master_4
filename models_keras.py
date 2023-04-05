@@ -296,8 +296,9 @@ def model_effnet(hp):
 
 tuner = Hyperband(
     model_effnet,
-    objective='val_accuracy',
+    objective=keras_tuner.Objective("val_auc", direction="max"),
     max_epochs=50,
+    overwrite=True,
     factor=3,
     hyperband_iterations=10
 )
