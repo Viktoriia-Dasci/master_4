@@ -314,6 +314,24 @@ tuner.search(train_generator,
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 print(f'Best hyperparameters: {best_hyperparams}')
 
+tuner = Hyperband(
+    model_densenet,
+    objective=keras_tuner.Objective("val_auc", direction="max"),
+    max_epochs=50,
+    #overwrite=True,
+    factor=3,
+    hyperband_iterations=10
+)
+tuner.search(train_generator,
+             validation_data=(X_val, y_val),
+             steps_per_epoch=len(train_generator),
+             epochs=50,
+             verbose=1
+             )
+# Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
+
 # Get the best model found by the tuner
 best_model = tuner.get_best_models(1)[0]
 
