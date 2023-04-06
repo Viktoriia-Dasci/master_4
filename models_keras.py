@@ -330,7 +330,7 @@ history_neweffnet = best_model.fit(
     callbacks=[checkpoint, early_stop, reduce_lr]
 )
 
-def plot_acc_loss(model_history, folder_path):
+def plot_acc_loss_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
@@ -357,7 +357,20 @@ def plot_acc_loss(model_history, folder_path):
     plt.legend()
     plt.savefig(os.path.join(folder_path, 'accuracy.png'))
     plt.close()
-    
+
+    auc = model_history.history['auc']
+    val_auc = model_history.history['val_auc']
+
+    plt.plot(epochs, auc, 'y', label='Training AUC')
+    plt.plot(epochs, val_auc, 'r', label='Validation AUC')
+    plt.title('Training and validation AUC')
+    plt.xlabel('Epochs')
+    plt.ylabel('AUC')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'auc.png'))
+    plt.close()
+
+
 plot_acc_loss(history_neweffnet,  '/home/viktoriia.trokhova/plots/effnet')
     
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
