@@ -317,8 +317,8 @@ print(f'Best hyperparameters: {best_hyperparams}')
 # Get the best model found by the tuner
 best_model = tuner.get_best_models(1)[0]
 
-checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_keras.pt" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=15, verbose=1, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
 # Fit the model to the training data for 50 epochs using the best hyperparameters
