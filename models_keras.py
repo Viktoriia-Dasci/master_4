@@ -318,7 +318,7 @@ tuner = Hyperband(
 best_model = tuner.get_best_models(1)[0]
 
 checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=15, verbose=1, restore_best_weights=True)
+early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
 # Fit the model to the training data for 50 epochs using the best hyperparameters
@@ -371,7 +371,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.close()
 
 
-plot_acc_loss(history_neweffnet,  '/home/viktoriia.trokhova/plots/effnet')
+plot_acc_loss_auc(history_neweffnet,  '/home/viktoriia.trokhova/plots/effnet')
     
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
