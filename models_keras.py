@@ -310,7 +310,7 @@ tuner.search(train_generator,
              verbose=1
              )
 
-Print the best hyperparameters found by the tuner
+#Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
 print(f'Best hyperparameters: {best_hyperparams}')
 
