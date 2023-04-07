@@ -261,19 +261,19 @@ from kerastuner.engine.hyperparameters import HyperParameters
     
 #     return model
 
-def model_densenet(hp):
+def model_densenet():
     model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
-    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+    model = tf.keras.layers.Dropout(rate=0.5)(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
-    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
-    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    batch_size = hp.Choice('batch_size', values=[8, 16, 32, 64])
+    optimizer = 'sgd'
+    learning_rate = 0.1
+    batch_size = 8
     
     #Set optimizer parameters based on user's selection
     if optimizer == 'adam':
@@ -298,7 +298,7 @@ def model_densenet(hp):
 tuner = Hyperband(
     model_densenet,
     objective=keras_tuner.Objective("val_auc", direction="max"),
-    overwrite=True,
+    #overwrite=True,
     max_epochs=50,
     factor=3,
     hyperband_iterations=10
@@ -312,8 +312,8 @@ tuner = Hyperband(
 #              )
 
 #Print the best hyperparameters found by the tuner
-best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-print(f'Best hyperparameters: {best_hyperparams}')
+# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+# print(f'Best hyperparameters: {best_hyperparams}')
 
 # tuner = Hyperband(
 #     model_densenet,
@@ -339,14 +339,14 @@ print(f'Best hyperparameters: {best_hyperparams}')
 
 
 # Get the best model found by the tuner
-best_model = tuner.get_best_models(1)[0]
+# best_model = tuner.get_best_models(1)[0]
 
 checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
 early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
 # Fit the model to the training data for 50 epochs using the best hyperparameters
-history_densenet = best_model.fit(
+history_densenet = model_densenet.fit(
     train_generator,
     epochs=50,
     validation_data=(X_val, y_val),
