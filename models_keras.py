@@ -317,7 +317,7 @@ def model_resnet():
 # # hp.Choice('batch_size', values=[16, 32, 64])
 
 tuner = Hyperband(
-    model_densenet,
+    model_resnet,
     objective=keras_tuner.Objective("val_auc", direction="max"),
     #overwrite=True,
     max_epochs=50,
