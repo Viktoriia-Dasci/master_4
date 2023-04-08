@@ -261,51 +261,51 @@ from kerastuner.engine.hyperparameters import HyperParameters
     
 #     return model
 
-# def model_train():
-#     model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+def model_resnet():
+    model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+    model = model_name.output
+    model = tf.keras.layers.GlobalAveragePooling2D()(model)
+    model = tf.keras.layers.Dense(128, activation='relu')(model)
+    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+    model = tf.keras.layers.Dense(2,activation='softmax')(model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+    
+    # Define optimizer and batch size
+    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
+    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
+    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
+    
+    #Set optimizer parameters based on user's selection
+    if optimizer == 'adam':
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    else:
+        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+    
+    # Compile the model with the optimizer and metrics
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', 'AUC'])
+    
+    return model
+
+# def model_train(model_name, image_size = 224):
+#     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
 #     model = model_name.output
 #     model = tf.keras.layers.GlobalAveragePooling2D()(model)
 #     model = tf.keras.layers.Dense(128, activation='relu')(model)
 #     model = tf.keras.layers.Dropout(rate=0.5)(model)
 #     model = tf.keras.layers.Dense(2,activation='softmax')(model)
 #     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    
-#     # Define optimizer and batch size
-#     optimizer = 'sgd'
-#     learning_rate = 0.1
-#     batch_size = 8
-    
-#     #Set optimizer parameters based on user's selection
-#     if optimizer == 'adam':
-#         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-#     else:
-#         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    
-#     # Compile the model with the optimizer and metrics
-#     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', 'AUC'])
-    
-#     return model
-
-def model_train(model_name, image_size = 224):
-    #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
-    model = model_name.output
-    model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dense(128, activation='relu')(model)
-    model = tf.keras.layers.Dropout(rate=0.5)(model)
-    model = tf.keras.layers.Dense(2,activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    sgd = tf.keras.optimizers.SGD(learning_rate=0.1)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
-    #callbacks
-    #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
-    #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, verbose=1,
-                   callbacks=[checkpoint, early_stop, reduce_lr])
+#     sgd = tf.keras.optimizers.SGD(learning_rate=0.1)
+#     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
+#     #callbacks
+#     #tensorboard = TensorBoard(log_dir = 'logs')
+#     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+#     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+#     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+#     #fitting the model
+#     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, verbose=1,
+#                    callbacks=[checkpoint, early_stop, reduce_lr])
   
-    return history
+#     return history
 
 
 # # Define hp before calling tuner.search()
@@ -316,25 +316,25 @@ def model_train(model_name, image_size = 224):
 # # hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
 # # hp.Choice('batch_size', values=[16, 32, 64])
 
-# tuner = Hyperband(
-#     model_densenet,
-#     objective=keras_tuner.Objective("val_auc", direction="max"),
-#     #overwrite=True,
-#     max_epochs=50,
-#     factor=3,
-#     hyperband_iterations=10
-# )
+tuner = Hyperband(
+    model_densenet,
+    objective=keras_tuner.Objective("val_auc", direction="max"),
+    #overwrite=True,
+    max_epochs=50,
+    factor=3,
+    hyperband_iterations=10
+)
 
-# tuner.search(train_generator,
-#              validation_data=(X_val, y_val),
-#              steps_per_epoch=len(train_generator),
-#              epochs=50,
-#              verbose=1
-#              )
+tuner.search(train_generator,
+             validation_data=(X_val, y_val),
+             steps_per_epoch=len(train_generator),
+             epochs=50,
+             verbose=1
+             )
 
 #Print the best hyperparameters found by the tuner
-# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-# print(f'Best hyperparameters: {best_hyperparams}')
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
 
 # tuner = Hyperband(
 #     model_densenet,
@@ -362,7 +362,7 @@ def model_train(model_name, image_size = 224):
 # Get the best model found by the tuner
 # best_model = tuner.get_best_models(1)[0]
 
-# checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+# checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
 # early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
 # reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
@@ -375,7 +375,7 @@ def model_train(model_name, image_size = 224):
 #     callbacks=[checkpoint, early_stop, reduce_lr]
 # )
 
-history_densenet = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+#history_densenet = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
 def plot_acc_loss_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
