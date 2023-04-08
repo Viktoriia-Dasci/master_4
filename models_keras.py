@@ -262,7 +262,7 @@ from kerastuner.engine.hyperparameters import HyperParameters
 #     return model
 
 def model_resnet():
-    model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
+    model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
