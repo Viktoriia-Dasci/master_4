@@ -367,7 +367,7 @@ early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1
 reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
 #Fit the model to the training data for 50 epochs using the best hyperparameters
-history_densenet = model_resnet.fit(
+history_resnet = best_model.fit(
     train_generator,
     epochs=50,
     validation_data=(X_val, y_val),
