@@ -359,7 +359,7 @@ tuner = Hyperband(
 
 
 
-Get the best model found by the tuner
+#Get the best model found by the tuner
 best_model = tuner.get_best_models(1)[0]
 
 checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
