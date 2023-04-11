@@ -261,8 +261,8 @@ from kerastuner.engine.hyperparameters import HyperParameters
     
 #     return model
 
-def model_resnet(hp):
-    model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+def model_inception(hp):
+    model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
@@ -317,24 +317,24 @@ def model_resnet(hp):
 # # hp.Choice('batch_size', values=[16, 32, 64])
 
 tuner = Hyperband(
-    model_resnet,
+    model_inception,
     objective=keras_tuner.Objective("val_auc", direction="max"),
-    #overwrite=True,
+    overwrite=True,
     max_epochs=50,
     factor=3,
     hyperband_iterations=10
 )
 
-# tuner.search(train_generator,
-#              validation_data=(X_val, y_val),
-#              steps_per_epoch=len(train_generator),
-#              epochs=50,
-#              verbose=1
-#              )
+tuner.search(train_generator,
+             validation_data=(X_val, y_val),
+             steps_per_epoch=len(train_generator),
+             epochs=50,
+             verbose=1
+             )
 
-# #Print the best hyperparameters found by the tuner
-# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-# print(f'Best hyperparameters: {best_hyperparams}')
+#Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
 
 # tuner = Hyperband(
 #     model_densenet,
@@ -359,21 +359,21 @@ tuner = Hyperband(
 
 
 
-#Get the best model found by the tuner
-best_model = tuner.get_best_models(1)[0]
+# #Get the best model found by the tuner
+# best_model = tuner.get_best_models(1)[0]
 
-checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+# checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+# early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
+# reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
-#Fit the model to the training data for 50 epochs using the best hyperparameters
-history_resnet = best_model.fit(
-    train_generator,
-    epochs=50,
-    validation_data=(X_val, y_val),
-    verbose=1,
-    callbacks=[checkpoint, early_stop, reduce_lr]
-)
+# #Fit the model to the training data for 50 epochs using the best hyperparameters
+# history_resnet = best_model.fit(
+#     train_generator,
+#     epochs=50,
+#     validation_data=(X_val, y_val),
+#     verbose=1,
+#     callbacks=[checkpoint, early_stop, reduce_lr]
+# )
 
 #history_densenet = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
