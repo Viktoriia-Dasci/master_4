@@ -889,9 +889,9 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
     return best_val_auc
 
   
-patience = 15
-PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
-best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.004), patience=15, PATH= '/home/viktoriia.trokhova/model_weights/model_resnet.pt')
+#patience = 15
+#PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
+best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.004), patience=10, PATH= '/home/viktoriia.trokhova/model_weights/resnet_pytorch.pt')
 
         
 # plot loss and accuracy for each epoch
@@ -903,7 +903,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('Loss')
 plt.legend()
-plt.savefig("/home/viktoriia.trokhova/plots/resnet/loss.png")  # save plot to given path
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
 
 plt.figure(figsize=(12, 4))
 plt.subplot(1, 2, 1)
@@ -913,7 +913,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.title('Accuracy')
 plt.legend()
-plt.savefig("/home/viktoriia.trokhova/plots/resnet/accuracy.png")  # save plot to given path
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
 
 plt.figure(figsize=(12, 4))
 plt.subplot(1, 2, 1)
@@ -923,4 +923,4 @@ plt.xlabel('Epoch')
 plt.ylabel('AUC')
 plt.title('AUC')
 plt.legend()
-plt.savefig("/home/viktoriia.trokhova/plots/resnet/AUC.png")  # save plot to given path
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/AUC.png")  # save plot to given path
