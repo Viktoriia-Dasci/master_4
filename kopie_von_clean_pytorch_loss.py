@@ -891,7 +891,7 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
   
 #patience = 15
 #PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
-best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.004), patience=10, PATH= '/home/viktoriia.trokhova/model_weights/resnet_pytorch.pt')
+best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.004), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_pytorch.pt')
 
         
 # plot loss and accuracy for each epoch
