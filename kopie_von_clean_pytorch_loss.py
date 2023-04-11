@@ -772,6 +772,8 @@ train_losses = []
 val_losses = []
 train_accuracies = []
 val_accuracies = []
+train_auc_values = []
+val_auc_values = []
 
 def train_with_early_stopping(model, optimizer, patience, PATH):
     dataloaders = load_data(batch_size=8)
@@ -788,6 +790,7 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
         total_targets_train = []
         correct_train = 0
         total_train = 0
+        train_probs = []
 
         for train_input, train_label, train_mask in dataloaders['Train']:
             train_label = train_label.long().to(device)
@@ -805,9 +808,20 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
             correct_train += (predicted == train_label).sum().item()
             total_train += train_label.size(0)
 
+            # calculate probabilities
+            probs = nn.functional.softmax(output, dim=1)
+            train_probs.append(probs.detach().cpu().numpy())
+            
+            total_targets_train.append(train_label.detach().cpu().numpy())
+
             batch_loss.backward()
             optimizer.step()
-          
+
+        # calculate train auc
+        total_targets_train = np.concatenate(total_targets_train, axis=0)
+        train_probs = np.concatenate(train_probs, axis=0)
+        train_auc = roc_auc_score(total_targets_train, train_probs[:, 1])
+        train_auc_values.append(train_auc)
 
         train_loss = total_loss_train / len(dataloaders['Train'])
         train_losses.append(train_loss)
@@ -851,6 +865,7 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
 
         val_auc = roc_auc_score(total_targets_val, total_preds_val)
         print("Epoch: {} - Validation AUC: {:.4f}".format(epoch_num+1, val_auc))
+        val_auc_values.append(val_auc)
 
         # update lr_scheduler
         lr_scheduler.step(val_loss)
@@ -899,3 +914,13 @@ plt.ylabel('Accuracy')
 plt.title('Accuracy')
 plt.legend()
 plt.savefig("/home/viktoriia.trokhova/plots/resnet/accuracy.png")  # save plot to given path
+
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_auc_values, label='Train')
+plt.plot(val_auc_values, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('AUC')
+plt.title('AUC')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet/AUC.png")  # save plot to given path
