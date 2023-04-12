@@ -725,7 +725,7 @@ def train_and_evaluate(param, model, trial):
     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
     torch.save(model.state_dict(), PATH)
   
-  return final_auc
+    return final_auc
 
   
 # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
