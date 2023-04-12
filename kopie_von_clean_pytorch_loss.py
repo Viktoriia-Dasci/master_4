@@ -746,7 +746,7 @@ def objective(trial):
      return max_accuracy
   
   
-EPOCHS = 10
+EPOCHS = 5
     
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
 study.optimize(objective, n_trials=40)
