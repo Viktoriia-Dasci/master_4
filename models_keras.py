@@ -319,18 +319,18 @@ def model_inception(hp):
 tuner = Hyperband(
     model_inception,
     objective=keras_tuner.Objective("val_auc", direction="max"),
-    overwrite=True,
+    #overwrite=True,
     max_epochs=50,
     factor=3,
     hyperband_iterations=10
 )
 
-tuner.search(train_generator,
-             validation_data=(X_val, y_val),
-             steps_per_epoch=len(train_generator),
-             epochs=50,
-             verbose=1
-             )
+# tuner.search(train_generator,
+#              validation_data=(X_val, y_val),
+#              steps_per_epoch=len(train_generator),
+#              epochs=50,
+#              verbose=1
+#              )
 
 #Print the best hyperparameters found by the tuner
 best_hyperparams = tuner.get_best_hyperparameters(1)[0]
@@ -353,27 +353,27 @@ print(f'Best hyperparameters: {best_hyperparams}')
 #              )
 
 
-# # Print the best hyperparameters found by the tuner
-# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-# print(f'Best hyperparameters: {best_hyperparams}')
+# Print the best hyperparameters found by the tuner
+best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+print(f'Best hyperparameters: {best_hyperparams}')
 
 
 
-# #Get the best model found by the tuner
-# best_model = tuner.get_best_models(1)[0]
+#Get the best model found by the tuner
+best_model = tuner.get_best_models(1)[0]
 
-# checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-# early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
-# reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_keras" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
+reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
-# #Fit the model to the training data for 50 epochs using the best hyperparameters
-# history_resnet = best_model.fit(
-#     train_generator,
-#     epochs=50,
-#     validation_data=(X_val, y_val),
-#     verbose=1,
-#     callbacks=[checkpoint, early_stop, reduce_lr]
-# )
+#Fit the model to the training data for 50 epochs using the best hyperparameters
+history_inception = best_model.fit(
+    train_generator,
+    epochs=50,
+    validation_data=(X_val, y_val),
+    verbose=1,
+    callbacks=[checkpoint, early_stop, reduce_lr]
+)
 
 #history_densenet = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2))
 
@@ -418,7 +418,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.close()
 
 
-plot_acc_loss_auc(history_resnet,  '/home/viktoriia.trokhova/plots/resnet')
+plot_acc_loss_auc(history_inception,  '/home/viktoriia.trokhova/plots/inception')
     
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
