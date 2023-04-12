@@ -647,23 +647,98 @@ best_model_wts = {}
 #     torch.save(model.state_dict(), PATH)
   
 #     return final_accuracy
-  
-# # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
-# def objective(trial):
 
-#      params = {
-#               'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
-#               'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
-#               'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
-#               'lambda_val': trial.suggest_float("lambda_val", 0.0, 1.0),
-#                'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
-#               }
+from sklearn.metrics import roc_auc_score
+
+def train_and_evaluate(param, model, trial):
+    aucs = []
+    dataloaders = load_data(batch_size=param['batch_size'])
+    # Freeze all layers
+    EPOCHS = 3
     
-#      model = MyCustomResnet50(pretrained=True).to(device)
+    #criterion = nn.CrossEntropyLoss()
+    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
 
-#      max_accuracy = train_and_evaluate(params, model, trial)
+    for epoch_num in range(EPOCHS):
+            torch.cuda.empty_cache()
+            model.train()
+            total_acc_train = 0
+            total_loss_train = 0
 
-#      return max_accuracy
+            for train_input, train_label, train_mask in dataloaders['Train']:
+
+                train_label = train_label.long().to(device)
+                train_input = train_input.float().to(device)
+                train_mask = train_mask.to(device)
+
+                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
+                
+                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+                total_loss_train += batch_loss.item()
+                
+                acc = (output.argmax(dim=1) == train_label).sum().item()
+                total_acc_train += acc
+
+                model.zero_grad()
+                batch_loss.backward()
+                optimizer.step()
+            
+            total_acc_val = 0
+            total_loss_val = 0
+            y_preds = []
+            model.eval()
+            # with torch.no_grad():
+            
+            for val_input, val_label, val_mask in dataloaders['Val']:
+
+                val_label = val_label.long().to(device)
+                val_input = val_input.float().to(device)
+                val_mask = val_mask.to(device)
+                
+
+                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(param['drop_out']))
+
+                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+                total_loss_val += batch_loss.item()
+                
+                y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
+                y_preds.extend(y_pred)
+                
+                acc = (output.argmax(dim=1) == val_label).sum().item()
+                total_acc_val += acc
+        
+            auc = roc_auc_score(val_label.cpu().detach().numpy(), y_preds)
+            aucs.append(auc)
+            print(auc)
+            if len(aucs) >= 3 and auc <= 0.8:
+                break
+
+            trial.report(auc, epoch_num)
+            if trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
+    final_auc = max(aucs)
+    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+    torch.save(model.state_dict(), PATH)
+  
+  return final_auc
+
+  
+# Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
+def objective(trial):
+
+     params = {
+              'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
+              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
+              'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0),
+               'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
+              }
+    
+     model = MyCustomResnet50(pretrained=True).to(device)
+
+     max_accuracy = train_and_evaluate(params, model, trial)
+
+     return max_accuracy
   
   
 # EPOCHS = 3
