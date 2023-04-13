@@ -654,7 +654,6 @@ def train_and_evaluate(param, model, trial):
     aucs = []
     accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
-    # Freeze all layers
     EPOCHS = 3
     
     #criterion = nn.CrossEntropyLoss()
@@ -687,6 +686,7 @@ def train_and_evaluate(param, model, trial):
             total_acc_val = 0
             total_loss_val = 0
             y_preds = []
+            val_labels = []
             model.eval()
             # with torch.no_grad():
             
@@ -705,6 +705,8 @@ def train_and_evaluate(param, model, trial):
                 y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
                 y_preds.extend(y_pred)
                 
+                val_labels.extend(val_label.cpu().detach().numpy())
+                
                 acc = (output.argmax(dim=1) == val_label).sum().item()
                 total_acc_val += acc
                 
@@ -715,17 +717,19 @@ def train_and_evaluate(param, model, trial):
             if len(accuracies) >= 3 and accuracy <= 0.5729:
                 break
         
-            auc = roc_auc_score(val_label.cpu().detach().numpy(), y_preds)
+            auc = roc_auc_score(val_labels, y_preds)
             aucs.append(auc)
 
             trial.report(auc, epoch_num)
             if trial.should_prune():
                 raise optuna.exceptions.TrialPruned()
+                
     final_auc = max(aucs)
     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
     torch.save(model.state_dict(), PATH)
   
     return final_auc
+
 
   
 # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
