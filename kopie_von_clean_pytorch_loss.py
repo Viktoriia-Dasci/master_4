@@ -975,36 +975,36 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
   
 # #patience = 15
 # #PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
-# best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.004), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_pytorch.pt')
+best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.0051), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_pytorch.pt')
 
         
-# # plot loss and accuracy for each epoch
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(train_losses, label='Train')
-# plt.plot(val_losses, label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Loss')
-# plt.title('Loss')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
+# plot loss and accuracy for each epoch
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_losses, label='Train')
+plt.plot(val_losses, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
 
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(train_accuracies, label='Train')
-# plt.plot(val_accuracies, label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.title('Accuracy')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_accuracies, label='Train')
+plt.plot(val_accuracies, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
 
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(train_auc_values, label='Train')
-# plt.plot(val_auc_values, label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('AUC')
-# plt.title('AUC')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/AUC.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(train_auc_values, label='Train')
+plt.plot(val_auc_values, label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('AUC')
+plt.title('AUC')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/AUC.png")  # save plot to given path
