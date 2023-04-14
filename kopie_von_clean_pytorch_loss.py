@@ -750,7 +750,7 @@ from sklearn.metrics import roc_auc_score
 #      return max_accuracy
   
   
-# EPOCHS = 5
+EPOCHS = 50
     
 # study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
 # study.optimize(objective, n_trials=40)
