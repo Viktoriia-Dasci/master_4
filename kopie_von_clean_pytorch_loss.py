@@ -650,125 +650,125 @@ best_model_wts = {}
 
 from sklearn.metrics import roc_auc_score
 
-def train_and_evaluate(param, model, trial):
-    aucs = []
-    accuracies = []
-    dataloaders = load_data(batch_size=param['batch_size'])
-    EPOCHS = 3
+# def train_and_evaluate(param, model, trial):
+#     aucs = []
+#     accuracies = []
+#     dataloaders = load_data(batch_size=param['batch_size'])
+#     EPOCHS = 3
     
-    #criterion = nn.CrossEntropyLoss()
-    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
+#     #criterion = nn.CrossEntropyLoss()
+#     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
 
-    for epoch_num in range(EPOCHS):
-            torch.cuda.empty_cache()
-            model.train()
-            total_acc_train = 0
-            total_loss_train = 0
+#     for epoch_num in range(EPOCHS):
+#             torch.cuda.empty_cache()
+#             model.train()
+#             total_acc_train = 0
+#             total_loss_train = 0
 
-            for train_input, train_label, train_mask in dataloaders['Train']:
+#             for train_input, train_label, train_mask in dataloaders['Train']:
 
-                train_label = train_label.long().to(device)
-                train_input = train_input.float().to(device)
-                train_mask = train_mask.to(device)
+#                 train_label = train_label.long().to(device)
+#                 train_input = train_input.float().to(device)
+#                 train_mask = train_mask.to(device)
 
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
+#                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
                 
-                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
-                total_loss_train += batch_loss.item()
+#                 batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+#                 total_loss_train += batch_loss.item()
                 
-                acc = (output.argmax(dim=1) == train_label).sum().item()
-                total_acc_train += acc
+#                 acc = (output.argmax(dim=1) == train_label).sum().item()
+#                 total_acc_train += acc
 
-                model.zero_grad()
-                batch_loss.backward()
-                optimizer.step()
+#                 model.zero_grad()
+#                 batch_loss.backward()
+#                 optimizer.step()
             
-            total_acc_val = 0
-            total_loss_val = 0
-            y_preds = []
-            val_labels = []
-            model.eval()
-            # with torch.no_grad():
+#             total_acc_val = 0
+#             total_loss_val = 0
+#             y_preds = []
+#             val_labels = []
+#             model.eval()
+#             # with torch.no_grad():
             
-            for val_input, val_label, val_mask in dataloaders['Val']:
+#             for val_input, val_label, val_mask in dataloaders['Val']:
 
-                val_label = val_label.long().to(device)
-                val_input = val_input.float().to(device)
-                val_mask = val_mask.to(device)
+#                 val_label = val_label.long().to(device)
+#                 val_input = val_input.float().to(device)
+#                 val_mask = val_mask.to(device)
                 
 
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(param['drop_out']))
+#                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(param['drop_out']))
 
-                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
-                total_loss_val += batch_loss.item()
+#                 batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+#                 total_loss_val += batch_loss.item()
                 
-                y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
-                y_preds.extend(y_pred)
+#                 y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
+#                 y_preds.extend(y_pred)
                 
-                val_labels.extend(val_label.cpu().detach().numpy())
+#                 val_labels.extend(val_label.cpu().detach().numpy())
                 
-                acc = (output.argmax(dim=1) == val_label).sum().item()
-                total_acc_val += acc
+#                 acc = (output.argmax(dim=1) == val_label).sum().item()
+#                 total_acc_val += acc
                 
         
-            accuracy = total_acc_val/len(image_datasets['Val'])
-            accuracies.append(accuracy)
-            print(accuracy)
-            if len(accuracies) >= 3 and accuracy <= 0.5729:
-                break
+#             accuracy = total_acc_val/len(image_datasets['Val'])
+#             accuracies.append(accuracy)
+#             print(accuracy)
+#             if len(accuracies) >= 3 and accuracy <= 0.5729:
+#                 break
         
-            auc = roc_auc_score(val_labels, y_preds)
-            aucs.append(auc)
+#             auc = roc_auc_score(val_labels, y_preds)
+#             aucs.append(auc)
 
-            trial.report(auc, epoch_num)
-            if trial.should_prune():
-                raise optuna.exceptions.TrialPruned()
+#             trial.report(auc, epoch_num)
+#             if trial.should_prune():
+#                 raise optuna.exceptions.TrialPruned()
                 
-    final_auc = max(aucs)
-    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-    torch.save(model.state_dict(), PATH)
+#     final_auc = max(aucs)
+#     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+#     torch.save(model.state_dict(), PATH)
   
-    return final_auc
+#     return final_auc
 
 
   
-# Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
-def objective(trial):
+# # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
+# def objective(trial):
 
-     params = {
-              'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
-              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
-              'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
-              'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0),
-               'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
-              }
+#      params = {
+#               'learning_rate': trial.suggest_float('learning_rate', 0.00001, 0.006),
+#               'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+#               'batch_size': trial.suggest_categorical("batch_size", [8, 16, 32, 64]),
+#               'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0),
+#                'drop_out' : trial.suggest_float("droupout", 0.2, 0.8)
+#               }
     
-     model = MyCustomResnet50(pretrained=True).to(device)
+#      model = MyCustomResnet50(pretrained=True).to(device)
 
-     max_accuracy = train_and_evaluate(params, model, trial)
+#      max_accuracy = train_and_evaluate(params, model, trial)
 
-     return max_accuracy
+#      return max_accuracy
   
   
-EPOCHS = 5
+# EPOCHS = 5
     
-study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=40)
-pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
-complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+# study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+# study.optimize(objective, n_trials=40)
+# pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+# complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
-print("Study statistics: ")
-print("  Number of finished trials: ", len(study.trials))
-print("  Number of pruned trials: ", len(pruned_trials))
-print("  Number of complete trials: ", len(complete_trials))
+# print("Study statistics: ")
+# print("  Number of finished trials: ", len(study.trials))
+# print("  Number of pruned trials: ", len(pruned_trials))
+# print("  Number of complete trials: ", len(complete_trials))
 
-print("Best trial:")
-trial = study.best_trial
-print("  Value: ", trial.value)
+# print("Best trial:")
+# trial = study.best_trial
+# print("  Value: ", trial.value)
 
-print("  Params: ")
-for key, value in trial.params.items():
-    print("    {}: {}".format(key, value))
+# print("  Params: ")
+# for key, value in trial.params.items():
+#     print("    {}: {}".format(key, value))
 
 #EPOCHS = 50
 
@@ -850,127 +850,127 @@ for key, value in trial.params.items():
 # train_and_evaluate(model)
 
 
-#optimizer = optim.SGD(model.parameters(), lr=0.004)
+optimizer = optim.SGD(model.parameters(), lr=0.0051)
 
-# train_losses = []
-# val_losses = []
-# train_accuracies = []
-# val_accuracies = []
-# train_auc_values = []
-# val_auc_values = []
+train_losses = []
+val_losses = []
+train_accuracies = []
+val_accuracies = []
+train_auc_values = []
+val_auc_values = []
 
-# def train_with_early_stopping(model, optimizer, patience, PATH):
-#     dataloaders = load_data(batch_size=8)
-#     # define early stopping and lr scheduler
-#     best_val_auc = 0.0
-#     early_stopping_counter = 0
-#     lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
+def train_with_early_stopping(model, optimizer, patience, PATH):
+    dataloaders = load_data(batch_size=8)
+    # define early stopping and lr scheduler
+    best_val_auc = 0.0
+    early_stopping_counter = 0
+    lr_scheduler = ReduceLROnPlateau(optimizer, factor=0.1, patience=patience//2, verbose=True)
 
-#     for epoch_num in range(EPOCHS):
-#         torch.cuda.empty_cache()
-#         model.train()
-#         total_loss_train = 0
-#         total_preds_train = []
-#         total_targets_train = []
-#         correct_train = 0
-#         total_train = 0
-#         train_probs = []
+    for epoch_num in range(EPOCHS):
+        torch.cuda.empty_cache()
+        model.train()
+        total_loss_train = 0
+        total_preds_train = []
+        total_targets_train = []
+        correct_train = 0
+        total_train = 0
+        train_probs = []
 
-#         for train_input, train_label, train_mask in dataloaders['Train']:
-#             train_label = train_label.long().to(device)
-#             train_input = train_input.float().to(device)
-#             train_mask = train_mask.to(device)
+        for train_input, train_label, train_mask in dataloaders['Train']:
+            train_label = train_label.long().to(device)
+            train_input = train_input.float().to(device)
+            train_mask = train_mask.to(device)
 
-#             optimizer.zero_grad()
-#             output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(0.79))
+            optimizer.zero_grad()
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(0.38))
 
-#             batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-#             total_loss_train += batch_loss.item()
+            batch_loss = xe_loss_.mean() + 0.202 * gcam_losses_
+            total_loss_train += batch_loss.item()
 
-#             # calculate accuracy
-#             _, predicted = torch.max(output.data, 1)
-#             correct_train += (predicted == train_label).sum().item()
-#             total_train += train_label.size(0)
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct_train += (predicted == train_label).sum().item()
+            total_train += train_label.size(0)
 
-#             # calculate probabilities
-#             probs = nn.functional.softmax(output, dim=1)
-#             train_probs.append(probs.detach().cpu().numpy())
+            # calculate probabilities
+            probs = nn.functional.softmax(output, dim=1)
+            train_probs.append(probs.detach().cpu().numpy())
             
-#             total_targets_train.append(train_label.detach().cpu().numpy())
+            total_targets_train.append(train_label.detach().cpu().numpy())
 
-#             batch_loss.backward()
-#             optimizer.step()
+            batch_loss.backward()
+            optimizer.step()
 
-#         # calculate train auc
-#         total_targets_train = np.concatenate(total_targets_train, axis=0)
-#         train_probs = np.concatenate(train_probs, axis=0)
-#         train_auc = roc_auc_score(total_targets_train, train_probs[:, 1])
-#         train_auc_values.append(train_auc)
+        # calculate train auc
+        total_targets_train = np.concatenate(total_targets_train, axis=0)
+        train_probs = np.concatenate(train_probs, axis=0)
+        train_auc = roc_auc_score(total_targets_train, train_probs[:, 1])
+        train_auc_values.append(train_auc)
 
-#         train_loss = total_loss_train / len(dataloaders['Train'])
-#         train_losses.append(train_loss)
-#         train_accuracy = correct_train / total_train
-#         print('train_acc:', train_accuracy)
-#         train_accuracies.append(train_accuracy)
+        train_loss = total_loss_train / len(dataloaders['Train'])
+        train_losses.append(train_loss)
+        train_accuracy = correct_train / total_train
+        print('train_acc:', train_accuracy)
+        train_accuracies.append(train_accuracy)
 
-#         total_loss_val = 0
-#         total_targets_val = []
-#         total_preds_val = []
-#         correct = 0
-#         total = 0
+        total_loss_val = 0
+        total_targets_val = []
+        total_preds_val = []
+        correct = 0
+        total = 0
 
-#         model.eval()
+        model.eval()
 
-#         for val_input, val_label, val_mask in dataloaders['Val']:
-#             val_label = val_label.long().to(device)
-#             val_input = val_input.float().to(device)
-#             val_mask = val_mask.to(device)
+        for val_input, val_label, val_mask in dataloaders['Val']:
+            val_label = val_label.long().to(device)
+            val_input = val_input.float().to(device)
+            val_mask = val_mask.to(device)
 
-#             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(0.79))
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(0.38))
 
-#             batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-#             total_loss_val += batch_loss.item()
+            batch_loss = xe_loss_.mean() + 0.202 * gcam_losses_
+            total_loss_val += batch_loss.item()
 
-#             # calculate accuracy
-#             _, predicted = torch.max(output.data, 1)
-#             correct += (predicted == val_label).sum().item()
-#             total += val_label.size(0)
+            # calculate accuracy
+            _, predicted = torch.max(output.data, 1)
+            correct += (predicted == val_label).sum().item()
+            total += val_label.size(0)
 
-#             targets_ = targets_.detach().cpu().numpy()
-#             preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
-#             total_targets_val.extend(targets_)
-#             total_preds_val.extend(preds_)
+            targets_ = targets_.detach().cpu().numpy()
+            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
+            total_targets_val.extend(targets_)
+            total_preds_val.extend(preds_)
 
-#         val_loss = total_loss_val / len(dataloaders['Val'])
-#         val_losses.append(val_loss)
-#         val_accuracy = correct / total
-#         print(val_accuracy)
-#         val_accuracies.append(val_accuracy)
+        val_loss = total_loss_val / len(dataloaders['Val'])
+        val_losses.append(val_loss)
+        val_accuracy = correct / total
+        print(val_accuracy)
+        val_accuracies.append(val_accuracy)
 
-#         val_auc = roc_auc_score(total_targets_val, total_preds_val)
-#         print("Epoch: {} - Validation AUC: {:.4f}".format(epoch_num+1, val_auc))
-#         val_auc_values.append(val_auc)
+        val_auc = roc_auc_score(total_targets_val, total_preds_val)
+        print("Epoch: {} - Validation AUC: {:.4f}".format(epoch_num+1, val_auc))
+        val_auc_values.append(val_auc)
 
-#         # update lr_scheduler
-#         lr_scheduler.step(val_loss)
+        # update lr_scheduler
+        lr_scheduler.step(val_loss)
 
-#         # check if early stopping criteria is met
-#         if val_auc > best_val_auc:
-#             early_stopping_counter = 0
-#             best_val_auc = val_auc
-#             # save model if val_auc is the best so far
-#             torch.save(model.state_dict(), PATH)
-#         else:
-#             early_stopping_counter += 1
+        # check if early stopping criteria is met
+        if val_auc > best_val_auc:
+            early_stopping_counter = 0
+            best_val_auc = val_auc
+            # save model if val_auc is the best so far
+            torch.save(model.state_dict(), PATH)
+        else:
+            early_stopping_counter += 1
 
-#         if early_stopping_counter >= patience:
-#             print("Early stopping.")
-#             break
+        if early_stopping_counter >= patience:
+            print("Early stopping.")
+            break
         
         
     
 
-#     return best_val_auc
+    return best_val_auc
 
   
 # #patience = 15
