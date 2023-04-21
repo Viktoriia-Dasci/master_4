@@ -305,7 +305,7 @@ def model_train(model_name, image_size = 224):
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
-    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'], class_weight={0:1 , 1:3.5})
+    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
@@ -313,7 +313,7 @@ def model_train(model_name, image_size = 224):
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
-                   callbacks=[checkpoint, early_stop, reduce_lr])
+                   callbacks=[checkpoint, early_stop, reduce_lr], class_weight={0:1 , 1:3.5})
   
     return history
 
