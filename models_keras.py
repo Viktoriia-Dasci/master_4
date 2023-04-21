@@ -385,7 +385,7 @@ def model_train(model_name, image_size = 224):
 #     callbacks=[checkpoint, early_stop, reduce_lr]
 # )
 
-history_effnet_weights = model_train(model_name = tf.keras.applications.EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3)))
+history_effnet_weights = model_train(model_name = tf.keras.applications.EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
 def plot_acc_loss_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
