@@ -153,7 +153,8 @@ X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
 # assume X_train and y_train are numpy arrays containing the training data and labels
 n_classes = len(np.unique(y_train))
-class_counts = np.bincount(y_train)
+y_train_flat = np.ravel(y_train)
+class_counts = np.bincount(y_train_flat)
 n_samples = np.sum(class_counts)
 class_weights = n_samples / (n_classes * class_counts)
 print(class_weights)
