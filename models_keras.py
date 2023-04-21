@@ -158,7 +158,7 @@ from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import MultiLabelBinarizer
 
 
-def generate_class_weights(y_train, multi_class=True, one_hot_encoded=False):
+def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
   """
   Method to generate class weights given a set of multi-class or multi-label labels, both one-hot-encoded or not.
   Some examples of different formats of class_series and their outputs are:
@@ -208,7 +208,7 @@ def generate_class_weights(y_train, multi_class=True, one_hot_encoded=False):
 
 #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
 
-class_weights = generate_class_weights(class_series, multi_class=False, one_hot_encoded=True)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
 print(class_weights)
 
 
