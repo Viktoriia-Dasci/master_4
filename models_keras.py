@@ -39,7 +39,7 @@ def save_to_dir(slices, path):
 
 def load_from_dir(path):
       file_paths = glob.glob(os.path.join(path, '*.npy'))
-      print(file_paths)
+   
 
       slices_list=[]
       for img in range(len(file_paths)):
@@ -73,6 +73,8 @@ HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/HG
 HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
 LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/LGG_t2')
 LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
+print(len(HGG_list_train))
+print(len(LGG_list_train))
 
 HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/HGG_t2')
 HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
