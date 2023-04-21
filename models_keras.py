@@ -150,12 +150,10 @@ X_train, y_train = shuffle(X_train,y_train, random_state=101)
 X_val, y_val = shuffle(X_val,y_val, random_state=101)
 X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
-from sklearn.utils import class_weight
-
-from sklearn.utils import class_weight
-import numpy as np
+from keras.utils import class_weight
 
 class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+
 
 print(class_weights)
 
