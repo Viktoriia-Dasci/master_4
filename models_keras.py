@@ -152,12 +152,12 @@ X_train, y_train = shuffle(X_train,y_train, random_state=101)
 X_val, y_val = shuffle(X_val,y_val, random_state=101)
 X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
-from keras.utils import class_weight
-
-class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
 
 
-print(class_weights)
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+
+
+#print(class_weights)
 
 
 datagen = ImageDataGenerator(
@@ -305,7 +305,7 @@ def model_train(model_name, image_size = 224):
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
-    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'], class_weight=class_weights)
+    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'], class_weight={0:1 , 1:3.5})
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
