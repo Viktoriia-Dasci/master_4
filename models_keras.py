@@ -214,7 +214,7 @@ print(class_weights)
 
 datagen = ImageDataGenerator(
     preprocessing_function=preprocess_input,
-    rotation_range=(0, 90),
+    rotation_range=90,
    #width_shift_range=0.1,
    #height_shift_range=0.1,
    #shear_range=0.1,
