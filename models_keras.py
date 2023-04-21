@@ -150,13 +150,11 @@ X_train, y_train = shuffle(X_train,y_train, random_state=101)
 X_val, y_val = shuffle(X_val,y_val, random_state=101)
 X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
+from sklearn.utils import class_weight
 
-# assume X_train and y_train are numpy arrays containing the training data and labels
-n_classes = len(np.unique(y_train))
-y_train = y_train.astype('int64')
-class_counts = np.bincount(y_train)
-n_samples = np.sum(class_counts)
-class_weights = n_samples / (n_classes * class_counts)
+class_weights = class_weight.compute_class_weight('balanced',
+                                                 np.unique(y_train),
+                                                 y_train)
 print(class_weights)
 
 
