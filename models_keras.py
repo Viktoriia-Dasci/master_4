@@ -459,7 +459,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
 #     callbacks=[checkpoint, early_stop, reduce_lr]
 # )
 
-history_effnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
 def plot_acc_loss_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
@@ -502,7 +502,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.close()
 
 
-plot_acc_loss_auc(history_effnet_weights,  '/home/viktoriia.trokhova/plots/effnet')
+plot_acc_loss_auc(history_resnet_weights,  '/home/viktoriia.trokhova/plots/resnet')
     
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
