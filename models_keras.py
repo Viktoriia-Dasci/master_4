@@ -376,7 +376,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     #adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
