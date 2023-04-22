@@ -348,26 +348,48 @@ from kerastuner.engine.hyperparameters import HyperParameters
     
 #     return model
 
-def model_train(model_name, image_size = 224):
+# def model_train(model_name, image_size = 224):
+#     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dense(128, activation='relu')(model)
+#     model = tf.keras.layers.Dropout(rate=0.4)(model)
+#     model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+#     adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
+#     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
+#     #callbacks
+#     #tensorboard = TensorBoard(log_dir = 'logs')
+#     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+#     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+#     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+#     #fitting the model
+#     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
+#                    callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+  
+#     return history
+
+
+def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
-    model = tf.keras.layers.Dropout(rate=0.4)(model)
-    model = tf.keras.layers.Dense(2,activation='softmax')(model)
+    model = tf.keras.layers.Dropout(rate=dropout)(model)
+    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
-    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
+    #adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
+    sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+    model.compile(loss='binary_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC', 'recall', 'F1Score'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
                    callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
-  
-    return history
+
 
 
 # # Define hp before calling tuner.search()
@@ -437,7 +459,7 @@ def model_train(model_name, image_size = 224):
 #     callbacks=[checkpoint, early_stop, reduce_lr]
 # )
 
-history_effnet_weights = model_train(model_name = tf.keras.applications.EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
+history_effnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
 def plot_acc_loss_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
