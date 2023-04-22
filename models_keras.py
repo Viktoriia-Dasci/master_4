@@ -380,7 +380,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     #adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='binary_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC', 'F1Score'])
+    model.compile(loss='binary_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
