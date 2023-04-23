@@ -429,9 +429,9 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1,
-                   callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
-
-
+                   callbacks=[checkpoint, early_stop, reduce_lr])
+    #, class_weight=class_weights
+     
     return history
 
 
