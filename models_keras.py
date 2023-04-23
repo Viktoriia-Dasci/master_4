@@ -370,6 +370,30 @@ from kerastuner.engine.hyperparameters import HyperParameters
 #     return history
 
 
+#def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
+    #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+#    model = model_name.output
+#    model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#    model = tf.keras.layers.Dense(128, activation='relu')(model)
+#    model = tf.keras.layers.Dropout(rate=dropout)(model)
+#    model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+    #adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
+#    sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+#    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
+    #callbacks
+    #tensorboard = TensorBoard(log_dir = 'logs')
+#    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+#    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
+#    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+    #fitting the model
+#    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
+ #                  callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+
+
+#    return history
+
+
 def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
@@ -378,17 +402,23 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    #adam = tf.keras.optimizers.Adam(learning_rate=0.0009)
+    #adam = tf.keras.optimizers.Adam(learning_rate=0.1)
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1,
                    callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+
+
+    return history
+
+
+      
 
 
 
@@ -459,7 +489,11 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
 #     callbacks=[checkpoint, early_stop, reduce_lr]
 # )
 
-history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+#history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+
+history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+
+
 
 def plot_acc_loss_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
@@ -502,7 +536,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.close()
 
 
-plot_acc_loss_auc(history_resnet_weights,  '/home/viktoriia.trokhova/plots/resnet')
+plot_acc_loss_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
     
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
