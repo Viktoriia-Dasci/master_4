@@ -73,8 +73,6 @@ HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/HG
 HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
 LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/LGG_t2')
 LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
-print(len(HGG_list_train))
-print(len(LGG_list_train))
 
 HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/HGG_t2')
 HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
@@ -101,25 +99,27 @@ LGG_list_new_test = resize(LGG_list_test, image_size = 224)
 import numpy as np
 from sklearn.utils import resample
 
-# Load the data and labels
-X_train = np.concatenate((HGG_list_train, LGG_list_train), axis=0)
-y_train = np.concatenate((np.zeros(len(HGG_list_train)), np.ones(len(LGG_list_train))))
-
-# Determine the maximum count
-max_count = np.max(np.bincount(y_train))
+# Determine maximum number of samples in any class
+max_count = np.max([len(HGG_list_new_train), len(LGG_list_new_train)])
 
 # Oversample each class to match max_count
-HGG_list_train_oversampled = resample(HGG_list_train, replace=True, n_samples=max_count, random_state=42)
-LGG_list_train_oversampled = resample(LGG_list_train, replace=True, n_samples=max_count, random_state=42)
-X_train_oversampled = np.concatenate((HGG_list_train_oversampled, LGG_list_train_oversampled), axis=0)
-y_train_oversampled = np.concatenate((np.zeros(len(HGG_list_train_oversampled)), np.ones(len(LGG_list_train_oversampled))))
+HGG_list_new_train_resampled = resample(HGG_list_new_train, 
+                                         replace=True,
+                                         n_samples=max_count,
+                                         random_state=42)
+LGG_list_new_train_resampled = resample(LGG_list_new_train, 
+                                         replace=True,
+                                         n_samples=max_count,
+                                         random_state=42)
 
+print(len(HGG_list_new_train_resampled))
+print(len(LGG_list_new_train_resampled))
 
-# X_train = []
-# y_train = []
+X_train = []
+y_train = []
 
-# X_train, y_train = add_labels(X_train, y_train, HGG_list_new_train, label='HGG')
-# X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
+X_train, y_train = add_labels(X_train, y_train, HGG_list_new_train_resampled, label='HGG')
+X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train_resampled, label='LGG')
 
 X_val = []
 y_val = []
@@ -147,11 +147,11 @@ X_test = np.array(X_test)
 y_test = np.array(y_test)
 
 labels = ['HGG', 'LGG']
-# y_train_new = []
-# for i in y_train:
-#     y_train_new.append(labels.index(i))
-# y_train = y_train_new
-# y_train = tf.keras.utils.to_categorical(y_train)
+y_train_new = []
+for i in y_train:
+    y_train_new.append(labels.index(i))
+y_train = y_train_new
+y_train = tf.keras.utils.to_categorical(y_train)
 
 y_val_new = []
 for i in y_val:
