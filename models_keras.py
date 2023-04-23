@@ -136,8 +136,8 @@ y_test = []
 X_test, y_test = add_labels(X_test, y_test, HGG_list_new_test, label='HGG')
 X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
 
-X_train = np.array(X_train_oversampled)
-y_train = np.array(y_train_oversampled)
+X_train = np.array(X_train)
+y_train = np.array(y_train)
 
 X_val = np.array(X_val)
 y_val = np.array(y_val)
