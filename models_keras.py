@@ -509,7 +509,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.001, dropout=0.6
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.001, dropout=0.6)
+history_inception_oversample = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.001, dropout=0.6)
 
 
 
@@ -554,7 +554,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.close()
 
 
-plot_acc_loss_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
+plot_acc_loss_auc(history_inception_oversample,  '/home/viktoriia.trokhova/plots/inception')
    
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
