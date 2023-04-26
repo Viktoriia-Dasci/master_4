@@ -414,7 +414,7 @@ from kerastuner.engine.hyperparameters import HyperParameters
 #    return history
 
 
-def model_train(model_name, image_size = 224, learning_rate = 0.001, dropout=0.6):
+def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.4):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
@@ -422,16 +422,16 @@ def model_train(model_name, image_size = 224, learning_rate = 0.001, dropout=0.6
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    #adam = tf.keras.optimizers.Adam(learning_rate=0.001)
-    sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
+    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+    #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_oversample" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_oversample" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1,
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
                    callbacks=[checkpoint, early_stop, reduce_lr])
      
     return history
@@ -509,7 +509,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.001, dropout=0.6
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-history_inception_oversample = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.001, dropout=0.6)
+history_effnet_oversample = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
 
 
 
@@ -554,7 +554,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.close()
 
 
-plot_acc_loss_auc(history_inception_oversample,  '/home/viktoriia.trokhova/plots/inception')
+plot_acc_loss_auc(history_effnet_oversample,  '/home/viktoriia.trokhova/plots/effnet')
    
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
