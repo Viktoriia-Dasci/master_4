@@ -84,6 +84,25 @@ HGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/tes
 LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_t2')
 LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_masks/')
 
+
+from sklearn.preprocessing import MinMaxScaler
+
+def normalize_images(images_list):
+    scaler = MinMaxScaler()
+    normalized_images = []
+    for image in images_list:
+        image_norm = scaler.fit_transform(image)
+        normalized_images.append(image_norm)
+    return normalized_images
+
+HGG_list_train_normalized = normalize_images(HGG_list_train)
+LGG_list_train_normalized = normalize_images(LGG_list_train)
+HGG_list_val_normalized = normalize_images(HGG_list_val)
+LGG_list_val_normalized = normalize_images(LGG_list_val)
+HGG_list_test_normalized = normalize_images(HGG_list_test)
+LGG_list_test_normalized = normalize_images(LGG_list_test)
+
+
 HGG_list_new_train = resize(HGG_list_train, image_size = 224)
 LGG_list_new_train = resize(LGG_list_train, image_size = 224)
 
@@ -99,27 +118,27 @@ LGG_list_new_test = resize(LGG_list_test, image_size = 224)
 import numpy as np
 from sklearn.utils import resample
 
-# Determine maximum number of samples in any class
-max_count = np.max([len(HGG_list_new_train), len(LGG_list_new_train)])
+# # Determine maximum number of samples in any class
+# max_count = np.max([len(HGG_list_new_train), len(LGG_list_new_train)])
 
-# Oversample each class to match max_count
-HGG_list_new_train_resampled = resample(HGG_list_new_train, 
-                                         replace=True,
-                                         n_samples=max_count,
-                                         random_state=42)
-LGG_list_new_train_resampled = resample(LGG_list_new_train, 
-                                         replace=True,
-                                         n_samples=max_count,
-                                         random_state=42)
+# # Oversample each class to match max_count
+# HGG_list_new_train_resampled = resample(HGG_list_new_train, 
+#                                          replace=True,
+#                                          n_samples=max_count,
+#                                          random_state=42)
+# LGG_list_new_train_resampled = resample(LGG_list_new_train, 
+#                                          replace=True,
+#                                          n_samples=max_count,
+#                                          random_state=42)
 
-print(len(HGG_list_new_train_resampled))
-print(len(LGG_list_new_train_resampled))
+# print(len(HGG_list_new_train_resampled))
+# print(len(LGG_list_new_train_resampled))
 
 X_train = []
 y_train = []
 
-X_train, y_train = add_labels(X_train, y_train, HGG_list_new_train_resampled, label='HGG')
-X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train_resampled, label='LGG')
+X_train, y_train = add_labels(X_train, y_train, HGG_list_new_train, label='HGG')
+X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 
 # X_train, y_train = add_labels(X_train, y_train, HGG_list_new_train, label='HGG')
 # X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
@@ -173,74 +192,72 @@ X_val, y_val = shuffle(X_val,y_val, random_state=101)
 X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
 
-# import numpy as np
-# from sklearn.utils.class_weight import compute_class_weight
-# from sklearn.preprocessing import MultiLabelBinarizer
+import numpy as np
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.preprocessing import MultiLabelBinarizer
 
 
-# def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
-#   """
-#   Method to generate class weights given a set of multi-class or multi-label labels, both one-hot-encoded or not.
-#   Some examples of different formats of class_series and their outputs are:
-#     - generate_class_weights(['mango', 'lemon', 'banana', 'mango'], multi_class=True, one_hot_encoded=False)
-#     {'banana': 1.3333333333333333, 'lemon': 1.3333333333333333, 'mango': 0.6666666666666666}
-#     - generate_class_weights([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0]], multi_class=True, one_hot_encoded=True)
-#     {0: 0.6666666666666666, 1: 1.3333333333333333, 2: 1.3333333333333333}
-#     - generate_class_weights([['mango', 'lemon'], ['mango'], ['lemon', 'banana'], ['lemon']], multi_class=False, one_hot_encoded=False)
-#     {'banana': 1.3333333333333333, 'lemon': 0.4444444444444444, 'mango': 0.6666666666666666}
-#     - generate_class_weights([[0, 1, 1], [0, 0, 1], [1, 1, 0], [0, 1, 0]], multi_class=False, one_hot_encoded=True)
-#     {0: 1.3333333333333333, 1: 0.4444444444444444, 2: 0.6666666666666666}
-#   The output is a dictionary in the format { class_label: class_weight }. In case the input is one hot encoded, the class_label would be index
-#   of appareance of the label when the dataset was processed. 
-#   In multi_class this is np.unique(class_series) and in multi-label np.unique(np.concatenate(class_series)).
-#   Author: Angel Igareta (angel@igareta.com)
-#   """
-#   if multi_class:
-#     # If class is one hot encoded, transform to categorical labels to use compute_class_weight   
-#     if one_hot_encoded:
-#       class_series = np.argmax(class_series, axis=1)
+def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
+  """
+  Method to generate class weights given a set of multi-class or multi-label labels, both one-hot-encoded or not.
+  Some examples of different formats of class_series and their outputs are:
+    - generate_class_weights(['mango', 'lemon', 'banana', 'mango'], multi_class=True, one_hot_encoded=False)
+    {'banana': 1.3333333333333333, 'lemon': 1.3333333333333333, 'mango': 0.6666666666666666}
+    - generate_class_weights([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0]], multi_class=True, one_hot_encoded=True)
+    {0: 0.6666666666666666, 1: 1.3333333333333333, 2: 1.3333333333333333}
+    - generate_class_weights([['mango', 'lemon'], ['mango'], ['lemon', 'banana'], ['lemon']], multi_class=False, one_hot_encoded=False)
+    {'banana': 1.3333333333333333, 'lemon': 0.4444444444444444, 'mango': 0.6666666666666666}
+    - generate_class_weights([[0, 1, 1], [0, 0, 1], [1, 1, 0], [0, 1, 0]], multi_class=False, one_hot_encoded=True)
+    {0: 1.3333333333333333, 1: 0.4444444444444444, 2: 0.6666666666666666}
+  The output is a dictionary in the format { class_label: class_weight }. In case the input is one hot encoded, the class_label would be index
+  of appareance of the label when the dataset was processed. 
+  In multi_class this is np.unique(class_series) and in multi-label np.unique(np.concatenate(class_series)).
+  Author: Angel Igareta (angel@igareta.com)
+  """
+  if multi_class:
+    # If class is one hot encoded, transform to categorical labels to use compute_class_weight   
+    if one_hot_encoded:
+      class_series = np.argmax(class_series, axis=1)
   
-#     # Compute class weights with sklearn method
-#     class_labels = np.unique(class_series)
-#     class_weights = compute_class_weight(class_weight='balanced', classes=class_labels, y=class_series)
-#     return dict(zip(class_labels, class_weights))
-#   else:
-#     # It is neccessary that the multi-label values are one-hot encoded
-#     mlb = None
-#     if not one_hot_encoded:
-#       mlb = MultiLabelBinarizer()
-#       class_series = mlb.fit_transform(class_series)
+    # Compute class weights with sklearn method
+    class_labels = np.unique(class_series)
+    class_weights = compute_class_weight(class_weight='balanced', classes=class_labels, y=class_series)
+    return dict(zip(class_labels, class_weights))
+  else:
+    # It is neccessary that the multi-label values are one-hot encoded
+    mlb = None
+    if not one_hot_encoded:
+      mlb = MultiLabelBinarizer()
+      class_series = mlb.fit_transform(class_series)
 
-#     n_samples = len(class_series)
-#     n_classes = len(class_series[0])
+    n_samples = len(class_series)
+    n_classes = len(class_series[0])
 
-#     # Count each class frequency
-#     class_count = [0] * n_classes
-#     for classes in class_series:
-#         for index in range(n_classes):
-#             if classes[index] != 0:
-#                 class_count[index] += 1
+    # Count each class frequency
+    class_count = [0] * n_classes
+    for classes in class_series:
+        for index in range(n_classes):
+            if classes[index] != 0:
+                class_count[index] += 1
     
-#     # Compute class weights using balanced method
-#     class_weights = [n_samples / (n_classes * freq) if freq > 0 else 1 for freq in class_count]
-#     class_labels = range(len(class_weights)) if mlb is None else mlb.classes_
-#     return dict(zip(class_labels, class_weights))
+    # Compute class weights using balanced method
+    class_weights = [n_samples / (n_classes * freq) if freq > 0 else 1 for freq in class_count]
+    class_labels = range(len(class_weights)) if mlb is None else mlb.classes_
+    return dict(zip(class_labels, class_weights))
 
-# #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
 
-# class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
-# print(class_weights)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+print(class_weights)
 
 
 datagen = ImageDataGenerator(
     preprocessing_function=preprocess_input,
     rotation_range=90,
-   #width_shift_range=0.1,
-   #height_shift_range=0.1,
-   #shear_range=0.1,
     vertical_flip=True,
     horizontal_flip=True,
     fill_mode='nearest')
+
 
 train_generator = datagen.flow(
     X_train, y_train,
@@ -432,7 +449,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
-                   callbacks=[checkpoint, early_stop, reduce_lr])
+                   callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
      
     return history
 
