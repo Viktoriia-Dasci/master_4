@@ -92,10 +92,10 @@ train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                        ])
 
 aug_transform = transforms.Compose([
-     transforms.RandomVerticalFlip(),
-     transforms.RandomHorizontalFlip(),
-     transforms.RandomRotation(degrees=(0, 5))
-      
+    RandomApply([transforms.RandomHorizontalFlip()], p=0.5), 
+    RandomApply([transforms.RandomVerticalFlip()], p=0.5), 
+    RandomApply([transforms.RandomRotation([-90, 90])], p=0.5),
+    Lambda(lambda x: x)
 ])
 
 
@@ -152,22 +152,22 @@ class myDataset_train(Dataset):
         
         #Oversampling to make the number of samples in both classes the same
         # Count number of samples in each class
-        class_count = [0] * len(self.class_map)
-        for target in self.targets:
-            class_count[self.class_map[target]] += 1
+#         class_count = [0] * len(self.class_map)
+#         for target in self.targets:
+#             class_count[self.class_map[target]] += 1
 
         # Determine maximum number of samples in any class
-        max_count = max(class_count)
+#         max_count = max(class_count)
 
-        # Oversample each class to match max_count
-        for class_id in range(len(class_count)):
-            for i in range(len(self.targets)):
-                if self.class_map[self.targets[i]] == class_id:
-                    while class_count[class_id] < max_count:
-                        self.images.append(self.images[i])
-                        self.targets.append(self.targets[i])
-                        self.masks.append(self.masks[i])
-                        class_count[class_id] += 1
+#         # Oversample each class to match max_count
+#         for class_id in range(len(class_count)):
+#             for i in range(len(self.targets)):
+#                 if self.class_map[self.targets[i]] == class_id:
+#                     while class_count[class_id] < max_count:
+#                         self.images.append(self.images[i])
+#                         self.targets.append(self.targets[i])
+#                         self.masks.append(self.masks[i])
+#                         class_count[class_id] += 1
         
         
         # Oversampling
@@ -216,6 +216,9 @@ class myDataset_train(Dataset):
         class_id = torch.tensor(class_id)
     
         return img_tensor, class_id, msk_tensor
+
+
+
 
 class myDataset_val(Dataset):
 
@@ -360,16 +363,33 @@ def load_data(batch_size):
 
 from collections import Counter
 
+# # create dataset object
+# dataset = myDataset_train()
+
+# # count occurrences of each class
+# class_counts = Counter(dataset.targets)
+
+# # print number of images in each class
+# for class_name, count in class_counts.items():
+#     print(f"{class_name}: {count}")
+    
+from sklearn.utils.class_weight import compute_class_weight
+
 # create dataset object
 dataset = myDataset_train()
 
 # count occurrences of each class
 class_counts = Counter(dataset.targets)
 
-# print number of images in each class
-for class_name, count in class_counts.items():
-    print(f"{class_name}: {count}")
-  
+# calculate class weights
+class_weights = compute_class_weight('balanced', np.unique(dataset.targets), dataset.targets)
+
+# print number of images in each class and their corresponding class weight
+for class_name, count, weight in zip(class_counts.keys(), class_counts.values(), class_weights):
+    print(f"{class_name}: {count}, class weight: {weight}")
+    
+    
+    
 #unnormalize images
 '''def imshow(image):
     npimg = image.numpy()
@@ -469,7 +489,7 @@ class MyCustomResnet50(nn.Module):
 
 
 
-    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
+    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=torch.Tensor(class_weights)), l1_criterion=nn.L1Loss(), dropout=None):
         images_feats = self.features(input_imgs)
         images_att = self.attention(images_feats)
         output = self.last_pooling_operation(images_att)
