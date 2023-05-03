@@ -391,6 +391,11 @@ class_counts = Counter(dataset.targets)
 class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(dataset.targets), y=dataset.targets)
 print(class_weights)
 
+class_weights_np = np.array(class_weights, dtype=np.float32)
+class_weights_tensor = torch.from_numpy(class_weights_np)
+if torch.cuda.is_available():
+    class_weights_tensor = class_weights_tensor.cuda()
+
 # # calculate class weights
 # class_weights = compute_class_weight('balanced', np.unique(dataset.targets), dataset.targets)
 
@@ -499,7 +504,7 @@ class MyCustomResnet50(nn.Module):
 
 
 
-    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=torch.Tensor(class_weights)), l1_criterion=nn.L1Loss(), dropout=None):
+    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
         images_feats = self.features(input_imgs)
         images_att = self.attention(images_feats)
         output = self.last_pooling_operation(images_att)
