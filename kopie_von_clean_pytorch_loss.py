@@ -50,6 +50,8 @@ from torchmetrics import AUROC
 
 import optuna
 from optuna.trial import TrialState
+from torchvision.transforms import RandomApply, Lambda
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device
