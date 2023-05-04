@@ -444,7 +444,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_oversample" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weughts_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
