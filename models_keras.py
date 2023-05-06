@@ -103,16 +103,16 @@ HGG_list_test_normalized = normalize_images(HGG_list_test)
 LGG_list_test_normalized = normalize_images(LGG_list_test)
 
 
-HGG_list_new_train = resize(HGG_list_train, image_size = 224)
-LGG_list_new_train = resize(LGG_list_train, image_size = 224)
+HGG_list_new_train = resize(HGG_list_train_normalized, image_size = 224)
+LGG_list_new_train = resize(LGG_list_train_normalized, image_size = 224)
 
-HGG_list_new_val = resize(HGG_list_val, image_size = 224)
-LGG_list_new_val = resize(LGG_list_val, image_size = 224)
+HGG_list_new_val = resize(HGG_list_val_normalized, image_size = 224)
+LGG_list_new_val = resize(LGG_list_val_normalized, image_size = 224)
 HGG_list_masks_new_val = resize(HGG_list_val_masks, image_size = 224)
 LGG_list_masks_new_val = resize(LGG_list_val_masks, image_size = 224)
 
-HGG_list_new_test = resize(HGG_list_test, image_size = 224)
-LGG_list_new_test = resize(LGG_list_test, image_size = 224)
+HGG_list_new_test = resize(HGG_list_test_normalized, image_size = 224)
+LGG_list_new_test = resize(LGG_list_test_normalized, image_size = 224)
 
 
 import numpy as np
