@@ -197,6 +197,7 @@ X_val, y_val = shuffle(X_val,y_val, random_state=101)
 X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
 
+
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -257,7 +258,7 @@ print(class_weights)
 
 
 datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input(mode='tf'),
+    #preprocessing_function=preprocess_input(mode='tf'),
     rotation_range=90,
     vertical_flip=True,
     horizontal_flip=True,
