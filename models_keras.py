@@ -257,7 +257,7 @@ print(class_weights)
 
 
 datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input(X_test, mode='tf'),
+    preprocessing_function=preprocess_input(mode='tf'),
     rotation_range=90,
     vertical_flip=True,
     horizontal_flip=True,
