@@ -52,7 +52,7 @@ def resize(slices_list, image_size):
     list_new = []
 
     for img in range(len(slices_list)):
-      img_new=cv2.resize(slices_list[img],(image_size,image_size), interpolation=cv2.INTER_LINEAR)))
+      img_new=cv2.resize(slices_list[img],(image_size,image_size))
       #img_new = tf.expand_dims(img_new, axis=2)
       img_float32 = np.float32(img_new)
       img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
