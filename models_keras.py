@@ -90,10 +90,11 @@ from sklearn.preprocessing import MinMaxScaler
 def normalize_images(images_list):
     scaler = MinMaxScaler()
     normalized_images = []
-    for image in images_list:
-        image_array = np.array(image)
-        image_norm = scaler.fit_transform(image_array)
-        image_norm = image_norm * 255
+    for img in images_list:
+        reshap_img = img.reshape(-1, 3)
+        image_norm = scaler.fit_transform(reshap_img)
+        img = image_norm.reshape(img.shape)
+        image_norm = img * 255
         image_norm = image_norm.astype(np.uint8)
         normalized_images.append(image_norm)
     return normalized_images
@@ -256,7 +257,7 @@ print(class_weights)
 
 
 datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input,
+    preprocessing_function=preprocess_input(X_test, mode='tf'),
     rotation_range=90,
     vertical_flip=True,
     horizontal_flip=True,
