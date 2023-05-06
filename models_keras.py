@@ -92,7 +92,8 @@ def normalize_images(images_list):
     normalized_images = []
     for image in images_list:
         image_norm = scaler.fit_transform(image)
-        normalized_images.append(image_norm)
+        image_norm = image_norm * 255
+        normalized_images.append(image_norm.astype(int))
     return normalized_images
 
 HGG_list_train_normalized = normalize_images(HGG_list_train)
