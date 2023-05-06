@@ -52,7 +52,7 @@ def resize(slices_list, image_size):
     list_new = []
 
     for img in range(len(slices_list)):
-      img_new=cv2.resize(slices_list[img],(image_size,image_size))
+      img_new=cv2.resize(slices_list[img],(image_size,image_size), interpolation=cv2.INTER_LINEAR)))
       #img_new = tf.expand_dims(img_new, axis=2)
       img_float32 = np.float32(img_new)
       img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
@@ -91,10 +91,13 @@ def normalize_images(images_list):
     scaler = MinMaxScaler()
     normalized_images = []
     for image in images_list:
-        image_norm = scaler.fit_transform(image)
+        image_array = np.array(image)
+        image_norm = scaler.fit_transform(image_array)
         image_norm = image_norm * 255
-        normalized_images.append(image_norm.astype(int))
+        image_norm = image_norm.astype(np.uint8)
+        normalized_images.append(image_norm)
     return normalized_images
+
 
 HGG_list_train_normalized = normalize_images(HGG_list_train)
 LGG_list_train_normalized = normalize_images(LGG_list_train)
