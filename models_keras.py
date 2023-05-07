@@ -89,16 +89,16 @@ def preprocess(images_list):
     return list_new
 
 
-HGG_list_new_train = preprocess(HGG_list_train_normalized, image_size = 224)
-LGG_list_new_train = preprocess(LGG_list_train_normalized, image_size = 224)
+HGG_list_new_train = preprocess(HGG_list_train, image_size = 224)
+LGG_list_new_train = preprocess(LGG_list_train, image_size = 224)
 
-HGG_list_new_val = preprocess(HGG_list_val_normalized, image_size = 224)
-LGG_list_new_val = preprocess(LGG_list_val_normalized, image_size = 224)
+HGG_list_new_val = preprocess(HGG_list_val, image_size = 224)
+LGG_list_new_val = preprocess(LGG_list_val, image_size = 224)
 HGG_list_masks_new_val = preprocess(HGG_list_val_masks, image_size = 224)
 LGG_list_masks_new_val = preprocess(LGG_list_val_masks, image_size = 224)
 
-HGG_list_new_test = preprocess(HGG_list_test_normalized, image_size = 224)
-LGG_list_new_test = preprocess(LGG_list_test_normalized, image_size = 224)
+HGG_list_new_test = preprocess(HGG_list_test, image_size = 224)
+LGG_list_new_test = preprocess(LGG_list_test, image_size = 224)
 
 
 import numpy as np
