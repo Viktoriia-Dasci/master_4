@@ -85,7 +85,8 @@ def preprocess(images_list):
         # Convert the image to the RGB color space
         img_color = cv2.cvtColor(img_rescaled, cv2.COLOR_GRAY2RGB)
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
-        list_new.append(img_cropped)
+        img_processed = tf.keras.applications.resnet50.preprocess_input(img_cropped)
+        list_new.append(img_processed)
     return list_new
 
 
@@ -238,7 +239,6 @@ class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encod
 print(class_weights)
 
 datagen = ImageDataGenerator(
-    preprocessing_function=lambda x: tf.keras.applications.resnet50.preprocess_input(x),
     rotation_range=90,
     vertical_flip=True,
     horizontal_flip=True,
