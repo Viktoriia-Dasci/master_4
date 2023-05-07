@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from tifffile import imsave
 import cv2
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard, ModelCheckpoint
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
@@ -26,7 +27,6 @@ from skimage.color import rgb2gray
 from sklearn.utils import shuffle
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from tensorflow_addons import metrics
 
 
@@ -47,19 +47,6 @@ def load_from_dir(path):
           slices_list.append(new_img)
 
       return slices_list
-
-def resize(slices_list, image_size):
-    list_new = []
-
-    for img in range(len(slices_list)):
-      img_new=cv2.resize(slices_list[img],(image_size,image_size))
-      #img_new = tf.expand_dims(img_new, axis=2)
-      img_float32 = np.float32(img_new)
-      img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
-      #img_new = np.stack((img_new,)*3, axis=-1) # add 3rd multichannel dimension, e.g. (224,224) to (224,224,3)
-      list_new.append(img_color)
-
-    return list_new
 
 def add_labels(X, y, images_list, label):
   
@@ -85,39 +72,33 @@ LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_
 LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_masks/')
 
 
-from sklearn.preprocessing import MinMaxScaler
 
-def normalize_images(images_list):
+def preprocess(images_list):
     scaler = MinMaxScaler()
-    normalized_images = []
+    list_new = []
     for img in images_list:
+        #minmax normalization
+        scaler = MinMaxScaler()
         reshap_img = img.reshape(-1, 3)
-        image_norm = scaler.fit_transform(reshap_img)
-        img = image_norm.reshape(img.shape)
-        image_norm = img * 255
-        image_norm = image_norm.astype(np.uint8)
-        normalized_images.append(image_norm)
-    return normalized_images
+        image_norm = scaler.fit_transform(reshap_img.astype(np.float32))
+        img_rescaled = image_norm.reshape(img.shape)
+        # Convert the image to the RGB color space
+        img_color = cv2.cvtColor(img_rescaled, cv2.COLOR_GRAY2RGB)
+        img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
+        list_new.append(img_cropped)
+    return list_new
 
 
-HGG_list_train_normalized = normalize_images(HGG_list_train)
-LGG_list_train_normalized = normalize_images(LGG_list_train)
-HGG_list_val_normalized = normalize_images(HGG_list_val)
-LGG_list_val_normalized = normalize_images(LGG_list_val)
-HGG_list_test_normalized = normalize_images(HGG_list_test)
-LGG_list_test_normalized = normalize_images(LGG_list_test)
+HGG_list_new_train = preprocess(HGG_list_train_normalized, image_size = 224)
+LGG_list_new_train = preprocess(LGG_list_train_normalized, image_size = 224)
 
+HGG_list_new_val = preprocess(HGG_list_val_normalized, image_size = 224)
+LGG_list_new_val = preprocess(LGG_list_val_normalized, image_size = 224)
+HGG_list_masks_new_val = preprocess(HGG_list_val_masks, image_size = 224)
+LGG_list_masks_new_val = preprocess(LGG_list_val_masks, image_size = 224)
 
-HGG_list_new_train = resize(HGG_list_train_normalized, image_size = 224)
-LGG_list_new_train = resize(LGG_list_train_normalized, image_size = 224)
-
-HGG_list_new_val = resize(HGG_list_val_normalized, image_size = 224)
-LGG_list_new_val = resize(LGG_list_val_normalized, image_size = 224)
-HGG_list_masks_new_val = resize(HGG_list_val_masks, image_size = 224)
-LGG_list_masks_new_val = resize(LGG_list_val_masks, image_size = 224)
-
-HGG_list_new_test = resize(HGG_list_test_normalized, image_size = 224)
-LGG_list_new_test = resize(LGG_list_test_normalized, image_size = 224)
+HGG_list_new_test = preprocess(HGG_list_test_normalized, image_size = 224)
+LGG_list_new_test = preprocess(LGG_list_test_normalized, image_size = 224)
 
 
 import numpy as np
@@ -256,9 +237,8 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
 class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
 print(class_weights)
 
-
 datagen = ImageDataGenerator(
-    preprocessing_function=lambda x: preprocess_input(x, mode='tf'),
+    preprocessing_function=lambda x: tf.keras.applications.resnet50.preprocess_input(x),
     rotation_range=90,
     vertical_flip=True,
     horizontal_flip=True,
