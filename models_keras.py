@@ -81,7 +81,7 @@ def preprocess(images_list):
         scaler = MinMaxScaler()
         reshap_img = img.reshape(-1, 3)
         image_norm = scaler.fit_transform(reshap_img.astype(np.float32))
-        img_rescaled = image_norm.reshape(img.shape)
+        img_rescaled = (image_norm * 255).astype(np.float32).reshape(img.shape)
         # Convert the image to the RGB color space
         img_color = cv2.cvtColor(img_rescaled, cv2.COLOR_GRAY2RGB)
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
