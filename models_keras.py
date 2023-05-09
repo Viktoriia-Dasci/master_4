@@ -85,7 +85,7 @@ def preprocess(images_list):
         # Convert the image to the RGB color space
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
-        img_processed = tf.keras.applications.resnet50.preprocess_input(img_cropped)
+        img_processed = tf.keras.applications.densenet.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
 
@@ -186,22 +186,6 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
-  """
-  Method to generate class weights given a set of multi-class or multi-label labels, both one-hot-encoded or not.
-  Some examples of different formats of class_series and their outputs are:
-    - generate_class_weights(['mango', 'lemon', 'banana', 'mango'], multi_class=True, one_hot_encoded=False)
-    {'banana': 1.3333333333333333, 'lemon': 1.3333333333333333, 'mango': 0.6666666666666666}
-    - generate_class_weights([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0]], multi_class=True, one_hot_encoded=True)
-    {0: 0.6666666666666666, 1: 1.3333333333333333, 2: 1.3333333333333333}
-    - generate_class_weights([['mango', 'lemon'], ['mango'], ['lemon', 'banana'], ['lemon']], multi_class=False, one_hot_encoded=False)
-    {'banana': 1.3333333333333333, 'lemon': 0.4444444444444444, 'mango': 0.6666666666666666}
-    - generate_class_weights([[0, 1, 1], [0, 0, 1], [1, 1, 0], [0, 1, 0]], multi_class=False, one_hot_encoded=True)
-    {0: 1.3333333333333333, 1: 0.4444444444444444, 2: 0.6666666666666666}
-  The output is a dictionary in the format { class_label: class_weight }. In case the input is one hot encoded, the class_label would be index
-  of appareance of the label when the dataset was processed. 
-  In multi_class this is np.unique(class_series) and in multi-label np.unique(np.concatenate(class_series)).
-  Author: Angel Igareta (angel@igareta.com)
-  """
   if multi_class:
     # If class is one hot encoded, transform to categorical labels to use compute_class_weight   
     if one_hot_encoded:
@@ -430,11 +414,11 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weughts_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1,
                    callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
      
     return history
@@ -510,9 +494,9 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
 
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-#history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-history_resnet_oversample = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+#history_resnet_oversample = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
 
 
