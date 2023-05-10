@@ -85,7 +85,7 @@ def preprocess(images_list):
         # Convert the image to the RGB color space
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
-        img_processed = tf.keras.applications.densenet.preprocess_input(img_cropped)
+        img_processed = tf.keras.applications.inception_v3.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
 
@@ -401,7 +401,7 @@ from kerastuner.engine.hyperparameters import HyperParameters
 #    return history
 
 
-def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
+def model_train(model_name, image_size = 224, learning_rate = 0.001, dropout=0.6):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
@@ -414,7 +414,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
@@ -494,10 +494,11 @@ def model_train(model_name, image_size = 224, learning_rate = 0.1, dropout=0.5):
 
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+#history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
 #history_resnet_oversample = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
+history_inceptionv3 = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.001, dropout=0.6)
 
 
 def plot_acc_loss_auc(model_history, folder_path):
@@ -540,8 +541,9 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.savefig(os.path.join(folder_path, 'auc.png'))
     plt.close()
 
+plot_acc_loss_auc(history_inceptionv3,  '/home/viktoriia.trokhova/plots/inception')
 
-plot_acc_loss_auc(history_resnet_oversample,  '/home/viktoriia.trokhova/plots/resnet')
+#plot_acc_loss_auc(history_resnet_oversample,  '/home/viktoriia.trokhova/plots/resnet')
    
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)))
 
