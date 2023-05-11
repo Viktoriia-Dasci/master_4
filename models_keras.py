@@ -410,13 +410,13 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(2,activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+    adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
+    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
