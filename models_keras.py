@@ -82,7 +82,7 @@ def preprocess(images_list):
         reshap_img = img.reshape(-1, 3)
         image_norm = scaler.fit_transform(reshap_img.astype(np.float32))
         img_rescaled = image_norm.reshape(img.shape)
-        img_rescaled = img_rescaled * 255
+        #img_rescaled = img_rescaled * 255
         # Convert the image to the RGB color space
         img_color = cv2.cvtColor(img_rescaled.astype(np.float32), cv2.COLOR_GRAY2RGB)
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
@@ -415,7 +415,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_scale" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
