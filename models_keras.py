@@ -74,20 +74,14 @@ LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/tes
 
 
 def preprocess(images_list):
-    scaler = MinMaxScaler()
     list_new = []
     for img in images_list:
-        #minmax normalization
-#         scaler = MinMaxScaler()
-#         reshap_img = img.reshape(-1, 3)
-#         image_norm = scaler.fit_transform(reshap_img.astype(np.float32))
-#         img_rescaled = image_norm.reshape(img.shape)
-        #img_rescaled = img_rescaled * 255
-        # Convert the image to the RGB color space
-        img = np.clip(img, 0, 255).astype(np.float32)
-        img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-        img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)  # crop to 224x224
-        img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped, mode='tf')
+        img_min = img.min()
+        img_max = img.max()
+        img_norm = (img - img_min) / (img_max - img_min)
+        img_color = cv2.cvtColor(img_norm.astype(np.float32), cv2.COLOR_GRAY2RGB)
+        img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
+        img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
 
@@ -416,7 +410,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_clip" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_norm" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
