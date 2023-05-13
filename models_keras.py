@@ -72,18 +72,14 @@ LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_
 LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_masks/')
 
 
-
 def preprocess(images_list):
     list_new = []
     for img in images_list:
-#         img_min = img.min()
-#         img_max = img.max()
-#         img_norm = (img - img_min) / (img_max - img_min)
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
-        img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
+
 
 
 HGG_list_new_train = preprocess(HGG_list_train)
@@ -98,24 +94,7 @@ HGG_list_new_test = preprocess(HGG_list_test)
 LGG_list_new_test = preprocess(LGG_list_test)
 
 
-import numpy as np
-from sklearn.utils import resample
 
-# # Determine maximum number of samples in any class
-# max_count = np.max([len(HGG_list_new_train), len(LGG_list_new_train)])
-
-# # Oversample each class to match max_count
-# HGG_list_new_train_resampled = resample(HGG_list_new_train, 
-#                                          replace=True,
-#                                          n_samples=max_count,
-#                                          random_state=42)
-# LGG_list_new_train_resampled = resample(LGG_list_new_train, 
-#                                          replace=True,
-#                                          n_samples=max_count,
-#                                          random_state=42)
-
-# print(len(HGG_list_new_train_resampled))
-# print(len(LGG_list_new_train_resampled))
 
 X_train = []
 y_train = []
@@ -219,7 +198,11 @@ class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encod
 print(class_weights)
 
 datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input,
     rotation_range=90,
+   #width_shift_range=0.1,
+   #height_shift_range=0.1,
+   #shear_range=0.1,
     vertical_flip=True,
     horizontal_flip=True,
     fill_mode='nearest')
@@ -410,7 +393,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_gen" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
