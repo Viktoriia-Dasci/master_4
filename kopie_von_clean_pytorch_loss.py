@@ -88,9 +88,9 @@ import torchvision.transforms as T
 
 train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                        transforms.Resize((224,224)),                                  
-                                       torchvision.transforms.Normalize(
-                                           mean=[0.485, 0.456, 0.406],
-                                           std=[0.229, 0.224, 0.225],),
+#                                        torchvision.transforms.Normalize(
+#                                            mean=[0.485, 0.456, 0.406],
+#                                            std=[0.229, 0.224, 0.225],),
                                        ])
 
 aug_transform = transforms.Compose([
@@ -104,10 +104,10 @@ aug_transform = transforms.Compose([
 
 val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                       transforms.Resize((224,224)),
-                                      torchvision.transforms.Normalize(
-                                          mean=[0.485, 0.456, 0.406],
-                                          std=[0.229, 0.224, 0.225],
-    ),
+#                                       torchvision.transforms.Normalize(
+#                                           mean=[0.485, 0.456, 0.406],
+#                                           std=[0.229, 0.224, 0.225],
+#     ),
                                       ])
 
 class myDataset_train(Dataset):
@@ -1008,7 +1008,7 @@ def train_with_early_stopping(model, optimizer, patience, PATH):
   
 # #patience = 15
 # #PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
-best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.0051), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_pytorch.pt')
+best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.0051), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_nonorm_pytorch.pt')
 
         
 # plot loss and accuracy for each epoch
