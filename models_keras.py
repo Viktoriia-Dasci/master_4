@@ -77,7 +77,8 @@ def preprocess(images_list):
     list_new = []
     for img in images_list:
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-        img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
+        img_cropped = cv2.resize(img_color, (224, 224))
+        #img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
         list_new.append(img_cropped)
     return list_new
 
@@ -199,7 +200,7 @@ class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encod
 print(class_weights)
 
 datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input,
+    #preprocessing_function=preprocess_input,
     rotation_range=90,
    #width_shift_range=0.1,
    #height_shift_range=0.1,
@@ -394,7 +395,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_gen" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_resize" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
