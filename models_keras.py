@@ -77,7 +77,10 @@ def preprocess(images_list):
     list_new = []
     for img in images_list:
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-        img_cropped = cv2.resize(img_color, (224, 224))
+        x_offset = (240 - 224) // 2
+        y_offset = (240 - 224) // 2
+        # Crop the image
+        img_cropped = img_color[y_offset:y_offset+224, x_offset:x_offset+224]
         img_cropped = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         #img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
         list_new.append(img_cropped)
@@ -396,9 +399,9 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_resize" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_crop" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 5, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1,
                    callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
