@@ -71,8 +71,6 @@ HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
 HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
-HGG_list_masks_new_val = preprocess(HGG_list_val_masks)
-LGG_list_masks_new_val = preprocess(LGG_list_val_masks)
 
 
 X_val = []
