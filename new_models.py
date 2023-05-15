@@ -28,6 +28,15 @@ from sklearn.utils import shuffle
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow_addons import metrics
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.metrics import f1_score
+import keras_tuner
+import tensorflow as tf
+from tensorflow.keras.optimizers import SGD
+from kerastuner.tuners import Hyperband
+from kerastuner.engine.hyperparameters import HyperParameters
+
 
 def save_to_dir(slices, path):
       for i in range(len(slices)):
@@ -66,52 +75,33 @@ def preprocess(images_list):
         img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
-    
+
+
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
+
 HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
 
 
-X_val = []
-y_val = []
-msk_val = []
-X_val, y_val = add_labels(X_val, y_val, HGG_list_new_val, label='HGG')
+# Combine the HGG and LGG lists
+X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
+X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
+X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
-msk_val = HGG_list_masks_new_val + LGG_list_masks_new_val
-X_test = []
-y_test = []
-X_test, y_test = add_labels(X_test, y_test, HGG_list_new_test, label='HGG')
-X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
-X_train = np.array(X_train)
-y_train = np.array(y_train)
-X_val = np.array(X_val)
-y_val = np.array(y_val)
-msk_val = np.array(msk_val)
-X_test = np.array(X_test)
-y_test = np.array(y_test)
-labels = ['HGG', 'LGG']
-y_train_new = []
-for i in y_train:
-    y_train_new.append(labels.index(i))
-y_train = y_train_new
-y_train = tf.keras.utils.to_categorical(y_train)
-y_val_new = []
-for i in y_val:
-    y_val_new.append(labels.index(i))
-y_val = y_val_new
-y_val = tf.keras.utils.to_categorical(y_val)
-y_test_new = []
-for i in y_test:
-    y_test_new.append(labels.index(i))
-y_test = y_test_new
-y_test = tf.keras.utils.to_categorical(y_test)
-X_train, y_train = shuffle(X_train,y_train, random_state=101)
-X_val, y_val = shuffle(X_val,y_val, random_state=101)
-X_test, y_test = shuffle(X_test, y_test, random_state=101)
-import numpy as np
-from sklearn.utils.class_weight import compute_class_weight
-from sklearn.preprocessing import MultiLabelBinarizer
+
+# Convert labels to numerical values and one-hot encoding
+labels = {'HGG': 0, 'LGG': 1}
+y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
+
+# Convert data to arrays and shuffle
+X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
+X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
+
+
+
+
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
   if multi_class:
     # If class is one hot encoded, transform to categorical labels to use compute_class_weight   
@@ -156,14 +146,7 @@ datagen = ImageDataGenerator(
 train_generator = datagen.flow(
     X_train, y_train,
     shuffle=True)
-from sklearn.metrics import f1_score
-import numpy as np
 
-import keras_tuner
-import tensorflow as tf
-from tensorflow.keras.optimizers import SGD
-from kerastuner.tuners import Hyperband
-from kerastuner.engine.hyperparameters import HyperParameters
 
 def model_train(model_name, image_size, learning_rate, dropout):
     #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
