@@ -158,7 +158,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     #adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
+    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/history_densenet_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
