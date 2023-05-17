@@ -186,28 +186,39 @@ train_generator = datagen.flow(
     X_train, y_train,
     shuffle=True)
 
+def f1_score(y_true, y_pred):
+    y_pred = K.argmax(y_pred, axis=-1)
+    y_true = K.argmax(y_true, axis=-1)
+    tp = K.sum(K.cast(K.logical_and(K.equal(y_true, 1), K.equal(y_pred, 1)), dtype=tf.float32))
+    fp = K.sum(K.cast(K.logical_and(K.equal(y_true, 0), K.equal(y_pred, 1)), dtype=tf.float32))
+    fn = K.sum(K.cast(K.logical_and(K.equal(y_true, 1), K.equal(y_pred, 0)), dtype=tf.float32))
+    precision = tp / (tp + fp + K.epsilon())
+    recall = tp / (tp + fn + K.epsilon())
+    f1 = 2 * precision * recall / (precision + recall + K.epsilon())
+    return f1
+
+
+
 
 def model_train(model_name, image_size, learning_rate, dropout):
-    #model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
-    model = tf.keras.layers.Dense(2,activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-    #adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
+
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics= ['accuracy', 'AUC'])
-    #callbacks
-    #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/history_inception_weights" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-    early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=20, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 10, min_delta = 0.001, mode='max',verbose=1)
-    #fitting the model
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1,
-                   callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
-     
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
+
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/history_inception_weights" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=20, verbose=1, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=10, min_delta=0.001, mode='max', verbose=1)
+
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+
     return history
+
 
 
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
