@@ -223,7 +223,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss=focal_loss, optimizer=adam, metrics=['accuracy', f1_score])
 
-    checkpoint = ModelCheckpoint("/content/drive/MyDrive/New_models/effnet_focal_f1" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_focal_f1" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
 
