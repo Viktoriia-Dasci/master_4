@@ -155,12 +155,12 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     return dict(zip(class_labels, class_weights))
 
     
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/HGG_t2')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/LGG_t2')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/train/HGG_stack')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/train/LGG_stack')
 
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/HGG_t2')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/LGG_t2')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/val/HGG_stack')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/val/HGG_stack')
 
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
@@ -229,7 +229,7 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
 
 def model_train(model_name, image_size, learning_rate, dropout):
     model = model_name.output
-    model = tf.keras.layers.GlobalAveragePooling2D()(model)
+    #model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dense(128, activation='relu')(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
@@ -238,7 +238,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss=focal_loss, optimizer=adam, metrics=['accuracy', f1_score])
 
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_focal_f1" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_stacked" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
 
@@ -248,7 +248,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
 
 history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
 
-plot_acc_loss_auc(history_effnet,  '/home/viktoriia.trokhova/plots/inception')
+plot_acc_loss_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
 
 
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
