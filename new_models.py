@@ -65,9 +65,10 @@ def add_labels(X, y, images_list, label):
     return X, y
 
 
-def plot_acc_loss_auc(model_history, folder_path):
+def plot_acc_loss_f1_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
+        
     loss = model_history.history['loss']
     val_loss = model_history.history['val_loss']
     epochs = range(1, len(loss) + 1)
@@ -79,6 +80,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.legend()
     plt.savefig(os.path.join(folder_path, 'loss.png'))
     plt.close()
+    
     acc = model_history.history['accuracy']
     val_acc = model_history.history['val_accuracy']
     plt.plot(epochs, acc, 'y', label='Training accuracy')
@@ -89,16 +91,29 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.legend()
     plt.savefig(os.path.join(folder_path, 'accuracy.png'))
     plt.close()
-    auc = model_history.history['auc']
-    val_auc = model_history.history['val_auc']
-    plt.plot(epochs, auc, 'y', label='Training AUC')
-    plt.plot(epochs, val_auc, 'r', label='Validation AUC')
-    plt.title('Training and validation AUC')
+    
+#     auc = model_history.history['auc']
+#     val_auc = model_history.history['val_auc']
+#     plt.plot(epochs, auc, 'y', label='Training AUC')
+#     plt.plot(epochs, val_auc, 'r', label='Validation AUC')
+#     plt.title('Training and validation AUC')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('AUC')
+#     plt.legend()
+#     plt.savefig(os.path.join(folder_path, 'auc.png'))
+#     plt.close()
+
+    f1 = model_history.history['f1_score']
+    val_f1 = model_history.history['val_f1_score']
+    plt.plot(epochs, f1, 'y', label='Training F1 Score')
+    plt.plot(epochs, val_f1, 'r', label='Validation F1 Score')
+    plt.title('Training and validation F1 Score')
     plt.xlabel('Epochs')
-    plt.ylabel('AUC')
+    plt.ylabel('F1 Score')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'auc.png'))
+    plt.savefig(os.path.join(folder_path, 'f1_score.png'))
     plt.close()
+
 
 def preprocess(images_list):
     list_new = []
