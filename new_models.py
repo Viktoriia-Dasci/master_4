@@ -183,7 +183,8 @@ y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
 X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
 X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
-
+print(X_train.shape())
+print(y_train.shape())
 
 #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
 class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
