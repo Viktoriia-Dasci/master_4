@@ -240,7 +240,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss=focal_loss, optimizer=adam, metrics=['accuracy', f1_score])
+    model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
 
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_stacked" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
@@ -252,7 +252,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
 
 history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
 
-plot_acc_loss_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
+plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
 
 
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
