@@ -119,10 +119,10 @@ def preprocess(images_list):
     list_new = []
     for img in images_list:
         #img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-         img = cv2.resize(img, (224, 224))
+        img_res = cv2.resize(img, (224, 224))
         #img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224)
         #img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
-        list_new.append(img)
+        list_new.append(img_res)
     return list_new
 
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
