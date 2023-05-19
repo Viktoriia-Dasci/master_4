@@ -119,7 +119,11 @@ def preprocess(images_list):
     list_new = []
     for img in images_list:
         #img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-        img_res = cv2.resize(img, (224, 224))
+        min_value = np.min(img)
+        max_value = np.max(img)
+        normalized_image = (img - min_value) / (max_value - min_value)
+        normalized_image = 255* normalized_image
+        img_res = cv2.resize(normalized_image, (224, 224))
         #img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224)
         #img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_res)
