@@ -159,12 +159,12 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     return dict(zip(class_labels, class_weights))
 
     
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/train/HGG_stack')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/train/LGG_stack')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI/train/HGG_stack')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI/train/LGG_stack')
 
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/val/HGG_stack')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_slices/val/HGG_stack')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI/val/HGG_stack')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI/val/HGG_stack')
 
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
