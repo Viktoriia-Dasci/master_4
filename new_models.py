@@ -246,11 +246,11 @@ def model_train(model_name, image_size, learning_rate, dropout):
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss=focal_loss, optimizer=sgd, metrics=['accuracy', f1_score])
 
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_flair" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_flair" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=20, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
 
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
 
     return history
 
@@ -260,11 +260,11 @@ def model_train(model_name, image_size, learning_rate, dropout):
 
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0009, dropout=0.4)
 
-#history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
+#history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
-plot_acc_loss_f1_auc(history_resnet_weights,  '/home/viktoriia.trokhova/plots/resnet')
+plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
