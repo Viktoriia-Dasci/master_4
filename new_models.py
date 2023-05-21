@@ -118,12 +118,12 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
 def preprocess(images_list):
     list_new = []
     for img in images_list:
-        #img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
+        img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
 #         mean_value = np.mean(img)
 #         std_value = np.std(img)
 #         normalized_image = (img - mean_value) / std_value
         #img_res = cv2.resize(img, (224, 224))
-        img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224)
+        img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
         img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
