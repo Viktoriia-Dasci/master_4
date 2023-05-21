@@ -78,7 +78,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'loss_stacked.png'))
+    plt.savefig(os.path.join(folder_path, 'loss_flair.png'))
     plt.close()
     
     acc = model_history.history['accuracy']
@@ -89,7 +89,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'accuracy_stacked.png'))
+    plt.savefig(os.path.join(folder_path, 'accuracy_flair.png'))
     plt.close()
     
 #     auc = model_history.history['auc']
@@ -111,7 +111,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('F1 Score')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'f1_score_stacked.png'))
+    plt.savefig(os.path.join(folder_path, 'f1_score_flair.png'))
     plt.close()
 
 
@@ -159,12 +159,12 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     return dict(zip(class_labels, class_weights))
 
     
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/train/HGG_stack')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/train/LGG_stack')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_stack')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/LGG_stack')
 
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/val/HGG_stack')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/val/HGG_stack')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/HGG_stack')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/HGG_stack')
 
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
@@ -244,9 +244,9 @@ def model_train(model_name, image_size, learning_rate, dropout):
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     #adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=sgd, metrics=['accuracy', f1_score])
 
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_stacked_new" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_flair" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=20, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
 
