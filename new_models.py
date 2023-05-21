@@ -247,7 +247,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
 
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_stacked_new" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
-    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
+    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=20, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
 
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
