@@ -59,14 +59,14 @@ def add_labels(X, y, images_list, label):
     
 HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
 #HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/LGG_flair')
 #LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
 
 #/Mri_slices_new/train/HGG_t2
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/HGG_flair')
 #HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/LGG_flair')
 #LGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/LGG_masks')
 
 #HGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_t2')
