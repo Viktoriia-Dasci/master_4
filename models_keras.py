@@ -57,16 +57,16 @@ def add_labels(X, y, images_list, label):
 
     return X, y
     
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/HGG_t2')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
 #HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/LGG_t2')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
 #LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
 
 #/Mri_slices_new/train/HGG_t2
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/HGG_t2')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
 #HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/LGG_t2')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
 #LGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/LGG_masks')
 
 #HGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_t2')
@@ -79,12 +79,12 @@ def preprocess(images_list):
     list_new = []
     for img in images_list:
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-        x_offset = (240 - 224) // 2
-        y_offset = (240 - 224) // 2
+#         x_offset = (240 - 224) // 2
+#         y_offset = (240 - 224) // 2
         # Crop the image
-        img_cropped = img_color[y_offset:y_offset+224, x_offset:x_offset+224]
+        #img_cropped = img_color[y_offset:y_offset+224, x_offset:x_offset+224]
+        img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
         img_cropped = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
-        #img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
         list_new.append(img_cropped)
     return list_new
 
@@ -95,11 +95,11 @@ LGG_list_new_train = preprocess(LGG_list_train)
 
 HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
-HGG_list_masks_new_val = preprocess(HGG_list_val_masks)
-LGG_list_masks_new_val = preprocess(LGG_list_val_masks)
+# HGG_list_masks_new_val = preprocess(HGG_list_val_masks)
+# LGG_list_masks_new_val = preprocess(LGG_list_val_masks)
 
-HGG_list_new_test = preprocess(HGG_list_test)
-LGG_list_new_test = preprocess(LGG_list_test)
+# HGG_list_new_test = preprocess(HGG_list_test)
+# LGG_list_new_test = preprocess(LGG_list_test)
 
 
 
@@ -115,28 +115,28 @@ X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 
 X_val = []
 y_val = []
-msk_val = []
+#msk_val = []
 
 X_val, y_val = add_labels(X_val, y_val, HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
-msk_val = HGG_list_masks_new_val + LGG_list_masks_new_val
+#msk_val = HGG_list_masks_new_val + LGG_list_masks_new_val
 
 
-X_test = []
-y_test = []
+# X_test = []
+# y_test = []
 
-X_test, y_test = add_labels(X_test, y_test, HGG_list_new_test, label='HGG')
-X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
+# X_test, y_test = add_labels(X_test, y_test, HGG_list_new_test, label='HGG')
+# X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
 
 X_train = np.array(X_train)
 y_train = np.array(y_train)
 
 X_val = np.array(X_val)
 y_val = np.array(y_val)
-msk_val = np.array(msk_val)
+#msk_val = np.array(msk_val)
 
-X_test = np.array(X_test)
-y_test = np.array(y_test)
+# X_test = np.array(X_test)
+# y_test = np.array(y_test)
 
 labels = ['HGG', 'LGG']
 y_train_new = []
@@ -151,15 +151,15 @@ for i in y_val:
 y_val = y_val_new
 y_val = tf.keras.utils.to_categorical(y_val)
 
-y_test_new = []
-for i in y_test:
-    y_test_new.append(labels.index(i))
-y_test = y_test_new
-y_test = tf.keras.utils.to_categorical(y_test)
+# y_test_new = []
+# for i in y_test:
+#     y_test_new.append(labels.index(i))
+# y_test = y_test_new
+# y_test = tf.keras.utils.to_categorical(y_test)
 
 X_train, y_train = shuffle(X_train,y_train, random_state=101)
 X_val, y_val = shuffle(X_val,y_val, random_state=101)
-X_test, y_test = shuffle(X_test, y_test, random_state=101)
+#X_test, y_test = shuffle(X_test, y_test, random_state=101)
 
 
 
