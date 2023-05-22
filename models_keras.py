@@ -58,19 +58,21 @@ def add_labels(X, y, images_list, label):
     return X, y
     
 HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/HGG_t2')
-HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
+#HGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/HGG_masks')
 LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/train/LGG_t2')
-LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
+#LGG_list_train_mask = load_from_dir('/home/viktoriia.trokhova/Mask_slices/train/LGG_masks')
+
+#/Mri_slices_new/train/HGG_t2
 
 HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/HGG_t2')
-HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
+#HGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/HGG_masks')
 LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/val/LGG_t2')
-LGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/LGG_masks')
+#LGG_list_val_masks = load_from_dir('/home/viktoriia.trokhova/Mask_slices/val/LGG_masks')
 
-HGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_t2')
-HGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_masks/')
-LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_t2')
-LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_masks/')
+#HGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_t2')
+#HGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/HGG_masks/')
+#LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_t2')
+#LGG_list_test_masks = load_from_dir('/home/viktoriia.trokhova/Mri_slices_new/test/LGG_masks/')
 
 
 def preprocess(images_list):
@@ -399,7 +401,7 @@ def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.
     model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
     #callbacks
     #tensorboard = TensorBoard(log_dir = 'logs')
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_weights_crop" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_flair" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 5, min_delta = 0.001, mode='max',verbose=1)
     #fitting the model
@@ -499,7 +501,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'loss.png'))
+    plt.savefig(os.path.join(folder_path, 'loss_flair.png'))
     plt.close()
 
     acc = model_history.history['accuracy']
@@ -511,7 +513,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'accuracy.png'))
+    plt.savefig(os.path.join(folder_path, 'accuracy_flair.png'))
     plt.close()
 
     auc = model_history.history['auc']
@@ -523,7 +525,7 @@ def plot_acc_loss_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('AUC')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'auc.png'))
+    plt.savefig(os.path.join(folder_path, 'auc_flair.png'))
     plt.close()
 
 plot_acc_loss_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
