@@ -78,7 +78,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'loss_flair.png'))
+    plt.savefig(os.path.join(folder_path, 'loss_stacked.png'))
     plt.close()
     
     acc = model_history.history['accuracy']
@@ -89,7 +89,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'accuracy_flair.png'))
+    plt.savefig(os.path.join(folder_path, 'accuracy_stacked.png'))
     plt.close()
     
 #     auc = model_history.history['auc']
@@ -111,7 +111,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('F1 Score')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'f1_score_flair.png'))
+    plt.savefig(os.path.join(folder_path, 'f1_score_stacked.png'))
     plt.close()
 
 
@@ -246,7 +246,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss=focal_loss, optimizer=sgd, metrics=['accuracy', f1_score])
 
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_flair" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_stacked" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=20, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
 
