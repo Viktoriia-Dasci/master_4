@@ -68,7 +68,7 @@ def add_labels(X, y, images_list, label):
 def plot_acc_loss_f1_auc(model_history, folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
-        
+
     loss = model_history.history['loss']
     val_loss = model_history.history['val_loss']
     epochs = range(1, len(loss) + 1)
@@ -78,9 +78,16 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
+
+    # Write exact values on the plot
+    for epoch, value in zip(epochs, loss):
+        plt.text(epoch, value, str(round(value, 4)), ha='center', va='bottom')
+    for epoch, value in zip(epochs, val_loss):
+        plt.text(epoch, value, str(round(value, 4)), ha='center', va='bottom')
+
     plt.savefig(os.path.join(folder_path, 'loss_stacked.png'))
     plt.close()
-    
+
     acc = model_history.history['accuracy']
     val_acc = model_history.history['val_accuracy']
     plt.plot(epochs, acc, 'y', label='Training accuracy')
@@ -89,19 +96,15 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
+
+    # Write exact values on the plot
+    for epoch, value in zip(epochs, acc):
+        plt.text(epoch, value, str(round(value, 4)), ha='center', va='bottom')
+    for epoch, value in zip(epochs, val_acc):
+        plt.text(epoch, value, str(round(value, 4)), ha='center', va='bottom')
+
     plt.savefig(os.path.join(folder_path, 'accuracy_stacked.png'))
     plt.close()
-    
-#     auc = model_history.history['auc']
-#     val_auc = model_history.history['val_auc']
-#     plt.plot(epochs, auc, 'y', label='Training AUC')
-#     plt.plot(epochs, val_auc, 'r', label='Validation AUC')
-#     plt.title('Training and validation AUC')
-#     plt.xlabel('Epochs')
-#     plt.ylabel('AUC')
-#     plt.legend()
-#     plt.savefig(os.path.join(folder_path, 'auc.png'))
-#     plt.close()
 
     f1 = model_history.history['f1_score']
     val_f1 = model_history.history['val_f1_score']
@@ -111,6 +114,13 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('F1 Score')
     plt.legend()
+
+    # Write exact values on the plot
+    for epoch, value in zip(epochs, f1):
+        plt.text(epoch, value, str(round(value, 4)), ha='center', va='bottom')
+    for epoch, value in zip(epochs, val_f1):
+        plt.text(epoch, value, str(round(value, 4)), ha='center', va='bottom')
+
     plt.savefig(os.path.join(folder_path, 'f1_score_stacked.png'))
     plt.close()
 
