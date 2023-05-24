@@ -110,6 +110,8 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.legend()
     plt.savefig(os.path.join(folder_path, 'f1_score_flair.png'))
     plt.close()
+
+
 def preprocess(images_list):
     list_new = []
     for img in images_list:
@@ -122,6 +124,8 @@ def preprocess(images_list):
         img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_processed)
     return list_new
+
+
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
   if multi_class:
     # If class is one hot encoded, transform to categorical labels to use compute_class_weight   
