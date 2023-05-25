@@ -231,6 +231,22 @@ def model_train(model_name, image_size, learning_rate, dropout):
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    
+        
+    train_loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    train_accuracy = history.history['accuracy']
+    val_accuracy = history.history['val_accuracy']
+    train_f1_score = history.history['f1_score']
+    val_f1_score = history.history['val_f1_score']
+
+    print("Train Loss:", train_loss)
+    print("Val Loss:", val_loss)
+    print("Train Accuracy:", train_accuracy)
+    print("Val Accuracy:", val_accuracy)
+    print("Train F1 Score:", train_f1_score)
+    print("Val F1 Score:", val_f1_score)  
+      
     return history
   
   
