@@ -274,8 +274,8 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
-def model_train(hp, model_name):
-    #model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
+def model_effnet(hp):
+    model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
@@ -305,7 +305,7 @@ hp = HyperParameters()
 
 
 tuner = Hyperband(
-    model_train(model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))),
+    model_effnet,
     objective=keras_tuner.Objective("val_f1_score", direction="max"),
     #overwrite=True,
     max_epochs=50,
