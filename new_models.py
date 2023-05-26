@@ -274,7 +274,7 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
-def model_train(hp):
+def model_train(hp, model_name):
     #model_name = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224,224,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
