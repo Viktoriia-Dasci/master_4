@@ -239,7 +239,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss=focal_loss, optimizer=sgd, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=adam, metrics=['accuracy', f1_score])
 
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/effnet_stacked_tuned" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
