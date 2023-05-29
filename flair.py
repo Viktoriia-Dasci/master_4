@@ -292,7 +292,7 @@ hp = HyperParameters()
 
 
 tuner = Hyperband(
-    model_densenet,
+    model_inception,
     objective=keras_tuner.Objective("val_f1_score", direction="max"),
     overwrite=True,
     max_epochs=30,
