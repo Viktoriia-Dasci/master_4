@@ -261,8 +261,8 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
-def model_inception(hp):
-    model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+def model_effnet(hp):
+    model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
@@ -283,7 +283,7 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss='categorical crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -292,7 +292,7 @@ hp = HyperParameters()
 
 
 tuner = Hyperband(
-    model_inception,
+    model_effnet,
     objective=keras_tuner.Objective("val_f1_score", direction="max"),
     overwrite=True,
     max_epochs=30,
