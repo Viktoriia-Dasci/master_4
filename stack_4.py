@@ -230,16 +230,14 @@ def model_train(model_name, image_size, learning_rate, dropout):
     x = tf.keras.layers.Dropout(rate=dropout)(x)
     x = tf.keras.layers.Dense(48, activation='relu')(x)
     x = tf.keras.layers.Dense(80, activation='relu')(x)
-    outputs = tf.keras.layers.Dense(2, activation='softmax')(x)
+    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(x)
     model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
+    model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_stack_4" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
-    
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)    
         
     train_loss = history.history['loss']
     val_loss = history.history['val_loss']
