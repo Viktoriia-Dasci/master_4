@@ -198,7 +198,7 @@ print(y_val.shape)
 
 
 #class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
-class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=False)
+class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=True)
 print(class_weights)
 datagen = ImageDataGenerator(
     rotation_range=90,
