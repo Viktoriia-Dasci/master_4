@@ -189,8 +189,8 @@ print(X_train.shape)
 print(y_train.shape)
 print(X_val.shape)
 print(y_val.shape)
-class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
-#class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+#class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=False)
 print(class_weights)
 datagen = ImageDataGenerator(
     rotation_range=90,
@@ -226,7 +226,6 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     
     return tf.reduce_mean(focal_loss, axis=-1)
 
-from tensorflow.keras.utils import to_categorical
 
 def model_train(model_name, image_size, learning_rate, dropout):
     model = model_name.output
@@ -238,13 +237,11 @@ def model_train(model_name, image_size, learning_rate, dropout):
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
     
-    # Convert true labels to one-hot encoded format
-    y_val_one_hot = to_categorical(y_val)
     
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_t1ce" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val_one_hot), epochs=50, batch_size=32, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
 
     
         
