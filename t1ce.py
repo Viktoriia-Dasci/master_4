@@ -231,7 +231,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     #adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
+    model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_t1ce" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
