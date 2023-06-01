@@ -174,6 +174,9 @@ X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
 labels = {'HGG': 0, 'LGG': 1}
 
+y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
+
 # Convert the labels to numeric values
 y_train_numeric = np.array([labels[y] for y in y_train])
 y_val_numeric = np.array([labels[y] for y in y_val])
@@ -185,27 +188,17 @@ X_train = np.array(X_train)
 X_val, y_val = shuffle(X_val, y_val_numeric, random_state=101)
 X_train, y_train = shuffle(X_train, y_train_numeric, random_state=101)
 
+
+
 print(X_train.shape)
 print(y_train.shape)
 print(X_val.shape)
 print(y_val.shape)
 
-from sklearn.utils import class_weight
-
-# Convert y_train and y_val to lists
-y_train_list = list(y_train)
-y_val_list = list(y_val)
-
-# Compute class weights
-class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train_list), y_train_list)
-
-# Convert class weights to a dictionary
-class_weights_dict = dict(enumerate(class_weights))
-
 
 
 #class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
-#class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=False)
+class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=False)
 print(class_weights)
 datagen = ImageDataGenerator(
     rotation_range=90,
