@@ -213,8 +213,7 @@ train_generator = datagen.flow(
 
 
 def f1_score(y_true, y_pred):
-    y_pred = tf.argmax(y_pred, axis=-1)
-    y_true = tf.argmax(y_true, axis=-1)
+    y_pred = tf.cast(tf.math.greater_equal(y_pred, 0.5), dtype=tf.float32)
     tp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 1)), dtype=tf.float32))
     fp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 0), tf.equal(y_pred, 1)), dtype=tf.float32))
     fn = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 0)), dtype=tf.float32))
@@ -222,6 +221,7 @@ def f1_score(y_true, y_pred):
     recall = tp / (tp + fn + tf.keras.backend.epsilon())
     f1 = 2 * precision * recall / (precision + recall + tf.keras.backend.epsilon())
     return f1
+
 
 
 def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
