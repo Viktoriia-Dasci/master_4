@@ -192,11 +192,16 @@ print(y_val.shape)
 
 from sklearn.utils import class_weight
 
+# Convert y_train and y_val to lists
+y_train_list = list(y_train)
+y_val_list = list(y_val)
+
 # Compute class weights
-class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train_list), y_train_list)
 
 # Convert class weights to a dictionary
 class_weights_dict = dict(enumerate(class_weights))
+
 
 
 #class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
