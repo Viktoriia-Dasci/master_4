@@ -193,10 +193,11 @@ print(y_val.shape)
 from sklearn.utils import class_weight
 
 # Compute class weights
-class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train_numeric), y_train_numeric)
+class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
 
 # Convert class weights to a dictionary
-class_weights_dict = {i: class_weights[i] for i in range(len(class_weights))}
+class_weights_dict = dict(enumerate(class_weights))
+
 
 #class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
 #class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=False)
