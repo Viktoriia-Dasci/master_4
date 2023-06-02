@@ -112,18 +112,18 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.close()
 
 
-def preprocess(images_list):
-    list_new = []
-    for img in images_list:
-#       img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-#         mean_value = np.mean(img)
-#         std_value = np.std(img)
-#         normalized_image = (img - mean_value) / std_value
-        #img_res = cv2.resize(img, (224, 224))
-        img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224)
-      # img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
-        list_new.append(img_cropped)
-    return list_new
+# def preprocess(images_list):
+#     list_new = []
+#     for img in images_list:
+# #       img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
+# #         mean_value = np.mean(img)
+# #         std_value = np.std(img)
+# #         normalized_image = (img - mean_value) / std_value
+#         #img_res = cv2.resize(img, (224, 224))
+#         img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224, 4)
+#       # img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
+#         list_new.append(img_cropped)
+#     return list_new
 
 
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
@@ -163,29 +163,35 @@ LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_sta
 HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
 LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/LGG_stack')
 
-HGG_list_new_train = preprocess(HGG_list_train)
-LGG_list_new_train = preprocess(LGG_list_train)
-HGG_list_new_val = preprocess(HGG_list_val)
-LGG_list_new_val = preprocess(LGG_list_val)
+# HGG_list_new_train = preprocess(HGG_list_train)
+# LGG_list_new_train = preprocess(LGG_list_train)
+# HGG_list_new_val = preprocess(HGG_list_val)
+# LGG_list_new_val = preprocess(LGG_list_val)
+# Combine the HGG and LGG lists
+
 # Combine the HGG and LGG lists
 X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
 X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
-# Convert labels to numerical values and one-hot encoding
+
+# Convert labels to numerical values
 labels = {'HGG': 0, 'LGG': 1}
-y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
-y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
+y_train_numeric = np.array([labels[y] for y in y_train])
+y_val_numeric = np.array([labels[y] for y in y_val])
+
 # Convert data to arrays and shuffle
-X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
-X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
+X_val, y_val_numeric = shuffle(np.array(X_val), y_val_numeric, random_state=101)
+X_train, y_train_numeric = shuffle(np.array(X_train), y_train_numeric, random_state=101)
 print(X_train.shape)
-print(y_train.shape)
+print(y_train_numeric.shape)
 print(X_val.shape)
-print(y_val.shape)
-#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
-class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+print(y_val_numeric.shape)
+
+# Compute class weights
+class_weights = generate_class_weights(y_train_numeric, multi_class=False, one_hot_encoded=False)
 print(class_weights)
+
 datagen = ImageDataGenerator(
     rotation_range=90,
     vertical_flip=True,
