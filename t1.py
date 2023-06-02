@@ -76,7 +76,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'loss_t1ce.png'))
+    plt.savefig(os.path.join(folder_path, 'loss_t1.png'))
     plt.close()
     
     acc = model_history.history['accuracy']
@@ -87,7 +87,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'accuracy_t1ce.png'))
+    plt.savefig(os.path.join(folder_path, 'accuracy_t1.png'))
     plt.close()
     
 #     auc = model_history.history['auc']
@@ -108,7 +108,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('F1 Score')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'f1_score_t1ce.png'))
+    plt.savefig(os.path.join(folder_path, 'f1_score_t1.png'))
     plt.close()
 
 
@@ -246,7 +246,7 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
 #     model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
     
     
-#     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_t1ce" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+#     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_t1" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
 #     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
 #     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
 #     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
