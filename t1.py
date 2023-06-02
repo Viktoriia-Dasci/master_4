@@ -156,12 +156,12 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     class_labels = range(len(class_weights)) if mlb is None else mlb.classes_
     return dict(zip(class_labels, class_weights))
     
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1CE_MRI_slices/train/HGG_t1ce')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1CE_MRI_slices/train/LGG_t1ce')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/train/HGG_t1')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/train/LGG_t1')
 
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1CE_MRI_slices/val/HGG_t1ce')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1CE_MRI_slices/val/LGG_t1ce')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/HGG_t1')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/LGG_t1')
 
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
