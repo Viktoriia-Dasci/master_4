@@ -76,7 +76,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'loss_t1ce.png'))
+    plt.savefig(os.path.join(folder_path, 'loss_stack_4.png'))
     plt.close()
     
     acc = model_history.history['accuracy']
@@ -87,7 +87,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'accuracy_t1ce.png'))
+    plt.savefig(os.path.join(folder_path, 'accuracy_stack_4.png'))
     plt.close()
     
 #     auc = model_history.history['auc']
@@ -108,7 +108,7 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.xlabel('Epochs')
     plt.ylabel('F1 Score')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, 'f1_score_t1ce.png'))
+    plt.savefig(os.path.join(folder_path, 'f1_score_stack_4.png'))
     plt.close()
 
 
