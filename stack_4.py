@@ -176,6 +176,10 @@ X_val, y_val = add_labels(X_val, y_val, LGG_list_val, label='LGG')
 
 # Convert labels to numerical values
 labels = {'HGG': 0, 'LGG': 1}
+
+y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
+
 y_train_numeric = np.array([labels[y] for y in y_train])
 y_val_numeric = np.array([labels[y] for y in y_val])
 
@@ -188,7 +192,7 @@ print(X_val.shape)
 print(y_val_numeric.shape)
 
 # Compute class weights
-class_weights = generate_class_weights(y_train_numeric, multi_class=False, one_hot_encoded=False)
+class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=False)
 print(class_weights)
 
 datagen = ImageDataGenerator(
