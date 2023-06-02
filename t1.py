@@ -276,8 +276,8 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 
-def model_densenet(hp):
-    model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+def model_inception(hp):
+    model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
@@ -307,7 +307,7 @@ hp = HyperParameters()
 
 
 tuner = Hyperband(
-    model_densenet,
+    model_inception,
     objective=keras_tuner.Objective("val_f1_score", direction="max"),
     overwrite=True,
     max_epochs=30,
