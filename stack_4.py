@@ -121,8 +121,8 @@ def preprocess(images_list):
 #         normalized_image = (img - mean_value) / std_value
         #img_res = cv2.resize(img, (224, 224))
         img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224)
-        img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
-        list_new.append(img_processed)
+      # img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
+        list_new.append(img_cropped)
     return list_new
 
 
