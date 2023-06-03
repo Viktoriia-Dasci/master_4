@@ -232,8 +232,8 @@ def model_train(model_name, save_name, image_size, learning_rate, dropout, optim
     model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
-    sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+#     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+#     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
@@ -335,7 +335,7 @@ def model_train(model_name, save_name, image_size, learning_rate, dropout, optim
 
 
 
-history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t1", image_size = 224, learning_rate = 0.0001, dropout=0.4, optimizer=adam, dense_0_units=112, dense_1_units=None, batch_size=16)
+history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t1", image_size = 224, learning_rate = 0.0001, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=112, dense_1_units=None, batch_size=16)
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.001, dropout=0.6)
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.01, dropout=0.2)
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
