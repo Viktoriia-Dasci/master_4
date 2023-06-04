@@ -143,17 +143,17 @@ y_val = torch.from_numpy(y_val).long()
 # y_test = torch.from_numpy(y_test).long()
 
 # Define the test dataset
-test_dataset = TensorDataset(X_test, y_test)
+#test_dataset = TensorDataset(X_test, y_test)
 
 # Define the dataset
 train_dataset = TensorDataset(X_train, y_train)
 val_dataset = TensorDataset(X_val, y_val)
-test_dataset = TensorDataset(X_test, y_test)
+#test_dataset = TensorDataset(X_test, y_test)
 
 # Define the data loaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+#test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Define the model
 model = MyCustomResnet50().to(device)
@@ -245,22 +245,22 @@ def validation(model, device, val_loader, criterion):
     val_accuracy = 100. * val_correct / len(val_loader.dataset)
     return val_loss, val_accuracy
 
-# Define the testing loop
-def test(model, device, test_loader, criterion):
-    model.eval()
-    test_loss = 0
-    test_correct = 0
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-            output = model(data)
-            test_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)
-            test_correct += pred.eq(target.view_as(pred)).sum().item()
+# # Define the testing loop
+# def test(model, device, test_loader, criterion):
+#     model.eval()
+#     test_loss = 0
+#     test_correct = 0
+#     with torch.no_grad():
+#         for data, target in test_loader:
+#             data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+#             output = model(data)
+#             test_loss += criterion(output, target).item()
+#             pred = output.argmax(dim=1, keepdim=True)
+#             test_correct += pred.eq(target.view_as(pred)).sum().item()
 
-    test_loss /= len(test_loader.dataset)
-    test_accuracy = 100. * test_correct / len(test_loader.dataset)
-    return test_loss, test_accuracy
+#     test_loss /= len(test_loader.dataset)
+#     test_accuracy = 100. * test_correct / len(test_loader.dataset)
+#     return test_loss, test_accuracy
 
 # Train and val the model
 for epoch in range(30):
@@ -270,5 +270,5 @@ for epoch in range(30):
         epoch+1, train_loss, train_accuracy, val_loss, val_accuracy))
 
 # Evaluate the model on the test set
-test_loss, test_accuracy = test(model, device, test_loader, criterion)
+#test_loss, test_accuracy = test(model, device, test_loader, criterion)
 print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
