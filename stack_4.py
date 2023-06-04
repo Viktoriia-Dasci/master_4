@@ -246,7 +246,7 @@ x = base_model.layers[1].output
 input_layer = Input(shape=(224, 224, 4))
 
 # Modify the first convolutional layer by replacing it with a new convolutional layer
-new_conv1 = Conv2D(64, (7, 7), strides=(2, 2), padding='same', activation='relu')(input_layer)
+new_conv1 = Conv2D(64, (3, 3), strides=(2, 2), padding='same', activation='relu')(input_layer)
 
 # Concatenate the modified input layer with the rest of the original model
 x = tf.keras.layers.Concatenate()([new_conv1, x])
