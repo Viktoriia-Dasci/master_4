@@ -160,7 +160,7 @@ model = MyCustomResnet50().to(device)
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-#optimizer = optim.SGD(model.parameters(), lr=0.004)
+optimizer = optim.SGD(model.parameters(), lr=0.004)
 
 
 # Define the training loop
