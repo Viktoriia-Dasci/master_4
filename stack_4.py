@@ -169,10 +169,10 @@ HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
 
 # Combine the HGG and LGG lists
-X_train, y_train = add_labels([], [], HGG_list_train, label='HGG')
-X_train, y_train = add_labels(X_train, y_train, LGG_list_train, label='LGG')
-X_val, y_val = add_labels([], [], HGG_list_val, label='HGG')
-X_val, y_val = add_labels(X_val, y_val, LGG_list_val, label='LGG')
+X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
+X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
+X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
+X_val, y_val = add_labels(X_val, y_val,LGG_list_new_val, label='LGG')
 
 # Convert labels to numerical values
 labels = {'HGG': 0, 'LGG': 1}
