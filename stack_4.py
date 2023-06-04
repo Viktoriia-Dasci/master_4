@@ -236,19 +236,27 @@ from tensorflow.keras.layers import Conv2D, Input
   
 #def model_train(model_name, image_size, learning_rate, dropout):
 
+# Create the base model with the desired input shape
 base_model = InceptionV3(include_top=False, weights='imagenet', input_shape=(224, 224, 3), classes=2)
-# Create a new input layer with the desired input shape
+
 # Get the output of the original first layer
 x = base_model.layers[1].output
 
-# Create a new input with 4 channels
+# Create a new input layer with the desired input shape
 input_layer = Input(shape=(224, 224, 4))
 
-# Concatenate the new input with a zero-filled channel
-new_input = Conv2D(4, (1, 1), padding='same')(input_layer)
+# Modify the first convolutional layer by replacing it with a new convolutional layer
+new_conv1 = Conv2D(64, (7, 7), strides=(2, 2), padding='same', activation='relu')(input_layer)
 
-# Concatenate the modified input with the original input
-x = tf.keras.layers.Concatenate()([x, new_input])
+# Concatenate the modified input layer with the rest of the original model
+x = tf.keras.layers.Concatenate()([new_conv1, x])
+
+# Create a new model with the modified input layer and the rest of the original model
+model = Model(inputs=input_layer, outputs=x)
+
+# Print the model summary
+model.summary()
+
 
 # Create a new model with the modified input layer and the rest of the original model
 model = Model(inputs=input_layer, outputs=x)
