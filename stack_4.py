@@ -230,7 +230,7 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     return tf.reduce_mean(focal_loss, axis=-1)
 
 
- from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Input
   
