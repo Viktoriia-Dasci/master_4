@@ -234,53 +234,53 @@ from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Input
   
-def model_train(model_name, image_size, learning_rate, dropout):
+#def model_train(model_name, image_size, learning_rate, dropout):
 
-    base_model = InceptionV3(include_top=False, weights='imagenet', input_shape=(224, 224, 3), classes=2)
-    # Create a new input layer with the desired input shape
-    # Get the output of the original first layer
-    x = base_model.layers[1].output
+base_model = InceptionV3(include_top=False, weights='imagenet', input_shape=(224, 224, 3), classes=2)
+# Create a new input layer with the desired input shape
+# Get the output of the original first layer
+x = base_model.layers[1].output
 
-    # Create a new input with 4 channels
-    input_layer = Input(shape=(224, 224, 4))
+# Create a new input with 4 channels
+input_layer = Input(shape=(224, 224, 4))
 
-    # Concatenate the new input with a zero-filled channel
-    new_input = Conv2D(4, (1, 1), padding='same')(input_layer)
+# Concatenate the new input with a zero-filled channel
+new_input = Conv2D(4, (1, 1), padding='same')(input_layer)
 
-    # Concatenate the modified input with the original input
-    x = tf.keras.layers.Concatenate()([x, new_input])
+# Concatenate the modified input with the original input
+x = tf.keras.layers.Concatenate()([x, new_input])
 
-    # Create a new model with the modified input layer and the rest of the original model
-    model = Model(inputs=input_layer, outputs=x)
-    model.summary()
-    x = tf.keras.layers.GlobalAveragePooling2D()(model)
-    x = tf.keras.layers.Dropout(rate=dropout)(x)
-    x = tf.keras.layers.Dense(48, activation='relu')(x)
-    x = tf.keras.layers.Dense(80, activation='relu')(x)
-    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(x)
-    model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
-    adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_stack_4" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
-    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)    
+# Create a new model with the modified input layer and the rest of the original model
+model = Model(inputs=input_layer, outputs=x)
+model.summary()
+x = tf.keras.layers.GlobalAveragePooling2D()(model)
+x = tf.keras.layers.Dropout(rate=dropout)(x)
+x = tf.keras.layers.Dense(48, activation='relu')(x)
+x = tf.keras.layers.Dense(80, activation='relu')(x)
+outputs = tf.keras.layers.Dense(1, activation='sigmoid')(x)
+model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
+checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_stack_4" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
+reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
+history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)    
         
-    train_loss = history.history['loss']
-    val_loss = history.history['val_loss']
-    train_accuracy = history.history['accuracy']
-    val_accuracy = history.history['val_accuracy']
-    train_f1_score = history.history['f1_score']
-    val_f1_score = history.history['val_f1_score']
+#     train_loss = history.history['loss']
+#     val_loss = history.history['val_loss']
+#     train_accuracy = history.history['accuracy']
+#     val_accuracy = history.history['val_accuracy']
+#     train_f1_score = history.history['f1_score']
+#     val_f1_score = history.history['val_f1_score']
 
-    print("Train Loss:", train_loss)
-    print("Val Loss:", val_loss)
-    print("Train Accuracy:", train_accuracy)
-    print("Val Accuracy:", val_accuracy)
-    print("Train F1 Score:", train_f1_score)
-    print("Val F1 Score:", val_f1_score)  
+#     print("Train Loss:", train_loss)
+#     print("Val Loss:", val_loss)
+#     print("Train Accuracy:", train_accuracy)
+#     print("Val Accuracy:", val_accuracy)
+#     print("Train F1 Score:", train_f1_score)
+#     print("Val F1 Score:", val_f1_score)  
       
-    return history
+#     return history
 
 
 # import keras_tuner
