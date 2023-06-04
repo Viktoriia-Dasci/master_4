@@ -53,6 +53,18 @@ from torch.nn import functional as F
 # Define the device to be used for training
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
+def load_from_dir(path):
+      file_paths = glob.glob(os.path.join(path, '*.npy'))
+   
+      slices_list=[]
+      for img in range(len(file_paths)):
+          new_img = np.load(file_paths[img])
+          slices_list.append(new_img)
+      return slices_list
+
+
+
 HGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/HGG_stack')
 LGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_stack')
 
