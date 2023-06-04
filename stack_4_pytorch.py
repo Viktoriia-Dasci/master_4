@@ -139,8 +139,8 @@ X_train = torch.from_numpy(X_train).float()
 y_train = torch.from_numpy(y_train).long()
 X_val = torch.from_numpy(X_val).float()
 y_val = torch.from_numpy(y_val).long()
-X_test = torch.from_numpy(X_test).float()
-y_test = torch.from_numpy(y_test).long()
+# X_test = torch.from_numpy(X_test).float()
+# y_test = torch.from_numpy(y_test).long()
 
 # Define the test dataset
 test_dataset = TensorDataset(X_test, y_test)
