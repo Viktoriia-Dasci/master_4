@@ -112,18 +112,18 @@ def plot_acc_loss_f1_auc(model_history, folder_path):
     plt.close()
 
 
-# def preprocess(images_list):
-#     list_new = []
-#     for img in images_list:
-# #       img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-# #         mean_value = np.mean(img)
-# #         std_value = np.std(img)
-# #         normalized_image = (img - mean_value) / std_value
-#         #img_res = cv2.resize(img, (224, 224))
+def preprocess(images_list):
+    list_new = []
+    for img in images_list:
+#       img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
+#         mean_value = np.mean(img)
+#         std_value = np.std(img)
+#         normalized_image = (img - mean_value) / std_value
+        img_res = cv2.resize(img, (224, 224, 4))
 #         img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224, 4)
-#       # img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
-#         list_new.append(img_cropped)
-#     return list_new
+      # img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
+        list_new.append(img_cropped)
+    return list_new
 
 
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
@@ -163,10 +163,10 @@ LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_sta
 HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
 LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/LGG_stack')
 
-# HGG_list_new_train = preprocess(HGG_list_train)
-# LGG_list_new_train = preprocess(LGG_list_train)
-# HGG_list_new_val = preprocess(HGG_list_val)
-# LGG_list_new_val = preprocess(LGG_list_val)
+HGG_list_new_train = preprocess(HGG_list_train)
+LGG_list_new_train = preprocess(LGG_list_train)
+HGG_list_new_val = preprocess(HGG_list_val)
+LGG_list_new_val = preprocess(LGG_list_val)
 
 # Combine the HGG and LGG lists
 X_train, y_train = add_labels([], [], HGG_list_train, label='HGG')
