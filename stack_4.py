@@ -229,13 +229,31 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     
     return tf.reduce_mean(focal_loss, axis=-1)
 
+
+ from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Conv2D, Input
   
 def model_train(model_name, image_size, learning_rate, dropout):
-    base_model = model_name
+
+    base_model = InceptionV3(include_top=False, weights='imagenet', input_shape=(224, 224, 3), classes=2)
     # Create a new input layer with the desired input shape
-    inputs = tf.keras.Input(shape=(224, 224, 4))
-    x = base_model(inputs)
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    # Get the output of the original first layer
+    x = base_model.layers[1].output
+
+    # Create a new input with 4 channels
+    input_layer = Input(shape=(224, 224, 4))
+
+    # Concatenate the new input with a zero-filled channel
+    new_input = Conv2D(4, (1, 1), padding='same')(input_layer)
+
+    # Concatenate the modified input with the original input
+    x = tf.keras.layers.Concatenate()([x, new_input])
+
+    # Create a new model with the modified input layer and the rest of the original model
+    model = Model(inputs=input_layer, outputs=x)
+    model.summary()
+    x = tf.keras.layers.GlobalAveragePooling2D()(model)
     x = tf.keras.layers.Dropout(rate=dropout)(x)
     x = tf.keras.layers.Dense(48, activation='relu')(x)
     x = tf.keras.layers.Dense(80, activation='relu')(x)
