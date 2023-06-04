@@ -83,8 +83,8 @@ y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 X_val = np.array(HGG_val + LGG_val)
 y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
 
-X_test = np.array(HGG_test + LGG_test)
-y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
+# X_test = np.array(HGG_test + LGG_test)
+# y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
 
 
 # Print the shapes of the train and test sets
@@ -92,8 +92,8 @@ print('X_train shape:', X_train.shape)
 print('y_train shape:', y_train.shape)
 print('X_train shape:', X_val.shape)
 print('y_train shape:', y_val.shape)
-print('X_test shape:', X_test.shape)
-print('y_test shape:', y_test.shape)
+# print('X_test shape:', X_test.shape)
+# print('y_test shape:', y_test.shape)
 
 class MyCustomResnet50(nn.Module):
     def __init__(self, pretrained=True):
