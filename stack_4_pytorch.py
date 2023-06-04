@@ -183,46 +183,46 @@ def train(model, device, train_loader, criterion, optimizer):
     train_accuracy = 100. * train_correct / len(train_loader.dataset)
     return train_loss, train_accuracy
 
-from hyperopt import fmin, tpe, hp
-from hyperopt.pyll.base import scope
+# from hyperopt import fmin, tpe, hp
+# from hyperopt.pyll.base import scope
 
-# Define the hyperparameter search space
-space = {
-    'lr': hp.loguniform('lr', -6, -3),
-    'momentum': hp.uniform('momentum', 0.1, 0.9)
-}
+# # Define the hyperparameter search space
+# space = {
+#     'lr': hp.loguniform('lr', -6, -3),
+#     'momentum': hp.uniform('momentum', 0.1, 0.9)
+# }
 
-from hyperopt import Trials
+# from hyperopt import Trials
 
-# Define the objective function to minimize
-def objective(params):
-    optimizer = optim.SGD(model.parameters(), lr=params['lr'], momentum=params['momentum'])
-    train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
-    return {'loss': 1 - train_accuracy / 100, 'status': 'ok'}
+# # Define the objective function to minimize
+# def objective(params):
+#     optimizer = optim.SGD(model.parameters(), lr=params['lr'], momentum=params['momentum'])
+#     train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
+#     return {'loss': 1 - train_accuracy / 100, 'status': 'ok'}
 
-trials = Trials()  # Define the 'trials' variable
+# trials = Trials()  # Define the 'trials' variable
 
-def hyperband_stopping(trials, trial, result, early_stopping_rounds):
-    if len(trials.trials) < early_stopping_rounds:
-        return False
-    best_trial = max(trials.trials, key=lambda t: t['result']['loss'])
-    if trial.number >= best_trial.number + early_stopping_rounds:
-        return True
-    else:
-        return False
+# def hyperband_stopping(trials, trial, result, early_stopping_rounds):
+#     if len(trials.trials) < early_stopping_rounds:
+#         return False
+#     best_trial = max(trials.trials, key=lambda t: t['result']['loss'])
+#     if trial.number >= best_trial.number + early_stopping_rounds:
+#         return True
+#     else:
+#         return False
 
 
-# Run the Hyperband algorithm to find the best hyperparameters
-best = fmin(fn=objective,
-            space=space,
-            algo=tpe.suggest,
-            max_evals=81,
-            rstate=np.random.seed(42),
-            #early_stop_fn=hyperband_stopping,
-            verbose=1)
+# # Run the Hyperband algorithm to find the best hyperparameters
+# best = fmin(fn=objective,
+#             space=space,
+#             algo=tpe.suggest,
+#             max_evals=81,
+#             rstate=np.random.seed(42),
+#             #early_stop_fn=hyperband_stopping,
+#             verbose=1)
 
-# Update the optimizer with the best hyperparameters
-optimizer = optim.SGD(model.parameters(), lr=best['lr'], momentum=best['momentum'])
+# # Update the optimizer with the best hyperparameters
+# optimizer = optim.SGD(model.parameters(), lr=best['lr'], momentum=best['momentum'])
 
 # Train the model with the best hyperparameters
 train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
@@ -271,4 +271,4 @@ for epoch in range(30):
 
 # Evaluate the model on the test set
 #test_loss, test_accuracy = test(model, device, test_loader, criterion)
-print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
+#print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
