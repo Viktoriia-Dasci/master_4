@@ -70,7 +70,7 @@ LGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_stack')
 
 
 HGG_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
-LGG_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/LGG_stack')
+LGG_val = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
 
 # Put X and y to device
 #X = torch.tensor(X, dtype=torch.float32).to(device)
