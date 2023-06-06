@@ -94,6 +94,7 @@ print('X_train shape:', X_val.shape)
 print('y_train shape:', y_val.shape)
 # print('X_test shape:', X_test.shape)
 # print('y_test shape:', y_test.shape)
+from efficientnet_pytorch import EfficientNet
 
 class Effnet(nn.Module):
     def __init__(self, pretrained=True):
