@@ -96,6 +96,30 @@ print('y_train shape:', y_val.shape)
 # print('y_test shape:', y_test.shape)
 from efficientnet_pytorch import EfficientNet
 
+
+# class MyCustomResnet50(nn.Module):
+#     def __init__(self, pretrained=True):
+#         super().__init__()
+#         # Load the pretrained ResNet50 model
+#         resnet50 = models.resnet50(pretrained=True)
+#         # Replace the first convolutional layer to handle images with shape (240, 240, 155)
+#         resnet50.conv1 = nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)
+#         # Reuse the other layers from the pretrained ResNet50 model
+#         self.features = nn.Sequential(*list(resnet50.children())[:-2])
+#         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+#         self.fc1 = nn.Linear(in_features=2048, out_features=128, bias=True)
+#         self.fc2 = nn.Linear(128, 2)
+#     def forward(self, x, dropout = nn.Dropout(p=0.79)
+# ):
+#         x = self.features(x)
+#         x = self.avgpool(x)
+#         x = x.view(x.size(0), -1)
+#         x = self.fc1(x)
+#         x = dropout(x)
+#         x = F.relu(self.fc2(x))
+#         return x
+
+
 class Effnet(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
@@ -105,24 +129,40 @@ class Effnet(nn.Module):
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
         efficientnet_b1.conv1 = nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)
-
+        
         # Reuse the other layers from the pretrained ResNet50 model
         self.features = nn.Sequential(*list(efficientnet_b1.children())[:-2])
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
-        in_features = efficientnet_b1._fc.in_features
-        self.fc1 = nn.Linear(in_features, out_features=128, bias=True)
+        self.fc1 = nn.Linear(in_features=2048, out_features=128, bias=True)
         self.fc2 = nn.Linear(128, 2)
-
-    def forward(self, x, dropout = nn.Dropout(p=0.4)
-):
+        
+     def forward(self, x, dropout = nn.Dropout(p=0.79)):
         x = self.features(x)
         x = self.avgpool(x)
-        x = dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
+        x = dropout(x)
         x = F.relu(self.fc2(x))
-
         return x
+        
+
+#         # Reuse the other layers from the pretrained ResNet50 model
+#         self.features = nn.Sequential(*list(efficientnet_b1.children())[:-2])
+#         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+#         in_features = efficientnet_b1._fc.in_features
+#         self.fc1 = nn.Linear(in_features, out_features=128, bias=True)
+#         self.fc2 = nn.Linear(128, 2)
+
+#     def forward(self, x, dropout = nn.Dropout(p=0.4)
+# ):
+#         x = self.features(x)
+#         x = self.avgpool(x)
+#         x = dropout(x)
+#         x = x.view(x.size(0), -1)
+#         x = self.fc1(x)
+#         x = F.relu(self.fc2(x))
+
+#         return x
 
 # class MyCustomEfficientNetB1(nn.Module):
 #     def __init__(self, pretrained=True):
