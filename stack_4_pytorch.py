@@ -178,7 +178,7 @@ val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 #test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Define the model
-model = MyCustomResnet50().to(device)
+model = Effnet().to(device)
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
