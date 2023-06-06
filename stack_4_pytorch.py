@@ -135,14 +135,17 @@ class Effnet(nn.Module):
         self.features = efficientnet_b1.extract_features
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self.fc1 = nn.Linear(in_features=1280, out_features=128, bias=True)
-        self.fc2 = nn.Linear(128, 2)
+        self.fc2 = nn.Linear(in_features=1280, out_features=128, bias=True)
+        self.fc3 = nn.Linear(128, 2)
         
     def forward(self, x):
         x = self.features(x)
         x = self.avgpool(x)
+        x = dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
-        x = F.relu(self.fc2(x))
+        x = self.fc2(x)
+        x = F.relu(self.fc3(x))
         return x
         
 
