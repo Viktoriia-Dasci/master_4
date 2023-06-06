@@ -120,6 +120,7 @@ from efficientnet_pytorch import EfficientNet
 #         return x
 
 
+
 class Effnet(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
@@ -136,7 +137,8 @@ class Effnet(nn.Module):
         self.fc1 = nn.Linear(in_features=2048, out_features=128, bias=True)
         self.fc2 = nn.Linear(128, 2)
         
-    def forward(self, x, dropout = nn.Dropout(p=0.79)):
+    def forward(self, x, dropout = nn.Dropout(p=0.79)
+):
         x = self.features(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
