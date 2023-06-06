@@ -228,10 +228,14 @@ def f1_score(y_true, y_pred):
     return f1
 
 
+
 def focal_loss(gamma, alpha):
     def loss(y_true, y_pred):
         epsilon = tf.keras.backend.epsilon()
         y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+        
+        # Convert y_true to float32
+        y_true = tf.cast(y_true, tf.float32)
         
         # Calculate focal loss
         cross_entropy = -y_true * tf.math.log(y_pred) - (1 - y_true) * tf.math.log(1 - y_pred)
@@ -240,6 +244,7 @@ def focal_loss(gamma, alpha):
         return tf.reduce_mean(focal_loss, axis=-1)
     
     return loss
+
 
 
 
