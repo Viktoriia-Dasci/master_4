@@ -95,36 +95,58 @@ print('y_train shape:', y_val.shape)
 # print('X_test shape:', X_test.shape)
 # print('y_test shape:', y_test.shape)
 
-class MyCustomResnet50(nn.Module):
+class Effnet(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
 
         # Load the pretrained ResNet50 model
-        resnet50 = models.resnet50(pretrained=True)
+        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
 
-        # Replace the first convolutional layer to handle images with shape (240, 240, 155)
-        resnet50.conv1 = nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        # Replace the first convolutional layer to handle images with shape (240, 240, 4)
+        efficientnet_b1.conv1 = nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
         # Reuse the other layers from the pretrained ResNet50 model
-        self.features = nn.Sequential(*list(resnet50.children())[:-2])
+        self.features = nn.Sequential(*list(efficientnet_b1.children())[:-2])
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
-        self.fc1 = nn.Linear(in_features=2048, out_features=128, bias=True)
+        in_features = efficientnet_b1._fc.in_features
+        self.fc1 = nn.Linear(in_features, out_features=128, bias=True)
         self.fc2 = nn.Linear(128, 2)
 
-
-
-    def forward(self, x, dropout = nn.Dropout(p=0.79)
+    def forward(self, x, dropout = nn.Dropout(p=0.4)
 ):
         x = self.features(x)
         x = self.avgpool(x)
+        x = dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
-        x = dropout(x)
         x = F.relu(self.fc2(x))
 
         return x
 
+# class MyCustomEfficientNetB1(nn.Module):
+#     def __init__(self, pretrained=True):
+#         super().__init__()
+        
+#         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
+#         self.features = efficientnet_b1.extract_features
+#         in_features = efficientnet_b1._fc.in_features
+#         self.attention = SelfAttention(in_features)
+#         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
+#         self.fc1 = nn.Linear(in_features, 128)
+#         self.fc2 = nn.Linear(128, 2)
 
+
+#     def forward(self, input_imgs):
+#         images_feats = self.features(input_imgs.cpu())
+#         images_att = self.attention(images_feats.cuda())
+#         output = self.last_pooling_operation(images_att)
+#         output = output.view(input_imgs.size(0), -1)
+#         images_outputs = self.fc1(output)
+#         #output = dropout(images_outputs)
+#         images_outputs = F.relu(self.fc2(output))
+#         #images_outputs = nn.ReLU(self.fc2(output))
+    
+    
 
 # Define the transformation to be applied to the images
 transform = transforms.Compose([transforms.ToTensor(),
