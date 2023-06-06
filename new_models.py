@@ -228,15 +228,18 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-# def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
-#     epsilon = tf.keras.backend.epsilon()
-#     y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+def focal_loss(gamma, alpha):
+    def loss(y_true, y_pred):
+        epsilon = tf.keras.backend.epsilon()
+        y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+        
+        # Calculate focal loss
+        cross_entropy = -y_true * tf.math.log(y_pred) - (1 - y_true) * tf.math.log(1 - y_pred)
+        focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+        
+        return tf.reduce_mean(focal_loss, axis=-1)
     
-#     # Calculate focal loss
-#     cross_entropy = -y_true * tf.math.log(y_pred)
-#     focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
-    
-#     return tf.reduce_mean(focal_loss, axis=-1)
+    return loss
 
 
 
@@ -302,7 +305,7 @@ def model_hp(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
