@@ -486,7 +486,7 @@ class MyCustomEfficientNetB1(nn.Module):
         output = self.last_pooling_operation(images_feats)
         output = output.view(input_imgs.size(0), -1)
         output = F.relu(self.fc1(output))
-        output = self.dropout(output)  
+        output = dropout(output)  
         output = self.fc2(output)
         output = torch.softmax(output, dim=1)
         return output
