@@ -231,17 +231,27 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
-    epsilon = tf.keras.backend.epsilon()
-    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+# def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
+#     epsilon = tf.keras.backend.epsilon()
+#     y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
     
-    # Calculate focal loss
-    cross_entropy = -y_true * tf.math.log(y_pred)
-    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+#     # Calculate focal loss
+#     cross_entropy = -y_true * tf.math.log(y_pred)
+#     focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
     
-    return tf.reduce_mean(focal_loss, axis=-1)
+#     return tf.reduce_mean(focal_loss, axis=-1)
 
 
+def focal_loss(gamma, alpha):
+    def loss(y_true, y_pred):
+          epsilon = tf.keras.backend.epsilon()
+          y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+
+          # Calculate focal loss
+          cross_entropy = -y_true * tf.math.log(y_pred)
+          focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+
+          return tf.reduce_mean(focal_loss, axis=-1)
 
 # def model_train(model_name, image_size, learning_rate, dropout):
 #     model = model_name.output
