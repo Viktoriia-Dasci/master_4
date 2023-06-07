@@ -166,45 +166,68 @@ LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/train/L
 HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/val/HGG_stack')
 LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/val/LGG_stack')
 
+# HGG_list_new_train = preprocess(HGG_list_train)
+# LGG_list_new_train = preprocess(LGG_list_train)
+
+# HGG_list_new_val = preprocess(HGG_list_val)
+# LGG_list_new_val = preprocess(LGG_list_val)
+
+
+# # Combine the HGG and LGG lists
+# X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
+# X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
+# X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
+# X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
+
+# # Convert labels to numerical values and one-hot encoding
+# labels = {'HGG': 0, 'LGG': 1}
+# y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+# y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
+
+# # Convert the labels to numeric values
+# y_train_numeric = np.array([labels[y] for y in y_train])
+# y_val_numeric = np.array([labels[y] for y in y_val])
+
+# # Convert data to arrays and shuffle
+# X_val = np.array(X_val)
+# X_train = np.array(X_train)
+
+# X_val, y_val = shuffle(X_val, y_val_numeric, random_state=101)
+# X_train, y_train = shuffle(X_train, y_train_numeric, random_state=101)
+
+# print(X_train.shape)
+# print(y_train.shape)
+
+# print(X_val.shape)
+# print(y_val.shape)
+
+# #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+# class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=True)
+# print(class_weights)
+
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
-
 HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
-
-
 # Combine the HGG and LGG lists
 X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
 X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
-
 # Convert labels to numerical values and one-hot encoding
 labels = {'HGG': 0, 'LGG': 1}
-y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
-y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
-
-# Convert the labels to numeric values
-y_train_numeric = np.array([labels[y] for y in y_train])
-y_val_numeric = np.array([labels[y] for y in y_val])
-
+y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
-X_val = np.array(X_val)
-X_train = np.array(X_train)
-
-X_val, y_val = shuffle(X_val, y_val_numeric, random_state=101)
-X_train, y_train = shuffle(X_train, y_train_numeric, random_state=101)
-
+X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
+X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
 print(X_train.shape)
 print(y_train.shape)
-
 print(X_val.shape)
 print(y_val.shape)
-
 #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
-class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=True)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
 print(class_weights)
-
 
 datagen = ImageDataGenerator(
     rotation_range=90,
@@ -281,7 +304,7 @@ def model_hp(hp):
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
     #model =  tf.keras.layers.Dense(1, activation='sigmoid')(model)
-    model =  tf.keras.layers.Dense(2, activation='softmax')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     
     # Define optimizer and batch size
