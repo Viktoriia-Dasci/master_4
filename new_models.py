@@ -319,8 +319,8 @@ def model_hp(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    #model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', f1_score])
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', f1_score])
+    #model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
       
     return model
 
