@@ -217,8 +217,11 @@ train_generator = datagen.flow(
     X_train, y_train,
     shuffle=True)
 
+
+
 def f1_score(y_true, y_pred):
-    y_pred = tf.cast(tf.math.greater_equal(y_pred, 0.5), dtype=tf.float32)
+    y_pred = tf.argmax(y_pred, axis=-1)
+    y_true = tf.argmax(y_true, axis=-1)
     tp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 1)), dtype=tf.float32))
     fp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 0), tf.equal(y_pred, 1)), dtype=tf.float32))
     fn = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 0)), dtype=tf.float32))
@@ -228,23 +231,15 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-
-def focal_loss(gamma, alpha):
-    def loss(y_true, y_pred):
-        epsilon = tf.keras.backend.epsilon()
-        y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-        
-        # Convert y_true to float32
-        y_true = tf.cast(y_true, tf.float32)
-        
-        # Calculate focal loss
-        cross_entropy = -y_true * tf.math.log(y_pred) - (1 - y_true) * tf.math.log(1 - y_pred)
-        focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
-        
-        return tf.reduce_mean(focal_loss, axis=-1)
+def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
+    epsilon = tf.keras.backend.epsilon()
+    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
     
-    return loss
-
+    # Calculate focal loss
+    cross_entropy = -y_true * tf.math.log(y_pred)
+    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+    
+    return tf.reduce_mean(focal_loss, axis=-1)
 
 
 
@@ -295,7 +290,8 @@ def model_hp(hp):
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
-    model =  tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    #model =  tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model =  tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
@@ -369,7 +365,7 @@ best_model = tuner.get_best_models(1)[0]
 
 #plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
 
-plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
+#plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
