@@ -464,39 +464,17 @@ msk_grid = imshow(msk_grid)
 
 """### 3. Create the network"""
 
-class SelfAttention(nn.Module):
-    def __init__(self, in_channels):
-        super().__init__()
-        self.query = nn.Conv2d(in_channels, in_channels // 8, kernel_size=1)
-        self.key = nn.Conv2d(in_channels, in_channels // 8, kernel_size=1)
-        self.value = nn.Conv2d(in_channels, in_channels, kernel_size=1)
-        self.softmax = nn.Softmax(dim=-1)
-        self.gamma = nn.Parameter(torch.zeros(1))
 
-    def forward(self, x):
-        batch_size, channels, height, width = x.size()
-        proj_query = self.query(x).view(batch_size, -1, height * width).permute(0, 2, 1)
-        proj_key = self.key(x).view(batch_size, -1, height * width)
-        energy = torch.bmm(proj_query, proj_key)
-        attention = self.softmax(energy)
-        proj_value = self.value(x).view(batch_size, -1, height * width)
-        out = torch.bmm(proj_value, attention.permute(0, 2, 1))
-        out = out.view(batch_size, channels, height, width)
-        out = self.gamma * out + x
-        return out
-
-
-class MyCustomResnet50(nn.Module):
+class MyCustomEfficientNetB1(nn.Module):
     def __init__(self, pretrained=True):
         super().__init__()
         
-        resnet50 = models.resnet50(pretrained=True)
-        self.features = nn.ModuleList(resnet50.children())[:-2]
-        self.features = nn.Sequential(*self.features)
-        in_features = resnet50.fc.in_features
-        self.attention = SelfAttention(2048)
+        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
+        self.features = efficientnet_b1.extract_features
+        in_features = efficientnet_b1._fc.in_features
+        self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(2048, 128)
+        self.fc1 = nn.Linear(in_features, 128)
         self.fc2 = nn.Linear(128, 2)
 
 
@@ -585,7 +563,7 @@ def compute_gradcam(output, feats, target):
 
     return gradcam
 
-model = MyCustomResnet50(pretrained=True).to(device)
+model = MyCustomEfficientNetB1(pretrained=True).to(device)
 
 # # Freeze all layers
 # for param in model.parameters():
