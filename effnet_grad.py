@@ -475,8 +475,8 @@ class MyCustomEfficientNetB1(nn.Module):
         in_features = efficientnet_b1._fc.in_features
         #self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(in_features, 96)
-        self.fc2 = nn.Linear(96, 2)
+        self.fc1 = nn.Linear(in_features, dense_0_units)
+        self.fc2 = nn.Linear(dense_0_units, 2)
 
 
 
