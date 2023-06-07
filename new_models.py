@@ -242,56 +242,22 @@ def f1_score(y_true, y_pred):
 #     return tf.reduce_mean(focal_loss, axis=-1)
 
 
+import tensorflow as tf
+from tensorflow.keras.applications import EfficientNetB0
+from kerastuner.engine.hyperparameters import HyperParameters
+
 def focal_loss(gamma, alpha):
     def loss(y_true, y_pred):
-          epsilon = tf.keras.backend.epsilon()
-          y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-
-          # Calculate focal loss
-          cross_entropy = -y_true * tf.math.log(y_pred)
-          focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
-
-          return tf.reduce_mean(focal_loss, axis=-1)
-
-# def model_train(model_name, image_size, learning_rate, dropout):
-#     model = model_name.output
-#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-#     model = tf.keras.layers.Dropout(rate=dropout)(model)
-#     model = tf.keras.layers.Dense(16, activation='relu')(model)
-#     model = tf.keras.layers.Dense(128, activation='relu')(model)
-#     model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
-#     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-#     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-#     #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-#     model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy', f1_score])
-
-#     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_stacked_tuned" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
-#     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
-#     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
-
-#     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=16, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
-
-#     train_loss = history.history['loss']
-#     val_loss = history.history['val_loss']
-#     train_accuracy = history.history['accuracy']
-#     val_accuracy = history.history['val_accuracy']
-#     train_f1_score = history.history['f1_score']
-#     val_f1_score = history.history['val_f1_score']
-
-#     print("Train Loss:", train_loss)
-#     print("Val Loss:", val_loss)
-#     print("Train Accuracy:", train_accuracy)
-#     print("Val Accuracy:", val_accuracy)
-#     print("Train F1 Score:", train_f1_score)
-#     print("Val F1 Score:", val_f1_score)
-
-#     return history
-
-import keras_tuner
-import tensorflow as tf
-from tensorflow.keras.optimizers import SGD
-from kerastuner.tuners import Hyperband
-from kerastuner.engine.hyperparameters import HyperParameters
+        epsilon = tf.keras.backend.epsilon()
+        y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+        
+        # Calculate focal loss
+        cross_entropy = -y_true * tf.math.log(y_pred)
+        focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+        
+        return tf.reduce_mean(focal_loss, axis=-1)
+    
+    return loss
 
 def model_hp(hp):
     model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3))
@@ -302,23 +268,24 @@ def model_hp(hp):
         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
     #model =  tf.keras.layers.Dense(1, activation='sigmoid')(model)
     model =  tf.keras.layers.Dense(2, activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     
     # Define optimizer and batch size
     optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
     learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
     batch_size = hp.Choice('batch_size', values=[16, 32, 64])
     
-    #Set optimizer parameters based on user's selection
+    # Set optimizer parameters based on user's selection
     if optimizer == 'adam':
         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     else:
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', 'f1_score'])
     
     return model
+
 
 #Define hp before calling tuner.search()
 hp = HyperParameters()
