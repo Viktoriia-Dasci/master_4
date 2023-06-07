@@ -475,8 +475,8 @@ class MyCustomEfficientNetB1(nn.Module):
         in_features = efficientnet_b1._fc.in_features
         #self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(in_features, 128)
-        self.fc2 = nn.Linear(128, 2)
+        self.fc1 = nn.Linear(in_features, 96)
+        self.fc2 = nn.Linear(96, 2)
 
 
 
@@ -747,21 +747,21 @@ def train_and_evaluate(param, model, trial):
 # # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
 def objective(trial):
 
-     params = {
-              'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
-              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
-              'dense_0_units': trail.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
-              'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
-              'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
-               'drop_out' : trial.suggest_float("droupout", 0.2, 0.8, step=0.1)
-              }
-    
-      model = MyCustomEfficientNetB1(pretrained=True).to(device)
+    params = {
+        'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
+        'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+        'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
+        'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
+        'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
+        'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
+    }
 
-      max_auc = train_and_evaluate(params, model, trial)
+    model = MyCustomEfficientNetB1(pretrained=True).to(device)
 
-      return max_auc
-  
+    max_auc = train_and_evaluate(params, model, trial)
+
+    return max_auc
+
   
 EPOCHS = 50
     
