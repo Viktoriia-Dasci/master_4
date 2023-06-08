@@ -296,62 +296,62 @@ def focal_loss(gamma, alpha):
     
     return loss
 
-def model_hp(hp):
-    model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3))
-    model = model_name.output
-    model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
-    for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
-        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
-    #model =  tf.keras.layers.Dense(1, activation='sigmoid')(model)
-    model = tf.keras.layers.Dense(2, activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
+# def model_hp(hp):
+#     model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3))
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+#     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
+#         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
+#     #model =  tf.keras.layers.Dense(1, activation='sigmoid')(model)
+#     model = tf.keras.layers.Dense(2, activation='softmax')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     
-    # Define optimizer and batch size
-    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
-    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
+#     # Define optimizer and batch size
+#     optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
+#     learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
+#     batch_size = hp.Choice('batch_size', values=[16, 32, 64])
     
-    # Set optimizer parameters based on user's selection
-    if optimizer == 'adam':
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    else:
-        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+#     # Set optimizer parameters based on user's selection
+#     if optimizer == 'adam':
+#         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+#     else:
+#         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
-    # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', f1_score])
-    #model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+#     # Compile the model with the optimizer and metrics
+#     model.compile(loss=focal_loss(hp.Float('gamma', min_value=0, max_value=5, step=0.5), hp.Float('alpha', min_value=0.5, max_value=2, step=0.5)), optimizer=optimizer, metrics=['accuracy', f1_score])
+#     #model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
       
-    return model
+#     return model
 
 
-#Define hp before calling tuner.search()
-hp = HyperParameters()
+# #Define hp before calling tuner.search()
+# hp = HyperParameters()
 
 
-tuner = Hyperband(
-    model_hp,
-    objective=keras_tuner.Objective("val_f1_score", direction="max"),
-    overwrite=True,
-    max_epochs=50,
-    factor=3,
-    hyperband_iterations=10
-)
+# tuner = Hyperband(
+#     model_hp,
+#     objective=keras_tuner.Objective("val_f1_score", direction="max"),
+#     overwrite=True,
+#     max_epochs=50,
+#     factor=3,
+#     hyperband_iterations=10
+# )
 
-tuner.search(train_generator,
-             validation_data=(X_val, y_val),
-             steps_per_epoch=len(train_generator),
-             epochs=50,
-             verbose=1
-             )
+# tuner.search(train_generator,
+#              validation_data=(X_val, y_val),
+#              steps_per_epoch=len(train_generator),
+#              epochs=50,
+#              verbose=1
+#              )
 
-#Print the best hyperparameters found by the tuner
-best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-print(f'Best hyperparameters: {best_hyperparams}')
+# #Print the best hyperparameters found by the tuner
+# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+# print(f'Best hyperparameters: {best_hyperparams}')
 
 
-#Get the best model found by the tuner
-best_model = tuner.get_best_models(1)[0]
+# #Get the best model found by the tuner
+# best_model = tuner.get_best_models(1)[0]
 
 # checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_stacked_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
 # early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
