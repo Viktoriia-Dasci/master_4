@@ -467,7 +467,7 @@ msk_grid = imshow(msk_grid)
 
 
 class MyCustomEfficientNetB1(nn.Module):
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained=True, dense_0_units=None):
         super().__init__()
         
         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
