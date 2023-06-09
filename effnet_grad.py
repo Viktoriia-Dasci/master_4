@@ -474,8 +474,13 @@ class MyCustomEfficientNetB1(nn.Module):
         self.features = efficientnet_b1.extract_features
         in_features = efficientnet_b1._fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(in_features, dense_0_units)
-        self.fc2 = nn.Linear(dense_0_units, 2)
+        if dense_0_units is not None:
+            dense_0_units = int(dense_0_units)  # Convert to integer if it's not None
+            self.fc1 = nn.Linear(in_features, dense_0_units)
+            self.fc2 = nn.Linear(dense_0_units, 2)
+        else:
+            self.fc1 = None
+            self.fc2 = None
 
 
 
@@ -562,7 +567,7 @@ def compute_gradcam(output, feats, target):
 
     return gradcam
 
-model = MyCustomEfficientNetB1(pretrained=True).to(device)
+#model = MyCustomEfficientNetB1(pretrained=True).to(device)
 
 # # Freeze all layers
 # for param in model.parameters():
