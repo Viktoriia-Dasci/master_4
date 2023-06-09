@@ -721,7 +721,7 @@ def train_and_evaluate(param, model, trial):
     
         accuracy = total_acc_val / len(image_datasets['Val'])
         accuracies.append(accuracy)
-        print('val accuracy': accuracy)
+        print('val accuracy:' accuracy)
     
         f1 = f1_score(val_labels, np.round(y_preds))
         f1_scores.append(f1)
