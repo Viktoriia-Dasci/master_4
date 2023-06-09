@@ -88,7 +88,7 @@ import torchvision.transforms as T
 #         return [t(img) for img in imgs]
 
 train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
-                                       transforms.Resize((224,224)),                                  
+                                       transforms.CenterCrop((224,224)),                                  
                                        torchvision.transforms.Normalize(
                                            mean=[0.485, 0.456, 0.406],
                                            std=[0.229, 0.224, 0.225],),
@@ -104,7 +104,7 @@ aug_transform = transforms.Compose([
 
 
 val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
-                                      transforms.Resize((224,224)),
+                                      transforms.CenterCrop((224,224)),
                                       torchvision.transforms.Normalize(
                                           mean=[0.485, 0.456, 0.406],
                                           std=[0.229, 0.224, 0.225],
@@ -473,7 +473,6 @@ class MyCustomEfficientNetB1(nn.Module):
         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
         self.features = efficientnet_b1.extract_features
         in_features = efficientnet_b1._fc.in_features
-        #self.attention = SelfAttention(in_features)
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(in_features, dense_0_units)
         self.fc2 = nn.Linear(dense_0_units, 2)
@@ -484,9 +483,9 @@ class MyCustomEfficientNetB1(nn.Module):
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
+        output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
-        output = F.relu(self.fc1(output))
-        output = dropout(output)  
+        output = F.relu(self.fc1(output))  
         output = self.fc2(output)
         images_outputs = torch.softmax(output, dim=1)
 
@@ -661,8 +660,11 @@ best_model_wts = {}
 
 from sklearn.metrics import roc_auc_score
 
+import numpy as np
+from sklearn.metrics import f1_score
+
 def train_and_evaluate(param, model, trial):
-    aucs = []
+    f1_scores = []
     accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
     EPOCHS = 3
@@ -671,75 +673,69 @@ def train_and_evaluate(param, model, trial):
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
 
     for epoch_num in range(EPOCHS):
-            torch.cuda.empty_cache()
-            model.train()
-            total_acc_train = 0
-            total_loss_train = 0
+        torch.cuda.empty_cache()
+        model.train()
+        total_acc_train = 0
+        total_loss_train = 0
 
-            for train_input, train_label, train_mask in dataloaders['Train']:
+        for train_input, train_label, train_mask in dataloaders['Train']:
+            train_label = train_label.long().to(device)
+            train_input = train_input.float().to(device)
+            train_mask = train_mask.to(device)
 
-                train_label = train_label.long().to(device)
-                train_input = train_input.float().to(device)
-                train_mask = train_mask.to(device)
-
-                output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
-                
-                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
-                total_loss_train += batch_loss.item()
-                
-                acc = (output.argmax(dim=1) == train_label).sum().item()
-                total_acc_train += acc
-
-                model.zero_grad()
-                batch_loss.backward()
-                optimizer.step()
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
             
-            total_acc_val = 0
-            total_loss_val = 0
-            y_preds = []
-            val_labels = []
-            model.eval()
-            # with torch.no_grad():
+            batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+            total_loss_train += batch_loss.item()
             
-            for val_input, val_label, val_mask in dataloaders['Val']:
+            acc = (output.argmax(dim=1) == train_label).sum().item()
+            total_acc_train += acc
 
-                val_label = val_label.long().to(device)
-                val_input = val_input.float().to(device)
-                val_mask = val_mask.to(device)
-                
-
-                output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(param['drop_out']))
-
-                batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
-                total_loss_val += batch_loss.item()
-                
-                y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
-                y_preds.extend(y_pred)
-                
-                val_labels.extend(val_label.cpu().detach().numpy())
-                
-                acc = (output.argmax(dim=1) == val_label).sum().item()
-                total_acc_val += acc
-                
+            model.zero_grad()
+            batch_loss.backward()
+            optimizer.step()
         
-            accuracy = total_acc_val/len(image_datasets['Val'])
-            accuracies.append(accuracy)
-            print(accuracy)
-            if len(accuracies) >= 3 and accuracy <= 0.5729:
-                break
+        total_acc_val = 0
+        total_loss_val = 0
+        y_preds = []
+        val_labels = []
+        model.eval()
         
-            auc = roc_auc_score(val_labels, y_preds)
-            aucs.append(auc)
+        for val_input, val_label, val_mask in dataloaders['Val']:
+            val_label = val_label.long().to(device)
+            val_input = val_input.float().to(device)
+            val_mask = val_mask.to(device)
 
-            trial.report(auc, epoch_num)
-            if trial.should_prune():
-                raise optuna.exceptions.TrialPruned()
-                
-    final_auc = max(aucs)
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
+
+            batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+            total_loss_val += batch_loss.item()
+            
+            y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
+            y_preds.extend(y_pred)
+            
+            val_labels.extend(val_label.cpu().detach().numpy())
+            
+            acc = (output.argmax(dim=1) == val_label).sum().item()
+            total_acc_val += acc
+    
+        accuracy = total_acc_val / len(image_datasets['Val'])
+        accuracies.append(accuracy)
+        print('val accuracy': accuracy)
+    
+        f1 = f1_score(val_labels, np.round(y_preds))
+        f1_scores.append(f1)
+        print('val f1-score': f1)
+
+        trial.report(f1, epoch_num)
+        if trial.should_prune():
+            raise optuna.exceptions.TrialPruned()
+            
+    final_f1 = max(f1_scores)
     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
     torch.save(model.state_dict(), PATH)
-  
-    return final_auc
+
+    return final_f1
 
 
   
@@ -755,11 +751,11 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = MyCustomEfficientNetB1(pretrained=True).to(device)
+    model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units']).to(device)
 
-    max_auc = train_and_evaluate(params, model, trial)
+    max_f1 = train_and_evaluate(params, model, trial)
 
-    return max_auc
+    return max_f1
 
   
 EPOCHS = 50
