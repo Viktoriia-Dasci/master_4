@@ -154,7 +154,7 @@ class Effnet(nn.Module):
         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
-        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False).to(device)
+        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
         
         # Reuse the other layers from the pretrained EfficientNet-B1 model
         self.features = efficientnet_b1.extract_features
@@ -329,7 +329,7 @@ def train_and_evaluate(param, model, trial):
     accuracies = []
     EPOCHS = 5
     
-    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor.to(device))
+    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate'])
     train_loader = DataLoader(train_dataset, batch_size=param['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=param['batch_size'], shuffle=False)
@@ -343,10 +343,9 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
 
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
             optimizer.zero_grad()
             output = model(data, dropout=param['drop_out'])
-            output = output.to(device)  # Convert output to the GPU device
             loss = criterion(output, target)
             train_loss += loss.item()
             pred = output.argmax(dim=1, keepdim=True)
@@ -366,9 +365,8 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+                data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
                 output = model(data, dropout=param['drop_out'])
-                output = output.to(device)  # Convert output to the GPU device
                 val_loss += criterion(output, target).item()
                 pred = output.argmax(dim=1, keepdim=True)
                 val_correct += pred.eq(target.view_as(pred)).sum().item()
@@ -405,7 +403,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units']).to(device)
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'])
 
     max_f1 = train_and_evaluate(params, model, trial)
 
