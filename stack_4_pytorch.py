@@ -167,8 +167,9 @@ print(X_val_tensor.shape)
 print(y_val_one_hot.shape)
 
 # Create datasets and data loaders
-train_dataset = TensorDataset(X_train_tensor, y_train_one_hot)
-val_dataset = TensorDataset(X_val_tensor, y_val_one_hot)
+train_dataset = TensorDataset(X_train_tensor, y_train_one_hot).double()
+val_dataset = TensorDataset(X_val_tensor, y_val_one_hot).double()
+
 # class MyCustomResnet50(nn.Module):
 #     def __init__(self, pretrained=True):
 #         super().__init__()
@@ -448,7 +449,7 @@ def objective(trial):
 
     return max_f1
 
-  
+
 EPOCHS = 50
     
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
