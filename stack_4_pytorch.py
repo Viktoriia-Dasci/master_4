@@ -211,10 +211,9 @@ transform = transforms.Compose([transforms.ToTensor(),
 ])
 
 aug_transform = transforms.Compose([
-    RandomApply([transforms.RandomHorizontalFlip()], p=0.5), 
-    RandomApply([transforms.RandomVerticalFlip()], p=0.5), 
-    RandomApply([transforms.RandomRotation([-90, 90])], p=0.5),
-    Lambda(lambda x: x)
+    transforms.RandomHorizontalFlip(), 
+    transforms.RandomVerticalFlip(), 
+    transforms.RandomRotation([-90, 90])
 ])
 
 # Convert the train, val and test data to PyTorch tensors
