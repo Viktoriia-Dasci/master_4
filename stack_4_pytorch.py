@@ -89,6 +89,8 @@ y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
 # X_test = np.array(HGG_test + LGG_test)
 # y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
 
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+
 # Convert y_train to one-hot encoded format
 label_encoder = LabelEncoder()
 integer_encoded = label_encoder.fit_transform(y_train)
