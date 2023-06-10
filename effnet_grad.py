@@ -477,10 +477,9 @@ class MyCustomEfficientNetB1(nn.Module):
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)  # Convert to integer if it's not None
             self.fc1 = nn.Linear(in_features, dense_0_units)
-            self.fc2 = nn.Linear(dense_0_units, 2)
         else:
             self.fc1 = None
-            self.fc2 = None
+        self.fc2 = nn.Linear(dense_0_units, 2)
 
 
 
@@ -491,7 +490,7 @@ class MyCustomEfficientNetB1(nn.Module):
         output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
         output = F.relu(self.fc1(output))  
-        images_outputs = F.relu(self.fc2(output))
+        images_outputs = self.fc2(output)
 
 
         # # compute gcam for images
@@ -671,7 +670,7 @@ def train_and_evaluate(param, model, trial):
     f1_scores = []
     accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
-    EPOCHS = 3
+    EPOCHS = 5
     
     #criterion = nn.CrossEntropyLoss()
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
