@@ -151,13 +151,13 @@ class Effnet(nn.Module):
         super().__init__()
 
         # Load the pretrained EfficientNet-B1 model
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
+        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
-        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
+        efficientnet_b0._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
         
         # Reuse the other layers from the pretrained EfficientNet-B1 model
-        self.features = efficientnet_b1.extract_features
+        self.features = efficientnet_b0.extract_features
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
@@ -387,7 +387,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units']).to(device)
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units']).to(device)
 
     max_f1 = train_and_evaluate(params, model, trial)
 
