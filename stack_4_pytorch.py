@@ -75,17 +75,17 @@ LGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_stack')
 HGG_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
 LGG_val = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
 
-# Put X and y to device
-#X = torch.tensor(X, dtype=torch.float32).to(device)
-#y = torch.tensor(y, dtype=torch.long).to(device)
-
-# Combine the HGG and LGG lists
-
 X_train = np.array(HGG_train + LGG_train)
 y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
-
 X_val = np.array(HGG_val + LGG_val)
 y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
+# X_test = np.array(HGG_test + LGG_test)
+# y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
+# Print the shapes of the train and test sets
+print('X_train shape:', X_train.shape)
+print('y_train shape:', y_train.shape)
+print('X_train shape:', X_val.shape)
+print('y_train shape:', y_val.shape)
 
 class_counts = Counter(y_train)
 
@@ -97,38 +97,6 @@ class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor
 
-# Assuming HGG_train, LGG_train, HGG_val, LGG_val are already defined
-
-# Combine HGG_train and LGG_train
-X_train = np.array(HGG_train + LGG_train)
-
-# Create an array of ones with the length of HGG_train
-y_train = np.ones(len(HGG_train))
-
-# Extend the array with zeros with the length of LGG_train
-y_train = np.concatenate((y_train, np.zeros(len(LGG_train))))
-
-# Combine HGG_val and LGG_val
-X_val = np.array(HGG_val + LGG_val)
-
-# Create an array of ones with the length of HGG_val
-y_val = np.ones(len(HGG_val))
-
-# Extend the array with zeros with the length of LGG_val
-y_val = np.concatenate((y_val, np.zeros(len(LGG_val))))
-
-X_train_tensor = torch.tensor(X_train)
-y_train_tensor = torch.tensor(y_train)
-
-
-X_val_tensor = torch.tensor(X_val)
-y_val_tensor = torch.tensor(y_val)
-
-# Create a TensorDataset from X_val_tensor and y_val_tensor
-val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
-
-# Create a TensorDataset from X_train_tensor and y_train_tensor
-train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 
 # Print the shapes of the train and test sets
 print('X_train shape:', X_train.shape)
@@ -138,6 +106,18 @@ print('y_train shape:', y_val.shape)
 # print('X_test shape:', X_test.shape)
 # print('y_test shape:', y_test.shape)
 from efficientnet_pytorch import EfficientNet
+
+X_train = torch.from_numpy(X_train).float()
+y_train = torch.from_numpy(y_train).long()
+X_val = torch.from_numpy(X_val).float()
+y_val = torch.from_numpy(y_val).long()
+# X_test = torch.from_numpy(X_test).float()
+# y_test = torch.from_numpy(y_test).long()
+# Define the test dataset
+#test_dataset = TensorDataset(X_test, y_test)
+# Define the dataset
+train_dataset = TensorDataset(X_train, y_train)
+val_dataset = TensorDataset(X_val, y_val)
 
 
 # class MyCustomResnet50(nn.Module):
