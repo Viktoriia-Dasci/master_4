@@ -80,6 +80,7 @@ LGG_val = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
 #y = torch.tensor(y, dtype=torch.long).to(device)
 
 # Combine the HGG and LGG lists
+
 X_train = np.array(HGG_train + LGG_train)
 y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 
@@ -96,20 +97,19 @@ class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor.cuda()
 
-# X_test = np.array(HGG_test + LGG_test)
-# y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
-
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
-# Convert y_train to one-hot encoded format
 label_encoder = LabelEncoder()
 integer_encoded = label_encoder.fit_transform(y_train)
 onehot_encoder = OneHotEncoder(sparse=False)
-y_train = onehot_encoder.fit_transform(integer_encoded.reshape(-1, 1))
+y_train_encoded = onehot_encoder.fit_transform(integer_encoded.reshape(-1, 1))
 
-# Convert y_val to one-hot encoded format
 integer_encoded_val = label_encoder.transform(y_val)
-y_val = onehot_encoder.transform(integer_encoded_val.reshape(-1, 1))
+y_val_encoded = onehot_encoder.transform(integer_encoded_val.reshape(-1, 1))
+
+train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train_encoded))
+val_dataset = TensorDataset(torch.from_numpy(X_val), torch.from_numpy(y_val_encoded))
+
 
 
 # Print the shapes of the train and test sets
@@ -269,21 +269,6 @@ from torchvision.transforms.functional import resize, to_tensor
 
 # Define the test dataset
 #test_dataset = TensorDataset(X_test, y_test)
-
-# Define the dataset
-from torch.utils.data import TensorDataset
-from collections import Counter
-from sklearn.utils.class_weight import compute_class_weight
-
-
-# Check if X_train and y_train have the same length
-assert len(X_train) == len(y_train), "Size mismatch between X_train and y_train"
-
-
-train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train))
-
-train_dataset = TensorDataset(X_train, y_train)
-val_dataset = TensorDataset(X_val, y_val)
 
 
 # test_dataset = TensorDataset(X_test, y_test)
