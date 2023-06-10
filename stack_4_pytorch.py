@@ -229,11 +229,11 @@ class Effnet(nn.Module):
 
 # Define the transformation to be applied to the images
 from torchvision import transforms
+from torchvision import transforms
+from torchvision.transforms.functional import resize, to_tensor
 
-# Define the transformation to be applied to the images
+
 transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Resize((224, 224)),
     transforms.Normalize(
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225]
@@ -247,21 +247,22 @@ aug_transform = transforms.Compose([
 ])
 
 # Apply the transformations to the train and val data
-X_train_transformed = transform(X_train)
-X_val_transformed = transform(X_val)
+X_train_transformed = torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in X_train])
+X_val_transformed = torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in X_val])
 
 # Apply the augmentation transformations to the train data
-X_train_augmented = aug_transform(X_train_transformed)
+X_train_augmented = torch.stack([aug_transform(img) for img in X_train_transformed])
 
 # Convert the train, val data to PyTorch tensors
-X_train_tensor = torch.Tensor(X_train_augmented)
+X_train_tensor = X_train_augmented.float()
 y_train_tensor = torch.Tensor(y_train).long()
-X_val_tensor = torch.Tensor(X_val_transformed)
+X_val_tensor = X_val_transformed.float()
 y_val_tensor = torch.Tensor(y_val).long()
 
 # Define the train and val datasets
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+
 
 # test_dataset = TensorDataset(X_test, y_test)
 
