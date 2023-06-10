@@ -266,32 +266,32 @@ val_dataset = TensorDataset(X_val, y_val)
 #test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Define the model
-model = Effnet().to(device)
+#model = Effnet().to(device)
 
 # Define the loss function and optimizer
-criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+#criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
 #optimizer = optim.SGD(model.parameters(), lr=0.004)
 
 
 # Define the training loop
-def train(model, device, train_loader, criterion, optimizer):
-    model.train()
-    train_loss = 0
-    train_correct = 0
-    for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-        optimizer.zero_grad()
-        output = model(data)
-        loss = criterion(output, target)
-        train_loss += loss.item()
-        pred = output.argmax(dim=1, keepdim=True)
-        train_correct += pred.eq(target.view_as(pred)).sum().item()
-        loss.backward()
-        optimizer.step()
+# def train(model, device, train_loader, criterion, optimizer):
+#     model.train()
+#     train_loss = 0
+#     train_correct = 0
+#     for batch_idx, (data, target) in enumerate(train_loader):
+#         data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+#         optimizer.zero_grad()
+#         output = model(data)
+#         loss = criterion(output, target)
+#         train_loss += loss.item()
+#         pred = output.argmax(dim=1, keepdim=True)
+#         train_correct += pred.eq(target.view_as(pred)).sum().item()
+#         loss.backward()
+#         optimizer.step()
 
-    train_loss /= len(train_loader.dataset)
-    train_accuracy = 100. * train_correct / len(train_loader.dataset)
-    return train_loss, train_accuracy
+#     train_loss /= len(train_loader.dataset)
+#     train_accuracy = 100. * train_correct / len(train_loader.dataset)
+#     return train_loss, train_accuracy
 
 
 
