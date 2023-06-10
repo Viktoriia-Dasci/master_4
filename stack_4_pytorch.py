@@ -275,6 +275,13 @@ from torch.utils.data import TensorDataset
 from collections import Counter
 from sklearn.utils.class_weight import compute_class_weight
 
+
+# Check if X_train and y_train have the same length
+assert len(X_train) == len(y_train), "Size mismatch between X_train and y_train"
+
+
+train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train))
+
 train_dataset = TensorDataset(X_train, y_train)
 val_dataset = TensorDataset(X_val, y_val)
 
@@ -343,7 +350,7 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
 
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2).float(), target.long() # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
             optimizer.zero_grad()
             output = model(data, dropout=nn.Dropout(param['drop_out']))
             loss = criterion(output, target)
@@ -365,7 +372,7 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2).float(), target.long() # Permute dimensions
+                data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
                 output = model(data, dropout=param['drop_out'])
                 val_loss += criterion(output, target).item()
                 pred = output.argmax(dim=1, keepdim=True)
