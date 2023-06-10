@@ -382,7 +382,6 @@ def train_and_evaluate(param, model, trial):
         total_loss_train = 0
         train_correct = 0
         train_loss = 0
-        model._conv_stem.weight = nn.Parameter(model._conv_stem.weight.double().cuda())
         
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
@@ -446,6 +445,7 @@ def objective(trial):
     }
 
     model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units']).to(device)
+    model = model.double()
 
     max_f1 = train_and_evaluate(params, model, trial)
 
