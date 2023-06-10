@@ -154,7 +154,7 @@ class Effnet(nn.Module):
         efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
-        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
+        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False).to(device)
         
         # Reuse the other layers from the pretrained EfficientNet-B1 model
         self.features = efficientnet_b1.extract_features
