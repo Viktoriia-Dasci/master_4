@@ -151,13 +151,13 @@ class Effnet(nn.Module):
         super().__init__()
 
         # Load the pretrained EfficientNet-B1 model
-        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
+        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b0')
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
-        efficientnet_b0._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
+        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
         
         # Reuse the other layers from the pretrained EfficientNet-B1 model
-        self.features = efficientnet_b0.extract_features
+        self.features = efficientnet_b1.extract_features
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
@@ -233,52 +233,50 @@ from torchvision import transforms
 from torchvision.transforms.functional import resize, to_tensor
 
 
-transform = transforms.Compose([
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    ),
-])
+# transform = transforms.Compose([
+#     transforms.Normalize(
+#         mean=[0.485, 0.456, 0.406],
+#         std=[0.229, 0.224, 0.225]
+#     ),
+# ])
 
-aug_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-    transforms.RandomRotation([-90, 90])
-])
+# aug_transform = transforms.Compose([
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomVerticalFlip(),
+#     transforms.RandomRotation([-90, 90])
+# ])
 
-from torchvision import transforms
-from torchvision.transforms.functional import resize, to_tensor
+# transform = transforms.Compose([transforms.ToTensor(),
+#                                 transforms.CenterCrop((224,224)),                                  
+#                                 transforms.Normalize(
+#                                    mean=[0.485, 0.456, 0.406],
+#                                    std=[0.229, 0.224, 0.225],),
+# ])
 
-transform = transforms.Compose([
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    ),
-])
+# aug_transform = transforms.Compose([
+#     transforms.RandomHorizontalFlip(), 
+#     transforms.RandomVerticalFlip(), 
+#     transforms.RandomRotation([-90, 90])
+# ])
 
-aug_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-    transforms.RandomRotation([-90, 90])
-])
+# Convert the train, val and test data to PyTorch tensors
+X_train = torch.from_numpy(X_train).float()
+y_train = torch.from_numpy(y_train).long()
+X_val = torch.from_numpy(X_val).float()
+y_val = torch.from_numpy(y_val).long()
+# X_test = torch.from_numpy(X_test).float()
+# y_test = torch.from_numpy(y_test).long()
 
-# Apply the transformations to the train and val data
-X_train_transformed = torch.stack([torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in batch]) for batch in X_train])
-X_val_transformed = torch.stack([torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in batch]) for batch in X_val])
+# Define the test dataset
+#test_dataset = TensorDataset(X_test, y_test)
 
-# Apply the augmentation transformations to the train data
-X_train_augmented = torch.stack([torch.stack([aug_transform(img) for img in batch]) for batch in X_train_transformed])
+# Define the dataset
+from torch.utils.data import TensorDataset
+from collections import Counter
+from sklearn.utils.class_weight import compute_class_weight
 
-# Convert the train, val data to PyTorch tensors
-X_train_tensor = X_train_augmented.float()
-y_train_tensor = torch.Tensor(y_train).long()
-X_val_tensor = X_val_transformed.float()
-y_val_tensor = torch.Tensor(y_val).long()
-
-# Define the train and val datasets
-train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
-
+train_dataset = TensorDataset(X_train, y_train)
+val_dataset = TensorDataset(X_val, y_val)
 
 
 # test_dataset = TensorDataset(X_test, y_test)
