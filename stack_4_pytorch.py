@@ -117,6 +117,18 @@ y_val = np.ones(len(HGG_val))
 # Extend the array with zeros with the length of LGG_val
 y_val = np.concatenate((y_val, np.zeros(len(LGG_val))))
 
+X_train_tensor = torch.tensor(X_train)
+y_train_tensor = torch.tensor(y_train)
+
+
+X_val_tensor = torch.tensor(X_val)
+y_val_tensor = torch.tensor(y_val)
+
+# Create a TensorDataset from X_val_tensor and y_val_tensor
+val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+
+# Create a TensorDataset from X_train_tensor and y_train_tensor
+train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 
 # Print the shapes of the train and test sets
 print('X_train shape:', X_train.shape)
