@@ -228,37 +228,41 @@ class Effnet(nn.Module):
     
 
 # Define the transformation to be applied to the images
-transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.CenterCrop((224,224)),                                  
-                                transforms.Normalize(
-                                   mean=[0.485, 0.456, 0.406],
-                                   std=[0.229, 0.224, 0.225],),
+from torchvision import transforms
+
+# Define the transformation to be applied to the images
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.CenterCrop((224, 224)),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    ),
 ])
 
 aug_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(), 
-    transforms.RandomVerticalFlip(), 
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
     transforms.RandomRotation([-90, 90])
 ])
 
-# Convert the train, val and test data to PyTorch tensors
-X_train = torch.from_numpy(X_train).float()
-y_train = torch.from_numpy(y_train).long()
-X_val = torch.from_numpy(X_val).float()
-y_val = torch.from_numpy(y_val).long()
-# X_test = torch.from_numpy(X_test).float()
-# y_test = torch.from_numpy(y_test).long()
+# Apply the transformations to the train and val data
+X_train_transformed = transform(X_train)
+X_val_transformed = transform(X_val)
 
-# Define the test dataset
-#test_dataset = TensorDataset(X_test, y_test)
+# Apply the augmentation transformations to the train data
+X_train_augmented = aug_transform(X_train_transformed)
 
-# Define the dataset
-from torch.utils.data import TensorDataset
-from collections import Counter
-from sklearn.utils.class_weight import compute_class_weight
+# Convert the train, val data to PyTorch tensors
+X_train_tensor = torch.Tensor(X_train_augmented)
+y_train_tensor = torch.Tensor(y_train).long()
+X_val_tensor = torch.Tensor(X_val_transformed)
+y_val_tensor = torch.Tensor(y_val).long()
 
-train_dataset = TensorDataset(X_train, y_train)
-val_dataset = TensorDataset(X_val, y_val)
+# Define the train and val datasets
+train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+
 # test_dataset = TensorDataset(X_test, y_test)
 
 
