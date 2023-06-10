@@ -122,7 +122,7 @@ from efficientnet_pytorch import EfficientNet
 
 
 class Effnet(nn.Module):
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
 
         # Load the pretrained EfficientNet-B1 model
@@ -134,11 +134,21 @@ class Effnet(nn.Module):
         # Reuse the other layers from the pretrained EfficientNet-B1 model
         self.features = efficientnet_b1.extract_features
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
-        self.fc1 = nn.Linear(in_features=1280, out_features=128, bias=True)
-        self.fc2 = nn.Linear(in_features=1280, out_features=128, bias=True)
-        self.fc3 = nn.Linear(128, 2)
+        if dense_0_units is not None:
+            dense_0_units = int(dense_0_units)
+            self.fc1 = nn.Linear(in_features=1280, out_features=dense_0_units, bias=True)
+        else:
+            self.fc1 = None
+        if dense_1_units is not None:
+            dense_1_units = int(dense_1_units)
+            self.fc2 = nn.Linear(in_features=dense_0_units, out_features=dense_1_units, bias=True)
+            self.fc3 = nn.Linear(dense_1_units, 2)
+        else:
+            self.fc2 = None
+            self.fc3 = nn.Linear(dense_0_units, 2)
         
-    def forward(self, x):
+        
+    def forward(self, x, dropout=None):
         x = self.features(x)
         x = self.avgpool(x)
         x = dropout(x)
@@ -194,10 +204,17 @@ class Effnet(nn.Module):
 
 # Define the transformation to be applied to the images
 transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.Resize((224,224)),                                  
+                                transforms.CenterCrop((224,224)),                                  
                                 transforms.Normalize(
                                    mean=[0.485, 0.456, 0.406],
                                    std=[0.229, 0.224, 0.225],),
+])
+
+aug_transform = transforms.Compose([
+    RandomApply([transforms.RandomHorizontalFlip()], p=0.5), 
+    RandomApply([transforms.RandomVerticalFlip()], p=0.5), 
+    RandomApply([transforms.RandomRotation([-90, 90])], p=0.5),
+    Lambda(lambda x: x)
 ])
 
 # Convert the train, val and test data to PyTorch tensors
@@ -216,17 +233,24 @@ train_dataset = TensorDataset(X_train, y_train)
 val_dataset = TensorDataset(X_val, y_val)
 #test_dataset = TensorDataset(X_test, y_test)
 
-# Define the data loaders
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+class_counts = Counter(train_dataset.targets)
+
+class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(train_dataset.targets), y=train_dataset.targets)
+print(class_weights)
+
+class_weights_np = np.array(class_weights, dtype=np.float32)
+class_weights_tensor = torch.from_numpy(class_weights_np)
+if torch.cuda.is_available():
+    class_weights_tensor = class_weights_tensor.cuda()
+
 #test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Define the model
 model = Effnet().to(device)
 
 # Define the loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.004)
+criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+#optimizer = optim.SGD(model.parameters(), lr=0.004)
 
 
 # Define the training loop
@@ -248,6 +272,125 @@ def train(model, device, train_loader, criterion, optimizer):
     train_loss /= len(train_loader.dataset)
     train_accuracy = 100. * train_correct / len(train_loader.dataset)
     return train_loss, train_accuracy
+
+
+
+
+import numpy as np
+from sklearn.metrics import f1_score
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import optuna
+
+def train_and_evaluate(param, model, trial):
+    f1_scores = []
+    accuracies = []
+    EPOCHS = 5
+    
+    criterion = nn.CrossEntropyLoss()
+    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate'])
+    train_loader = DataLoader(train_dataset, batch_size=param['batch_size'], shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=param['batch_size'], shuffle=False)
+
+    for epoch_num in range(EPOCHS):
+        torch.cuda.empty_cache()
+        model.train()
+        total_acc_train = 0
+        total_loss_train = 0
+        train_correct = 0
+        train_loss = 0
+
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+            optimizer.zero_grad()
+            output = model(data, dropout=param['drop_out'])
+            loss = criterion(output, target)
+            train_loss += loss.item()
+            pred = output.argmax(dim=1, keepdim=True)
+            train_correct += pred.eq(target.view_as(pred)).sum().item()
+            loss.backward()
+            optimizer.step()
+            
+        train_loss /= len(train_loader.dataset)
+        train_accuracy = 100. * train_correct / len(train_loader.dataset)
+        print('train accuracy:', train_accuracy)
+        
+        model.eval()
+        val_loss = 0
+        val_correct = 0
+        val_labels = []
+        y_preds = []
+        
+        with torch.no_grad():
+            for data, target in val_loader:
+                data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+                output = model(data, dropout=param['drop_out'])
+                val_loss += criterion(output, target).item()
+                pred = output.argmax(dim=1, keepdim=True)
+                val_correct += pred.eq(target.view_as(pred)).sum().item()
+                val_labels.extend(target.cpu().numpy())
+                y_preds.extend(output.cpu().numpy())
+        
+        val_loss /= len(val_loader.dataset)
+        val_accuracy = 100. * val_correct / len(val_loader.dataset)
+        print('val accuracy:', val_accuracy)
+        
+        f1 = f1_score(val_labels, np.round(y_preds))
+        f1_scores.append(f1)
+        print('val f1-score:', f1)
+
+        trial.report(f1, epoch_num)
+        if trial.should_prune():
+            raise optuna.exceptions.TrialPruned()
+    
+    final_f1 = max(f1_scores)
+    PATH = '/home/viktoriia.trokhova/model_weights/stack_4.pt'
+    torch.save(model.state_dict(), PATH)
+
+    return final_f1
+
+# # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
+def objective(trial):
+
+    params = {
+        'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
+        'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+        'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
+        'dense_1_units': trial.suggest_categorical("dense_1_units", [None, 16, 32, 48, 64, 80, 96, 112, 128]),
+        'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
+        'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
+    }
+
+    model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units']).to(device)
+
+    max_f1 = train_and_evaluate(params, model, trial)
+
+    return max_f1
+
+  
+EPOCHS = 50
+    
+study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+study.optimize(objective, n_trials=40)
+pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+
+print("Study statistics: ")
+print("  Number of finished trials: ", len(study.trials))
+print("  Number of pruned trials: ", len(pruned_trials))
+print("  Number of complete trials: ", len(complete_trials))
+
+print("Best trial:")
+trial = study.best_trial
+print("  Value: ", trial.value)
+
+print("  Params: ")
+for key, value in trial.params.items():
+    print("    {}: {}".format(key, value))
+
+
 
 # from hyperopt import fmin, tpe, hp
 # from hyperopt.pyll.base import scope
