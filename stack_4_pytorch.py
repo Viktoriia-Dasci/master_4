@@ -246,12 +246,28 @@ aug_transform = transforms.Compose([
     transforms.RandomRotation([-90, 90])
 ])
 
+from torchvision import transforms
+from torchvision.transforms.functional import resize, to_tensor
+
+transform = transforms.Compose([
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    ),
+])
+
+aug_transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomRotation([-90, 90])
+])
+
 # Apply the transformations to the train and val data
-X_train_transformed = torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in X_train])
-X_val_transformed = torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in X_val])
+X_train_transformed = torch.stack([torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in batch]) for batch in X_train])
+X_val_transformed = torch.stack([torch.stack([transform(resize(to_tensor(img), (224, 224))) for img in batch]) for batch in X_val])
 
 # Apply the augmentation transformations to the train data
-X_train_augmented = torch.stack([aug_transform(img) for img in X_train_transformed])
+X_train_augmented = torch.stack([torch.stack([aug_transform(img) for img in batch]) for batch in X_train_transformed])
 
 # Convert the train, val data to PyTorch tensors
 X_train_tensor = X_train_augmented.float()
@@ -262,6 +278,7 @@ y_val_tensor = torch.Tensor(y_val).long()
 # Define the train and val datasets
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+
 
 
 # test_dataset = TensorDataset(X_test, y_test)
