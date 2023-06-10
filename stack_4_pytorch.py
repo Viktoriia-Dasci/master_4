@@ -138,12 +138,18 @@ labels = {'HGG': 0, 'LGG': 1}
 y_train = [labels[y] for y in y_train]
 y_val = [labels[y] for y in y_val]
 
-# Convert data to tensors
-X_train_tensor = torch.tensor(X_train)
-y_train_tensor = torch.tensor(y_train)
+X_train_array = np.array(X_train)
+y_train_array = np.array(y_train)
 
-X_val_tensor = torch.tensor(X_val)
-y_val_tensor = torch.tensor(y_val)
+X_val_array = np.array(X_val)
+y_val_array = np.array(y_val)
+
+# Convert data to tensors
+X_train_tensor = torch.tensor(X_train_array)
+y_train_tensor = torch.tensor(y_train_array)
+
+X_val_tensor = torch.tensor(X_val_array)
+y_val_tensor = torch.tensor(y_val_array)
 
 # Convert labels to one-hot encoding
 num_classes = len(set(y_train))
@@ -162,7 +168,6 @@ print(y_val_one_hot.shape)
 # Create datasets and data loaders
 train_dataset = TensorDataset(X_train_tensor, y_train_one_hot)
 val_dataset = TensorDataset(X_val_tensor, y_val_one_hot)
-
 # class MyCustomResnet50(nn.Module):
 #     def __init__(self, pretrained=True):
 #         super().__init__()
