@@ -260,10 +260,10 @@ from torchvision.transforms.functional import resize, to_tensor
 # ])
 
 # Convert the train, val and test data to PyTorch tensors
-X_train = torch.from_numpy(X_train).float()
-y_train = torch.from_numpy(y_train).long()
-X_val = torch.from_numpy(X_val).float()
-y_val = torch.from_numpy(y_val).long()
+# X_train = torch.from_numpy(X_train).float()
+# y_train = torch.from_numpy(y_train).long()
+# X_val = torch.from_numpy(X_val).float()
+# y_val = torch.from_numpy(y_val).long()
 # X_test = torch.from_numpy(X_test).float()
 # y_test = torch.from_numpy(y_test).long()
 
@@ -343,7 +343,7 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
 
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2), target.astype(np.float32) # Permute dimensions
             optimizer.zero_grad()
             output = model(data, dropout=nn.Dropout(param['drop_out']))
             loss = criterion(output, target)
@@ -365,7 +365,7 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2), target# Permute dimensions
+                data, target = data.permute(0, 3, 1, 2), target.astype(np.float32) # Permute dimensions
                 output = model(data, dropout=param['drop_out'])
                 val_loss += criterion(output, target).item()
                 pred = output.argmax(dim=1, keepdim=True)
