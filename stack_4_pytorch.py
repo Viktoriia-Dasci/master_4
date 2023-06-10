@@ -86,6 +86,16 @@ y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 X_val = np.array(HGG_val + LGG_val)
 y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
 
+class_counts = Counter(y_train)
+
+class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
+print(class_weights)
+
+class_weights_np = np.array(class_weights, dtype=np.float32)
+class_weights_tensor = torch.from_numpy(class_weights_np)
+if torch.cuda.is_available():
+    class_weights_tensor = class_weights_tensor.cuda()
+
 # X_test = np.array(HGG_test + LGG_test)
 # y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
 
@@ -251,15 +261,6 @@ train_dataset = TensorDataset(X_train, y_train)
 val_dataset = TensorDataset(X_val, y_val)
 # test_dataset = TensorDataset(X_test, y_test)
 
-class_counts = Counter(y_train)
-
-class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
-print(class_weights)
-
-class_weights_np = np.array(class_weights, dtype=np.float32)
-class_weights_tensor = torch.from_numpy(class_weights_np)
-if torch.cuda.is_available():
-    class_weights_tensor = class_weights_tensor.cuda()
 
 
 #test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
