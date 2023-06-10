@@ -95,26 +95,27 @@ print(class_weights)
 class_weights_np = np.array(class_weights, dtype=np.float32)
 class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
-    class_weights_tensor = class_weights_tensor.cuda()
+    class_weights_tensor = class_weights_tensor
 
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+# Assuming HGG_train, LGG_train, HGG_val, LGG_val are already defined
 
-label_encoder = LabelEncoder()
-integer_encoded = label_encoder.fit_transform(y_train)
-onehot_encoder = OneHotEncoder(sparse=False)
-y_train_encoded = onehot_encoder.fit_transform(integer_encoded.reshape(-1, 1))
+# Combine HGG_train and LGG_train
+X_train = np.array(HGG_train + LGG_train)
 
-integer_encoded_val = label_encoder.transform(y_val)
-y_val_encoded = onehot_encoder.transform(integer_encoded_val.reshape(-1, 1))
+# Create an array of ones with the length of HGG_train
+y_train = np.ones(len(HGG_train))
 
-X_train = X_train.astype(np.float64)  # Convert X_train to Double
-y_train_encoded = y_train_encoded.astype(np.float64)  # Convert y_train_encoded to Double
+# Extend the array with zeros with the length of LGG_train
+y_train = np.concatenate((y_train, np.zeros(len(LGG_train))))
 
-X_val = X_val.astype(np.float64)  # Convert X_val to Double
-y_val_encoded = y_val_encoded.astype(np.float64)  # Convert y_val_encoded to Double
+# Combine HGG_val and LGG_val
+X_val = np.array(HGG_val + LGG_val)
 
-train_dataset = TensorDataset(torch.from_numpy(X_train).double(), torch.from_numpy(y_train_encoded).double())
-val_dataset = TensorDataset(torch.from_numpy(X_val).double(), torch.from_numpy(y_val_encoded).double())
+# Create an array of ones with the length of HGG_val
+y_val = np.ones(len(HGG_val))
+
+# Extend the array with zeros with the length of LGG_val
+y_val = np.concatenate((y_val, np.zeros(len(LGG_val))))
 
 
 # Print the shapes of the train and test sets
