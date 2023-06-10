@@ -42,6 +42,9 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, models, transforms
 from torchvision.models import ResNet50_Weights
 
+from collections import Counter
+from sklearn.utils.class_weight import compute_class_weight
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
