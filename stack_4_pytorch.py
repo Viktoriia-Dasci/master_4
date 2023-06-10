@@ -345,7 +345,8 @@ def train_and_evaluate(param, model, trial):
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
             optimizer.zero_grad()
-            output = model(data, dropout=param['drop_out']).to(device)
+            output = model(data, dropout=param['drop_out'])
+            output = output.to(device)  # Convert output to the GPU device
             loss = criterion(output, target)
             train_loss += loss.item()
             pred = output.argmax(dim=1, keepdim=True)
@@ -366,7 +367,8 @@ def train_and_evaluate(param, model, trial):
         with torch.no_grad():
             for data, target in val_loader:
                 data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-                output = model(data, dropout=param['drop_out']).to(device)
+                output = model(data, dropout=param['drop_out'])
+                output = output.to(device)  # Convert output to the GPU device
                 val_loss += criterion(output, target).item()
                 pred = output.argmax(dim=1, keepdim=True)
                 val_correct += pred.eq(target.view_as(pred)).sum().item()
