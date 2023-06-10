@@ -376,7 +376,7 @@ def train_and_evaluate(param, model, trial):
     accuracies = []
     EPOCHS = 5
     
-    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor.to(device))
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate'])
     train_loader = DataLoader(train_dataset, batch_size=param['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=param['batch_size'], shuffle=False)
@@ -390,7 +390,7 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
 
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
+            data, target = data.to(device), target.to(device) # Permute dimensions
             optimizer.zero_grad()
             output = model(data, dropout=nn.Dropout(param['drop_out']))
             loss = criterion(output, target)
@@ -412,7 +412,7 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
+                data, target = data.to(device), target.to(device) # Permute dimensions
                 output = model(data, dropout=param['drop_out'])
                 val_loss += criterion(output, target).item()
                 pred = output.argmax(dim=1, keepdim=True)
@@ -450,7 +450,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'])
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units']).to(device)
 
     max_f1 = train_and_evaluate(params, model, trial)
 
