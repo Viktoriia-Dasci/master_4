@@ -107,9 +107,14 @@ y_train_encoded = onehot_encoder.fit_transform(integer_encoded.reshape(-1, 1))
 integer_encoded_val = label_encoder.transform(y_val)
 y_val_encoded = onehot_encoder.transform(integer_encoded_val.reshape(-1, 1))
 
-train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train_encoded))
-val_dataset = TensorDataset(torch.from_numpy(X_val), torch.from_numpy(y_val_encoded))
+X_train = X_train.astype(np.float64)  # Convert X_train to Double
+y_train_encoded = y_train_encoded.astype(np.float64)  # Convert y_train_encoded to Double
 
+X_val = X_val.astype(np.float64)  # Convert X_val to Double
+y_val_encoded = y_val_encoded.astype(np.float64)  # Convert y_val_encoded to Double
+
+train_dataset = TensorDataset(torch.from_numpy(X_train).double(), torch.from_numpy(y_train_encoded).double())
+val_dataset = TensorDataset(torch.from_numpy(X_val).double(), torch.from_numpy(y_val_encoded).double())
 
 
 # Print the shapes of the train and test sets
