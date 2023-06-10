@@ -491,8 +491,7 @@ class MyCustomEfficientNetB1(nn.Module):
         output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
         output = F.relu(self.fc1(output))  
-        output = self.fc2(output)
-        images_outputs = torch.softmax(output, dim=1)
+        images_outputs = F.relu(self.fc2(output))
 
 
         # # compute gcam for images
