@@ -89,6 +89,16 @@ y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
 # X_test = np.array(HGG_test + LGG_test)
 # y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
 
+# Convert y_train to one-hot encoded format
+label_encoder = LabelEncoder()
+integer_encoded = label_encoder.fit_transform(y_train)
+onehot_encoder = OneHotEncoder(sparse=False)
+y_train = onehot_encoder.fit_transform(integer_encoded.reshape(-1, 1))
+
+# Convert y_val to one-hot encoded format
+integer_encoded_val = label_encoder.transform(y_val)
+y_val = onehot_encoder.transform(integer_encoded_val.reshape(-1, 1))
+
 
 # Print the shapes of the train and test sets
 print('X_train shape:', X_train.shape)
@@ -231,19 +241,24 @@ y_val = torch.from_numpy(y_val).long()
 #test_dataset = TensorDataset(X_test, y_test)
 
 # Define the dataset
+from torch.utils.data import TensorDataset
+from collections import Counter
+from sklearn.utils.class_weight import compute_class_weight
+
 train_dataset = TensorDataset(X_train, y_train)
 val_dataset = TensorDataset(X_val, y_val)
-#test_dataset = TensorDataset(X_test, y_test)
+# test_dataset = TensorDataset(X_test, y_test)
 
-class_counts = Counter(train_dataset.targets)
+class_counts = Counter(y_train)
 
-class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(train_dataset.targets), y=train_dataset.targets)
+class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
 print(class_weights)
 
 class_weights_np = np.array(class_weights, dtype=np.float32)
 class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor.cuda()
+
 
 #test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
