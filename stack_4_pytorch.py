@@ -151,7 +151,7 @@ class Effnet(nn.Module):
         super().__init__()
 
         # Load the pretrained EfficientNet-B1 model
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b0')
+        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
         efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
@@ -329,9 +329,8 @@ def train_and_evaluate(param, model, trial):
     accuracies = []
     EPOCHS = 5
     
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor.to(device))
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate'])
-    optimizer = optimizer.to(device)
     train_loader = DataLoader(train_dataset, batch_size=param['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=param['batch_size'], shuffle=False)
 
