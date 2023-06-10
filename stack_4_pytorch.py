@@ -166,9 +166,16 @@ print(y_train_one_hot.shape)
 print(X_val_tensor.shape)
 print(y_val_one_hot.shape)
 
-# Create datasets and data loaders
-train_dataset = TensorDataset(X_train_tensor, y_train_one_hot).double()
-val_dataset = TensorDataset(X_val_tensor, y_val_one_hot).double()
+
+X_train_tensor = X_train_tensor.double()
+y_train_one_hot = y_train_one_hot.double()
+
+X_val_tensor = X_val_tensor.double()
+y_val_one_hot = y_val_one_hot.double()
+
+# Create datasets
+train_dataset = TensorDataset(X_train_tensor, y_train_one_hot)
+val_dataset = TensorDataset(X_val_tensor, y_val_one_hot)
 
 # class MyCustomResnet50(nn.Module):
 #     def __init__(self, pretrained=True):
