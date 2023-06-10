@@ -41,6 +41,7 @@ import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 from torchvision import datasets, models, transforms
 from torchvision.models import ResNet50_Weights
+from efficientnet_pytorch import EfficientNet
 
 from collections import Counter
 from sklearn.utils.class_weight import compute_class_weight
