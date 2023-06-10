@@ -330,7 +330,8 @@ def train_and_evaluate(param, model, trial):
     EPOCHS = 5
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate']).to(device)
+    optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate'])
+    optimizer = optimizer.to(device)
     train_loader = DataLoader(train_dataset, batch_size=param['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=param['batch_size'], shuffle=False)
 
