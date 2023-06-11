@@ -423,7 +423,7 @@ def train_and_evaluate(param, model, trial):
 
             batch_accuracy = correct_predictions / target_numpy.shape[0]
             #print("Number of correct predictions:", correct_predictions)
-            print("Accuracy of the batch:", batch_accuracy)
+            #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
             loss.backward()
             optimizer.step()
@@ -432,8 +432,8 @@ def train_and_evaluate(param, model, trial):
         epoch_loss = train_loss / len(train_loader)
         epoch_accuracy = train_correct / len(train_loader)
 
-        print("Epoch Loss:", epoch_loss)
-        print("Epoch Accuracy:", epoch_accuracy)
+        print("Epoch Loss:", epoch_num, ': ', epoch_loss)
+        print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
             
        
         model.eval()
@@ -452,7 +452,7 @@ def train_and_evaluate(param, model, trial):
                 softmax = nn.Softmax(dim=1)
                 output = softmax(output)
                 predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-                print('predictions:', predictions)
+                #print('predictions:', predictions)
 
                 target_numpy = target.detach().cpu().numpy()
                 correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
@@ -461,7 +461,7 @@ def train_and_evaluate(param, model, trial):
 
                 batch_accuracy = correct_predictions / target_numpy.shape[0]
                 #print("Number of correct predictions:", correct_predictions)
-                print("Accuracy of the batch:", batch_accuracy)
+                #print("Accuracy of the batch:", batch_accuracy)
                 val_correct += batch_accuracy
                 
                 # Calculate F1 score
@@ -472,10 +472,11 @@ def train_and_evaluate(param, model, trial):
             epoch_val_loss = val_loss / len(val_loader)
             epoch_val_accuracy = val_correct / len(val_loader)
             epoch_val_f1_score = val_f1_score / len(val_loader)
+            print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
+            print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
         
-        f1_scores.append(epoch_val_f1_score)
-        print('val f1-score:', epoch_val_f1_score)
-
+        f1_scores.append(epoch_val_f1_score)        
+        print(f1_scores)
         trial.report(epoch_val_f1_score, epoch_num)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
