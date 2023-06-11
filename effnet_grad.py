@@ -603,7 +603,7 @@ def train_and_evaluate(param, model, trial):
         for train_input, train_label, train_mask in dataloaders['Train']:
             optimizer.zero_grad()
             train_label = train_label.float().to(device)
-            print(train_label)
+            #print(train_label)
             train_input = train_input.to(device)
             train_mask = train_mask.to(device)
             targets = torch.argmax(train_label, dim=1)
@@ -615,21 +615,21 @@ def train_and_evaluate(param, model, trial):
             total_loss_train += batch_loss.item()
         
             
-            print('output:', output)
+            #print('output:', output)
             output=F.softmax(output, dim=1)
-            print('softmax output:', output)
+            #print('softmax output:', output)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            print('predictions:', predictions)
+            #print('predictions:', predictions)
 
             target_numpy = train_label.detach().cpu().numpy()
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-            print('correct_predictions:', correct_predictions)
+            #print('correct_predictions:', correct_predictions)
 
             batch_accuracy = correct_predictions / target_numpy.shape[0]
-            print("Number of correct predictions:", correct_predictions)
-            print("Accuracy of the batch:", batch_accuracy)
+            #print("Number of correct predictions:", correct_predictions)
+            #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
             
             model.zero_grad()
