@@ -413,6 +413,13 @@ def train_and_evaluate(param, model, trial):
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
             print('output:', output)
+            
+            _, predicted = torch.max(output.data, 1)
+            print(predicted)
+            
+            correct += (predicted == target).sum().item()
+            total += target.size(0)
+            
             pred = output.argmax(dim=1).float()
             print('pred:', output)
             acc_train = (pred == target[:, 1]).float().mean().item()
@@ -421,6 +428,20 @@ def train_and_evaluate(param, model, trial):
             train_correct += acc_train
             loss.backward()
             optimizer.step()
+            
+
+
+            targets_ = targets_.detach().cpu().numpy()
+            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
+            total_targets_val.extend(targets_)
+            total_preds_val.extend(preds_)
+
+        val_loss = total_loss_val / len(dataloaders['Val'])
+        val_losses.append(val_loss)
+        val_accuracy = correct / total
+        print(val_accuracy)
+        val_accuracies.append(val_accuracy)
+
             
         train_loss /= len(train_loader.dataset)
         train_accuracy = 100. * train_correct / len(train_loader.dataset)
@@ -445,6 +466,8 @@ def train_and_evaluate(param, model, trial):
                 val_correct += acc_val
                 val_labels.extend(target.cpu().numpy())
                 y_preds.extend(output.cpu().numpy())
+        
+        
         
         val_loss /= len(val_loader.dataset)
         val_accuracy = 100. * val_correct / len(val_loader.dataset)
