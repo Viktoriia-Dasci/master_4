@@ -416,6 +416,7 @@ def train_and_evaluate(param, model, trial):
             pred = output.argmax(dim=1).float()
             print('pred:', output)
             acc_train = (pred == target[:, 1]).float().mean().item()
+            print(target[:, 1])
             print('acc_train:', acc_train)
             train_correct += acc_train
             loss.backward()
