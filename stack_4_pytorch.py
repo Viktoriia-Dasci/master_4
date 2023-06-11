@@ -231,7 +231,7 @@ class Effnet(nn.Module):
         if self.fc2 is not None:
             x = self.fc2(x)
         else:
-        x = F.relu(self.fc3(x))
+            x = F.relu(self.fc3(x))
         return x
         
 
