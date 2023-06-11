@@ -606,7 +606,7 @@ def train_and_evaluate(param, model, trial):
             print(train_label)
             train_input = train_input.to(device)
             train_mask = train_mask.to(device)
-            targets = torch.argmax(one_hot_tensor, dim=1)
+            targets = torch.argmax(train_label, dim=1)
 
             output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
            
