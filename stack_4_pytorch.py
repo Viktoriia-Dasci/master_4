@@ -400,7 +400,7 @@ def train_and_evaluate(param, model, trial):
         total_loss_train = 0
         train_correct = 0
         train_loss = 0
-        
+
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
             print(target)
@@ -408,7 +408,7 @@ def train_and_evaluate(param, model, trial):
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
-            print('loss:',loss)
+            print('loss:', loss)
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
@@ -427,24 +427,14 @@ def train_and_evaluate(param, model, trial):
             train_correct += batch_accuracy
             loss.backward()
             optimizer.step()
+
+        # Calculate epoch-level loss and accuracy
+        epoch_loss = train_loss / len(train_loader)
+        epoch_accuracy = train_correct / len(train_loader)
+
+        print("Epoch Loss:", epoch_loss)
+        print("Epoch Accuracy:", epoch_accuracy)
             
-
-
-            targets_ = targets_.detach().cpu().numpy()
-            preds_ = output[:, 1].detach().cpu().numpy()  # use class 1 probabilities for AUC calculation
-            total_targets_val.extend(targets_)
-            total_preds_val.extend(preds_)
-
-        val_loss = total_loss_val / len(dataloaders['Val'])
-        val_losses.append(val_loss)
-        val_accuracy = correct / total
-        print(val_accuracy)
-        val_accuracies.append(val_accuracy)
-
-            
-        train_loss /= len(train_loader.dataset)
-        train_accuracy = 100. * train_correct / len(train_loader.dataset)
-        print('train accuracy:', train_accuracy)
         
         model.eval()
         val_loss = 0
