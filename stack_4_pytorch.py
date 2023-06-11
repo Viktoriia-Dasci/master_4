@@ -210,7 +210,7 @@ val_dataset = TensorDataset(X_val, y_val)
 
 
 class Effnet(nn.Module):
-    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
+    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None, dropout=None):
         super().__init__()
 
         # Load the pretrained EfficientNet-B1 model
@@ -222,6 +222,7 @@ class Effnet(nn.Module):
         # Reuse the other layers from the pretrained EfficientNet-B1 model
         self.features = efficientnet_b1.extract_features
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+        self.dropout = nn.Dropout(dropout)
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
             self.fc1 = nn.Linear(in_features=1280, out_features=dense_0_units, bias=True)
@@ -236,10 +237,10 @@ class Effnet(nn.Module):
             self.fc3 = nn.Linear(dense_0_units, 2)
         
         
-    def forward(self, x, dropout=None):
+    def forward(self, x):
         x = self.features(x)
         x = self.avgpool(x)
-        x = dropout(x)
+        x = self.dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         if self.fc2 is not None:
@@ -404,7 +405,7 @@ def train_and_evaluate(param, model, trial):
             data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
             optimizer.zero_grad()
             #data = data.float()
-            output = model(data, dropout=nn.Dropout(param['drop_out']))
+            output = model(data)
             loss = criterion(output, target)
             train_loss += loss.item()
             pred = output.argmax(dim=1, keepdim=True)
@@ -426,7 +427,7 @@ def train_and_evaluate(param, model, trial):
             for data, target in val_loader:
                 data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
                 #data = data.float()
-                output = model(data, dropout=param['drop_out'])
+                output = model(data)
                 val_loss += criterion(output, target).item()
                 pred = output.argmax(dim=1,  keepdim=True)
                 val_correct += pred.eq(target.view_as(pred)).sum().item()
@@ -463,7 +464,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'])
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=nn.Dropout(param['drop_out']))
 
     max_f1 = train_and_evaluate(params, model, trial)
 
