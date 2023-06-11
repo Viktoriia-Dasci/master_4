@@ -688,6 +688,8 @@ def train_and_evaluate(param, model, trial):
 
             output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
             
+            output=F.softmax(output, dim=1)
+            
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_train += batch_loss.item()
             
@@ -697,6 +699,9 @@ def train_and_evaluate(param, model, trial):
             model.zero_grad()
             batch_loss.backward()
             optimizer.step()
+        
+        print('train accuracy:', total_loss_train)
+        
         
         total_acc_val = 0
         total_loss_val = 0
@@ -711,25 +716,24 @@ def train_and_evaluate(param, model, trial):
 
             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
 
+            output=F.softmax(output, dim=1)
+            
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_val += batch_loss.item()
             
-            y_pred = nn.functional.softmax(output, dim=1)[:, 1].cpu().detach().numpy()
+            y_pred = output.argmax(dim=1).cpu().detach().numpy()
             y_preds.extend(y_pred)
-            
+
             val_labels.extend(val_label.cpu().detach().numpy())
+        
+            acc_val = (output.argmax(dim=1) == val_label).sum().item()
+            total_acc_val += acc_val
             
-            acc = (output.argmax(dim=1) == val_label).sum().item()
-            total_acc_val += acc
-    
-        accuracy = total_acc_val / len(image_datasets['Val'])
-        accuracies.append(accuracy)
-        print('val accuracy:', accuracy)
-    
-        f1 = f1_score(val_labels, np.round(y_preds))
+        print('val accuracy:', total_acc_val)
+        
+        f1 = f1_score(val_labels, y_preds, average='binary')
         f1_scores.append(f1)
         print('val f1-score:', f1)
-
         trial.report(f1, epoch_num)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
