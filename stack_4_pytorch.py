@@ -93,7 +93,7 @@ print(class_weights)
 class_weights_np = np.array(class_weights, dtype=np.float32)
 class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
-    class_weights_tensor = class_weights_tensor.cuda()
+    class_weights_tensor = class_weights_tensor.to(device)
 
 # Convert labels to categorical tensor
 y_train_tensor = torch.tensor(y_train, dtype=torch.long)
