@@ -98,7 +98,21 @@ class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor
 
+X_train = torch.from_numpy(X_train).float()
+y_train = torch.from_numpy(y_train).long()
+X_val = torch.from_numpy(X_val).float()
+y_val = torch.from_numpy(y_val).long()
+# X_test = torch.from_numpy(X_test).float()
+# y_test = torch.from_numpy(y_test).long()
 
+# Define the test dataset
+#test_dataset = TensorDataset(X_test, y_test)
+
+# Define the dataset
+train_dataset = TensorDataset(X_train, y_train)
+val_dataset = TensorDataset(X_val, y_val)
+    
+    
 # Print the shapes of the train and test sets
 # print('X_train shape:', X_train.shape)
 # print('y_train shape:', y_train.shape)
@@ -121,55 +135,55 @@ if torch.cuda.is_available():
 # val_dataset = TensorDataset(X_val, y_val)
 
 
-def add_labels(X, y, images_list, label):
-    for img in images_list:
-        X.append(img)
-        y.append(label)
-    return X, y
+# def add_labels(X, y, images_list, label):
+#     for img in images_list:
+#         X.append(img)
+#         y.append(label)
+#     return X, y
 
-# Assuming HGG_list_new_train, LGG_list_new_train, HGG_list_new_val, LGG_list_new_val are already defined
+# # Assuming HGG_list_new_train, LGG_list_new_train, HGG_list_new_val, LGG_list_new_val are already defined
 
-X_train, y_train = add_labels([], [], HGG_train, label='HGG')
-X_train, y_train = add_labels(X_train, y_train, LGG_train, label='LGG')
-X_val, y_val = add_labels([], [], HGG_val, label='HGG')
-X_val, y_val = add_labels(X_val, y_val, LGG_val, label='LGG')
+# X_train, y_train = add_labels([], [], HGG_train, label='HGG')
+# X_train, y_train = add_labels(X_train, y_train, LGG_train, label='LGG')
+# X_val, y_val = add_labels([], [], HGG_val, label='HGG')
+# X_val, y_val = add_labels(X_val, y_val, LGG_val, label='LGG')
 
-# Convert labels to numerical values
-labels = {'HGG': 0, 'LGG': 1}
-y_train = [labels[y] for y in y_train]
-y_val = [labels[y] for y in y_val]
+# # Convert labels to numerical values
+# labels = {'HGG': 0, 'LGG': 1}
+# y_train = [labels[y] for y in y_train]
+# y_val = [labels[y] for y in y_val]
 
-X_train_array = np.array(X_train)
-y_train_array = np.array(y_train)
+# X_train_array = np.array(X_train)
+# y_train_array = np.array(y_train)
 
-X_val_array = np.array(X_val)
-y_val_array = np.array(y_val)
+# X_val_array = np.array(X_val)
+# y_val_array = np.array(y_val)
 
-# Convert data to tensors
-X_train_tensor = torch.tensor(X_train_array)
-y_train_tensor = torch.tensor(y_train_array)
+# # Convert data to tensors
+# X_train_tensor = torch.tensor(X_train_array)
+# y_train_tensor = torch.tensor(y_train_array)
 
-X_val_tensor = torch.tensor(X_val_array)
-y_val_tensor = torch.tensor(y_val_array)
+# X_val_tensor = torch.tensor(X_val_array)
+# y_val_tensor = torch.tensor(y_val_array)
 
-# Convert labels to one-hot encoding
-num_classes = len(set(y_train))
-y_train_one_hot = torch.nn.functional.one_hot(y_train_tensor, num_classes=num_classes).float()
-y_val_one_hot = torch.nn.functional.one_hot(y_val_tensor, num_classes=num_classes).float()
+# # Convert labels to one-hot encoding
+# num_classes = len(set(y_train))
+# y_train_one_hot = torch.nn.functional.one_hot(y_train_tensor, num_classes=num_classes).float()
+# y_val_one_hot = torch.nn.functional.one_hot(y_val_tensor, num_classes=num_classes).float()
 
-# Shuffle the data
-X_val_tensor, y_val_one_hot = shuffle(X_val_tensor, y_val_one_hot, random_state=101)
-X_train_tensor, y_train_one_hot = shuffle(X_train_tensor, y_train_one_hot, random_state=101)
+# # Shuffle the data
+# X_val_tensor, y_val_one_hot = shuffle(X_val_tensor, y_val_one_hot, random_state=101)
+# X_train_tensor, y_train_one_hot = shuffle(X_train_tensor, y_train_one_hot, random_state=101)
 
-print(X_train_tensor.shape)
-print(y_train_one_hot.shape)
-print(X_val_tensor.shape)
-print(y_val_one_hot.shape)
+# print(X_train_tensor.shape)
+# print(y_train_one_hot.shape)
+# print(X_val_tensor.shape)
+# print(y_val_one_hot.shape)
 
 
-# Create datasets
-train_dataset = TensorDataset(X_train_tensor, y_train_one_hot)
-val_dataset = TensorDataset(X_val_tensor, y_val_one_hot)
+# # Create datasets
+# train_dataset = TensorDataset(X_train_tensor, y_train_one_hot)
+# val_dataset = TensorDataset(X_val_tensor, y_val_one_hot)
 
 # class MyCustomResnet50(nn.Module):
 #     def __init__(self, pretrained=True):
@@ -388,11 +402,11 @@ def train_and_evaluate(param, model, trial):
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
             optimizer.zero_grad()
-            data = data.float()
+            #data = data.float()
             output = model(data, dropout=nn.Dropout(param['drop_out']))
             loss = criterion(output, target)
             train_loss += loss.item()
-            pred = output.argmax(dim=1)
+            pred = output.argmax(dim=1, keepdim=True)
             train_correct += pred.eq(target.view_as(pred)).sum().item()
             loss.backward()
             optimizer.step()
@@ -410,10 +424,10 @@ def train_and_evaluate(param, model, trial):
         with torch.no_grad():
             for data, target in val_loader:
                 data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
-                data = data.float()
+                #data = data.float()
                 output = model(data, dropout=param['drop_out'])
                 val_loss += criterion(output, target).item()
-                pred = output.argmax(dim=1)
+                pred = output.argmax(dim=1,  keepdim=True)
                 val_correct += pred.eq(target.view_as(pred)).sum().item()
                 val_labels.extend(target.cpu().numpy())
                 y_preds.extend(output.cpu().numpy())
