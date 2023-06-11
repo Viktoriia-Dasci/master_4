@@ -405,7 +405,7 @@ def train_and_evaluate(param, model, trial):
             data, target = data.permute(0, 3, 1, 2).to(device), target.float().to(device) # Permute dimensions
             optimizer.zero_grad()
             #data = data.float()
-            output = model(data)
+            output = model(data).to(device)
             loss = criterion(output, target)
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
@@ -430,7 +430,7 @@ def train_and_evaluate(param, model, trial):
             for data, target in val_loader:
                 data, target = data.permute(0, 3, 1, 2).to(device), target.float().to(device) # Permute dimensions
                 #data = data.float()
-                output = model(data)
+                output = model(data).to(device)
                 val_loss += criterion(output, target).item()
                 softmax = nn.Softmax(dim=1)
                 output = softmax(output)
