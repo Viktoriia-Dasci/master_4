@@ -435,10 +435,11 @@ def train_and_evaluate(param, model, trial):
         print("Epoch Loss:", epoch_loss)
         print("Epoch Accuracy:", epoch_accuracy)
             
-        
+       
         model.eval()
         val_loss = 0
         val_correct = 0
+        val_f1_score = 0  # Initialize val_f1_score
         val_labels = []
         y_preds = []
         
