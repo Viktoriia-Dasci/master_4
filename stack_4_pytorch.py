@@ -413,9 +413,10 @@ def train_and_evaluate(param, model, trial):
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
             print('output:', output)
-            pred = output.argmax(dim=1)
+            pred = output.argmax(dim=1).float()
             print('pred:', output)
-            acc_train = (pred == target).sum().item()
+            acc_train = (pred == target).float().mean().item()
+            print('acc_train:', acc_train)
             train_correct += acc_train
             loss.backward()
             optimizer.step()
