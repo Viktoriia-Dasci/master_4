@@ -244,10 +244,10 @@ class Effnet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         if self.fc2 is not None:
-            x = self.fc2(x)
-            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc2(x))
+            x = self.fc3(x)
         else:
-            x = F.relu(self.fc3(x))    
+            x = self.fc3(x)   
         return x
         
 
@@ -402,7 +402,7 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
         
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2), target.long() # Permute dimensions
             optimizer.zero_grad()
             #data = data.float()
             output = model(data)
