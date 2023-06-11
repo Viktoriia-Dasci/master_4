@@ -414,11 +414,14 @@ def train_and_evaluate(param, model, trial):
             output = softmax(output)
             print('output:', output)
             
-            _, predicted = torch.max(output.data, 1)
-            print(predicted)
+            predictions = np.argmax(output, axis=1)
+            print('predictions:', predictions)
             
-            correct += (predicted == target).sum().item()
-            total += target.size(0)
+            correct_predictions = np.sum(predictions == target.argmax(axis=1))
+            print('correct_predictions:', correct_predictions)
+
+            print("Number of correct predictions:", correct_predictions)
+            print("Accuracy of the batch:", accuracy)
             
             pred = output.argmax(dim=1).float()
             print('pred:', output)
