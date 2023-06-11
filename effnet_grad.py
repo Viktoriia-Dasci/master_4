@@ -633,7 +633,7 @@ def train_and_evaluate(param, model, trial):
             train_correct += batch_accuracy
             
             model.zero_grad()
-            loss.backward()
+            batch_loss.backward()
             optimizer.step()
        
         print('train accuracy:', total_acc_train)
