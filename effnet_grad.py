@@ -635,8 +635,13 @@ def train_and_evaluate(param, model, trial):
             model.zero_grad()
             batch_loss.backward()
             optimizer.step()
-       
-        print('train accuracy:', total_acc_train)
+      
+        epoch_loss = total_loss_train / len(dataloaders['Train'])
+        epoch_accuracy = train_correct / len(dataloaders['Train'])
+
+        print("Epoch Loss:", epoch_num, ': ', epoch_loss)
+        print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
+            
         
         
         total_acc_val = 0
@@ -646,31 +651,48 @@ def train_and_evaluate(param, model, trial):
         model.eval()
         
         for val_input, val_label, val_mask in dataloaders['Val']:
-            val_label = val_label.long().to(device)
-            val_input = val_input.float().to(device)
+            val_label = val_label.float().to(device)
+            print(val_label)
+            val_input = val_input.to(device)
             val_mask = val_mask.to(device)
+            val_targets = torch.argmax(val_label, dim=1)
 
-            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
 
-            output=F.softmax(output, dim=1)
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_val += batch_loss.item()
-            
-            y_pred = output.argmax(dim=1).cpu().detach().numpy()
-            y_preds.extend(y_pred)
 
-            val_labels.extend(val_label.cpu().detach().numpy())
-        
-            acc_val = (output.argmax(dim=1) == val_label).sum().item()
-            total_acc_val += acc_val
+            output=F.softmax(output, dim=1)
+            print('softmax output:', output)
             
-        print('val accuracy:', total_acc_val)
+            predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+            print('predictions:', predictions)
+
+            target_numpy = val_label.detach().cpu().numpy()
+            correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+           
+            print('correct_predictions:', correct_predictions)
+
+            batch_accuracy = correct_predictions / target_numpy.shape[0]
+            print("Number of correct predictions:", correct_predictions)
+            print("Accuracy of the batch:", batch_accuracy)
+            val_correct += batch_accuracy
+            
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            val_f1_score += f1
+            
+                    
+        epoch_val_loss = val_loss / len(dataloaders['Val'])
+        epoch_val_accuracy = val_correct / len(dataloaders['Val'])
+        epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
+        print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
+        print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
         
-        f1 = f1_score(val_labels, y_preds, average='binary')
-        f1_scores.append(f1)
-        print('val f1-score:', f1)
-        trial.report(f1, epoch_num)
+        
+        f1_scores.append(epoch_val_f1_score)
+        print('val f1-score:', epoch_val_f1_score)
+        trial.report(epoch_val_f1_score, epoch_num)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
             
