@@ -402,7 +402,7 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
         
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2).to(device), target.float().to(device) # Permute dimensions
             optimizer.zero_grad()
             #data = data.float()
             output = model(data)
@@ -428,7 +428,7 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
+                data, target = data.permute(0, 3, 1, 2).to(device), target.float().to(device) # Permute dimensions
                 #data = data.float()
                 output = model(data)
                 val_loss += criterion(output, target).item()
@@ -470,7 +470,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=params['drop_out'])
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=params['drop_out']).to(device)
 
     max_f1 = train_and_evaluate(params, model, trial)
 
