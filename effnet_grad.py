@@ -152,40 +152,7 @@ class myDataset_train(Dataset):
         # print(len(self.masks))
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
-        
-        #Oversampling to make the number of samples in both classes the same
-        # Count number of samples in each class
-#         class_count = [0] * len(self.class_map)
-#         for target in self.targets:
-#             class_count[self.class_map[target]] += 1
 
-        # Determine maximum number of samples in any class
-#         max_count = max(class_count)
-
-#         # Oversample each class to match max_count
-#         for class_id in range(len(class_count)):
-#             for i in range(len(self.targets)):
-#                 if self.class_map[self.targets[i]] == class_id:
-#                     while class_count[class_id] < max_count:
-#                         self.images.append(self.images[i])
-#                         self.targets.append(self.targets[i])
-#                         self.masks.append(self.masks[i])
-#                         class_count[class_id] += 1
-        
-        
-        # Oversampling
-#         class_count = [0, 0]
-#         for target in self.targets:
-#             class_count[self.class_map[target]] += 1
-
-#         max_count = max(class_count)
-#         for i in range(len(self.targets)):
-#             class_id = self.class_map[self.targets[i]]
-#             if class_count[class_id] < max_count:
-#                 self.images.append(self.images[i])
-#                 self.targets.append(self.targets[i])
-#                 self.masks.append(self.masks[i])
-#                 class_count[class_id] += 1
 
     def __len__(self):
         return len(self.images)
@@ -215,8 +182,9 @@ class myDataset_train(Dataset):
         msk_tensor = aug_transform(msk_tensor)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
+        class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
     
-        return img_tensor, class_id, msk_tensor
+        return img_tensor, class_id_one_hot, msk_tensor
 
 
 
@@ -281,62 +249,10 @@ class myDataset_val(Dataset):
         msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
+        class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
     
-        return img_tensor, class_id, msk_tensor
+        return img_tensor, class_id_one_hot, msk_tensor
 
-class myDataset_test(Dataset):
-
-    def __init__(self, transform=None): 
-        #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/test/"
-        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/test/"
-        file_list = glob.glob(self.imgs_path + "*")
-        msk_list = glob.glob(self.masks_path + "*")
-        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
-        self.images = []
-        self.targets = []
-        self.masks = []
-        for class_path in file_list:
-            class_name = class_path.split("/")[-1]
-            for img_path in sorted(glob.glob(class_path + "/.*")):
-                self.images.append(img_path)
-            for img_path in sorted(glob.glob(class_path + "/.*")):
-                self.targets.append(class_name)
-        for msk_path in msk_list:
-            for masks_path in sorted(glob.glob(msk_path + "/.*")):
-                  self.masks.append(masks_path)
-        self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
-        print(self.images[-100])
-        print(self.targets[-100])
-        print(self.masks[-100])
-        print(len(self.images))
-        print(len(self.targets))
-        print(len(self.masks))
-        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
-        self.img_dim = (224, 224)
-
-    def __len__(self):
-        return len(self.images)
-
-    def __getitem__(self, idx):
-        img_path  = self.images[idx]
-        class_name = self.targets[idx]
-        masks_path = self.masks[idx]
-        img = np.load(img_path)
-        msk = np.load(masks_path)
-#         min_max_scaler = p.MinMaxScaler()
-#         img = min_max_scaler.fit_transform(img)
-#         msk = min_max_scaler.fit_transform(msk)
-#         img_float32 = np.float32(img)
-        img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
-        img_tensor = val_transforms(img_color)
-        msk_float32 = np.float32(msk)
-        msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
-        msk_tensor = val_transforms(msk_color)
-        class_id = self.class_map[class_name]
-        class_id = torch.tensor(class_id)
-    
-        return img_tensor, class_id, msk_tensor
 
 image_datasets = {
     'Train': 
@@ -682,7 +598,7 @@ def train_and_evaluate(param, model, trial):
         total_loss_train = 0
 
         for train_input, train_label, train_mask in dataloaders['Train']:
-            train_label = train_label.long().to(device)
+            train_label = train_label.to(device)
             print(train_label)
             train_input = train_input.float().to(device)
             train_mask = train_mask.to(device)
