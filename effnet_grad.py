@@ -602,12 +602,13 @@ def train_and_evaluate(param, model, trial):
 
         for train_input, train_label, train_mask in dataloaders['Train']:
             optimizer.zero_grad()
-            train_label = train_label.long().to(device)
+            train_label = train_label.float().to(device)
             print(train_label)
-            train_input = train_input.float().to(device)
+            train_input = train_input.to(device)
             train_mask = train_mask.to(device)
+            targets = torch.argmax(one_hot_tensor, dim=1)
 
-            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
            
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
