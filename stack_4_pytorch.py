@@ -78,8 +78,8 @@ LGG_val = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
 
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+from torch.utils.data import TensorDataset
 
-# Concatenate the data arrays
 X_train = np.array(HGG_train + LGG_train)
 X_val = np.array(HGG_val + LGG_val)
 
@@ -97,9 +97,8 @@ class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor
 
-
 # Convert labels to one-hot encoded format
-encoder = OneHotEncoder(sparse=False, categories='auto')
+encoder = OneHotEncoder(sparse=False, categories='auto', n_values=2)
 y_train = encoder.fit_transform(y_train.reshape(-1, 1))
 y_val = encoder.transform(y_val.reshape(-1, 1))
 
@@ -109,9 +108,6 @@ print('y_train shape:', y_train.shape)
 print('X_val shape:', X_val.shape)
 print('y_val shape:', y_val.shape)
 
-import torch
-from torch.utils.data import TensorDataset
-
 # Convert arrays to tensors
 X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
 y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
@@ -120,7 +116,8 @@ y_val_tensor = torch.tensor(y_val, dtype=torch.float32)
 
 # Create train and validation datasets
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-val_dataset = TensorDataset(X_val_tensor, y_val_tensor)    
+val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+  
     
 # Print the shapes of the train and test sets
 # print('X_train shape:', X_train.shape)
