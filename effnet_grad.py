@@ -646,6 +646,8 @@ def train_and_evaluate(param, model, trial):
         
         total_acc_val = 0
         total_loss_val = 0
+        val_correct = 0
+        val_f1_score = 0
         y_preds = []
         val_labels = []
         model.eval()
