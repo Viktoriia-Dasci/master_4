@@ -464,7 +464,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=nn.Dropout(params['drop_out']))
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=params['drop_out'])
 
     max_f1 = train_and_evaluate(params, model, trial)
 
