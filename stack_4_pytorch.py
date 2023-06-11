@@ -476,7 +476,7 @@ def train_and_evaluate(param, model, trial):
         f1_scores.append(epoch_val_f1_score)
         print('val f1-score:', epoch_val_f1_score)
 
-        trial.report(f1, epoch_num)
+        trial.report(epoch_val_f1_score, epoch_num)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
     
