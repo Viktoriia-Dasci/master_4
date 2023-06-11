@@ -403,26 +403,26 @@ def train_and_evaluate(param, model, trial):
 
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
-            print(target)
-            print(target.float)
+            #print(target.float)
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
-            print('loss:', loss)
+            #print('loss:', loss)
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
-            print('output:', output)
+            #print('output:', output)
 
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            print('predictions:', predictions)
+            #print('predictions:', predictions)
 
             target_numpy = target.detach().cpu().numpy()
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
-            print('correct_predictions:', correct_predictions)
+           
+            #print('correct_predictions:', correct_predictions)
 
             batch_accuracy = correct_predictions / target_numpy.shape[0]
-            print("Number of correct predictions:", correct_predictions)
+            #print("Number of correct predictions:", correct_predictions)
             print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
             loss.backward()
@@ -447,24 +447,33 @@ def train_and_evaluate(param, model, trial):
                 data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
                 #data = data.float()
                 output = model(data)
-                val_loss += criterion(output, target).item()
+                val_loss += criterion(output, target)
                 softmax = nn.Softmax(dim=1)
                 output = softmax(output)
-                pred = output.argmax(dim=1)
-                acc_val = (pred == target[:, 1]).sum().item()
-                val_correct += acc_val
-                val_labels.extend(target.cpu().numpy())
-                y_preds.extend(output.cpu().numpy())
+                predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+                print('predictions:', predictions)
+
+                target_numpy = target.detach().cpu().numpy()
+                correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+
+                #print('correct_predictions:', correct_predictions)
+
+                batch_accuracy = correct_predictions / target_numpy.shape[0]
+                #print("Number of correct predictions:", correct_predictions)
+                print("Accuracy of the batch:", batch_accuracy)
+                val_correct += batch_accuracy
+                
+                # Calculate F1 score
+                f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+                val_f1_score += f1
+
+            # Calculate epoch-level loss, accuracy, and F1 score
+            epoch_val_loss = val_loss / len(val_loader)
+            epoch_val_accuracy = val_correct / len(val_loader)
+            epoch_val_f1_score = val_f1_score / len(val_loader)
         
-        
-        
-        val_loss /= len(val_loader.dataset)
-        val_accuracy = 100. * val_correct / len(val_loader.dataset)
-        print('val accuracy:', val_accuracy)
-        
-        f1 = f1_score(val_labels, np.round(y_preds))
-        f1_scores.append(f1)
-        print('val f1-score:', f1)
+        f1_scores.append(epoch_val_f1_score)
+        print('val f1-score:', epoch_val_f1_score)
 
         trial.report(f1, epoch_num)
         if trial.should_prune():
