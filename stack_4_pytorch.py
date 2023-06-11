@@ -228,7 +228,9 @@ class Effnet(nn.Module):
         x = dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
-        x = self.fc2(x)
+        if self.fc2 is not None:
+            x = self.fc2(x)
+        else:
         x = F.relu(self.fc3(x))
         return x
         
