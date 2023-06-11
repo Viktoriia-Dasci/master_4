@@ -602,7 +602,7 @@ def train_and_evaluate(param, model, trial):
 
         for train_input, train_label, train_mask in dataloaders['Train']:
             optimizer.zero_grad()
-            train_label = train_label.long.to(device)
+            train_label = train_label.long().to(device)
             print(train_label)
             train_input = train_input.float().to(device)
             train_mask = train_mask.to(device)
