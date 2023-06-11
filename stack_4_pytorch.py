@@ -76,17 +76,16 @@ LGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_stack')
 HGG_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
 LGG_val = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
 
+import numpy as np
+from sklearn.preprocessing import OneHotEncoder
+
+# Concatenate the data arrays
 X_train = np.array(HGG_train + LGG_train)
-y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 X_val = np.array(HGG_val + LGG_val)
+
+# Create the labels array
+y_train = np.array([0] * len(HGG_train) + [1] * len(LGG_train))
 y_val = np.array([0] * len(HGG_val) + [1] * len(LGG_val))
-# X_test = np.array(HGG_test + LGG_test)
-# y_test = np.array([0] * len(HGG_test) + [1] * len(LGG_test))
-# Print the shapes of the train and test sets
-print('X_train shape:', X_train.shape)
-print('y_train shape:', y_train.shape)
-print('X_train shape:', X_val.shape)
-print('y_train shape:', y_val.shape)
 
 class_counts = Counter(y_train)
 
@@ -98,20 +97,30 @@ class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor
 
-X_train = torch.from_numpy(X_train).float()
-y_train = torch.from_numpy(y_train).long()
-X_val = torch.from_numpy(X_val).float()
-y_val = torch.from_numpy(y_val).long()
-# X_test = torch.from_numpy(X_test).float()
-# y_test = torch.from_numpy(y_test).long()
 
-# Define the test dataset
-#test_dataset = TensorDataset(X_test, y_test)
+# Convert labels to one-hot encoded format
+encoder = OneHotEncoder(sparse=False, categories='auto')
+y_train = encoder.fit_transform(y_train.reshape(-1, 1))
+y_val = encoder.transform(y_val.reshape(-1, 1))
 
-# Define the dataset
-train_dataset = TensorDataset(X_train, y_train)
-val_dataset = TensorDataset(X_val, y_val)
-    
+# Print the shapes of the train and validation sets
+print('X_train shape:', X_train.shape)
+print('y_train shape:', y_train.shape)
+print('X_val shape:', X_val.shape)
+print('y_val shape:', y_val.shape)
+
+import torch
+from torch.utils.data import TensorDataset
+
+# Convert arrays to tensors
+X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
+X_val_tensor = torch.tensor(X_val, dtype=torch.float32)
+y_val_tensor = torch.tensor(y_val, dtype=torch.float32)
+
+# Create train and validation datasets
+train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+val_dataset = TensorDataset(X_val_tensor, y_val_tensor)    
     
 # Print the shapes of the train and test sets
 # print('X_train shape:', X_train.shape)
