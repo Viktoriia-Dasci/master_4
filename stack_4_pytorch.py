@@ -93,7 +93,7 @@ print(class_weights)
 class_weights_np = np.array(class_weights, dtype=np.float32)
 class_weights_tensor = torch.from_numpy(class_weights_np)
 if torch.cuda.is_available():
-    class_weights_tensor = class_weights_tensor.to(device)
+    class_weights_tensor = class_weights_tensor
 
 # Convert labels to categorical tensor
 y_train_tensor = torch.tensor(y_train, dtype=torch.long)
@@ -402,10 +402,10 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
         
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2).to(device), target.float().to(device) # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
             optimizer.zero_grad()
             #data = data.float()
-            output = model(data).to(device)
+            output = model(data)
             loss = criterion(output, target)
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
@@ -428,9 +428,9 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2).to(device), target.float().to(device) # Permute dimensions
+                data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
                 #data = data.float()
-                output = model(data).to(device)
+                output = model(data)
                 val_loss += criterion(output, target).item()
                 softmax = nn.Softmax(dim=1)
                 output = softmax(output)
@@ -470,7 +470,7 @@ def objective(trial):
         'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=params['drop_out']).to(device)
+    model = Effnet(pretrained=True, dense_0_units=params['dense_0_units'],  dense_1_units=params['dense_1_units'], dropout=params['drop_out'])
 
     max_f1 = train_and_evaluate(params, model, trial)
 
