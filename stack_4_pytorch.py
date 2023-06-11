@@ -419,8 +419,9 @@ def train_and_evaluate(param, model, trial):
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
-            pred = output.argmax(dim=1, keepdim=True)
-            train_correct += pred.eq(target.view_as(pred)).sum().item()
+            pred = output.argmax(dim=1)
+            acc_train = (pred == target).sum().item()
+            train_correct += acc_train
             loss.backward()
             optimizer.step()
             
@@ -442,8 +443,9 @@ def train_and_evaluate(param, model, trial):
                 val_loss += criterion(output, target).item()
                 softmax = nn.Softmax(dim=1)
                 output = softmax(output)
-                pred = output.argmax(dim=1,  keepdim=True)
-                val_correct += pred.eq(target.view_as(pred)).sum().item()
+                pred = output.argmax(dim=1)
+                acc_val = (pred == target).sum().item()
+                val_correct += acc_val
                 val_labels.extend(target.cpu().numpy())
                 y_preds.extend(output.cpu().numpy())
         
