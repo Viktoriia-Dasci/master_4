@@ -406,29 +406,25 @@ def train_and_evaluate(param, model, trial):
             print(target)
             print(target.float)
             optimizer.zero_grad()
-            #data = data.float()
             output = model(data)
             loss = criterion(output, target)
+            print('loss:',loss)
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
             print('output:', output)
-            
-            predictions = np.argmax(output, axis=1)
+
+            predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
             print('predictions:', predictions)
-            
-            correct_predictions = np.sum(predictions == target.argmax(axis=1))
+
+            target_numpy = target.detach().cpu().numpy()
+            correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
             print('correct_predictions:', correct_predictions)
 
+            batch_accuracy = correct_predictions / target_numpy.shape[0]
             print("Number of correct predictions:", correct_predictions)
-            print("Accuracy of the batch:", accuracy)
-            
-            pred = output.argmax(dim=1).float()
-            print('pred:', output)
-            acc_train = (pred == target[:, 1]).float().mean().item()
-            print(target[:, 1])
-            print('acc_train:', acc_train)
-            train_correct += acc_train
+            print("Accuracy of the batch:", batch_accuracy)
+            train_correct += batch_accuracy
             loss.backward()
             optimizer.step()
             
