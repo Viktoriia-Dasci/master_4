@@ -412,7 +412,9 @@ def train_and_evaluate(param, model, trial):
             train_loss += loss.item()
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
+            print('output:', output)
             pred = output.argmax(dim=1)
+            print('pred:', output)
             acc_train = (pred == target).sum().item()
             train_correct += acc_train
             loss.backward()
