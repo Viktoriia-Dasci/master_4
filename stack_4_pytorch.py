@@ -402,7 +402,7 @@ def train_and_evaluate(param, model, trial):
         train_loss = 0
         
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
+            data, target = data.permute(0, 3, 1, 2), targe.float()t # Permute dimensions
             optimizer.zero_grad()
             #data = data.float()
             output = model(data)
@@ -428,7 +428,7 @@ def train_and_evaluate(param, model, trial):
         
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.permute(0, 3, 1, 2), target # Permute dimensions
+                data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
                 #data = data.float()
                 output = model(data)
                 val_loss += criterion(output, target).item()
