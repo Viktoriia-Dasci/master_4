@@ -373,7 +373,23 @@ from torchvision.transforms.functional import resize, to_tensor
 #     return train_loss, train_accuracy
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
+class FocalLoss(nn.Module):
+    def __init__(self, weight=None, gamma=2.0, alpha=0.25, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.weight = weight
+        self.gamma = gamma
+        self.alpha = alpha
+        self.reduction = reduction
+
+    def forward(self, input, target):
+        ce_loss = F.cross_entropy(input, target, reduction=self.reduction, weight=self.weight)
+        pt = torch.exp(-ce_loss)
+        focal_loss = (self.alpha * (1-pt)**self.gamma * ce_loss).mean()
+        return focal_loss
 
 import numpy as np
 from sklearn.metrics import f1_score
@@ -388,7 +404,7 @@ def train_and_evaluate(param, model, trial):
     accuracies = []
     EPOCHS = 5
     
-    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+    criterion = FocalLoss(weight=class_weights_tensor, gamma=2.0, alpha=0.25)
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr=param['learning_rate'])
     train_loader = DataLoader(train_dataset, batch_size=param['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=param['batch_size'], shuffle=False)
@@ -409,8 +425,6 @@ def train_and_evaluate(param, model, trial):
             loss = criterion(output, target)
             #print('loss:', loss)
             train_loss += loss.item()
-            softmax = nn.Softmax(dim=1)
-            output = softmax(output)
             #print('output:', output)
 
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
