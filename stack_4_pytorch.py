@@ -583,26 +583,26 @@ for key, value in trial.params.items():
 # # Update the optimizer with the best hyperparameters
 # optimizer = optim.SGD(model.parameters(), lr=best['lr'], momentum=best['momentum'])
 
-# Train the model with the best hyperparameters
-train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
+# # Train the model with the best hyperparameters
+# train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
 
 
-# Define the validating loop
-def validation(model, device, val_loader, criterion):
-    model.eval()
-    val_loss = 0
-    val_correct = 0
-    with torch.no_grad():
-        for data, target in val_loader:
-            data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-            output = model(data)
-            val_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)
-            val_correct += pred.eq(target.view_as(pred)).sum().item()
+# # Define the validating loop
+# def validation(model, device, val_loader, criterion):
+#     model.eval()
+#     val_loss = 0
+#     val_correct = 0
+#     with torch.no_grad():
+#         for data, target in val_loader:
+#             data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
+#             output = model(data)
+#             val_loss += criterion(output, target).item()
+#             pred = output.argmax(dim=1, keepdim=True)
+#             val_correct += pred.eq(target.view_as(pred)).sum().item()
 
-    val_loss /= len(val_loader.dataset)
-    val_accuracy = 100. * val_correct / len(val_loader.dataset)
-    return val_loss, val_accuracy
+#     val_loss /= len(val_loader.dataset)
+#     val_accuracy = 100. * val_correct / len(val_loader.dataset)
+#     return val_loss, val_accuracy
 
 # # Define the testing loop
 # def test(model, device, test_loader, criterion):
@@ -622,12 +622,12 @@ def validation(model, device, val_loader, criterion):
 #     return test_loss, test_accuracy
 
 # Train and val the model
-for epoch in range(30):
-    train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
-    val_loss, val_accuracy = validation(model, device, val_loader, criterion)
-    print('Epoch: {} \tTrain Loss: {:.6f} \tTrain Accuracy: {:.2f}% \tVal Loss: {:.6f} \tVal Accuracy: {:.2f}%'.format(
-        epoch+1, train_loss, train_accuracy, val_loss, val_accuracy))
+# for epoch in range(30):
+#     train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
+#     val_loss, val_accuracy = validation(model, device, val_loader, criterion)
+#     print('Epoch: {} \tTrain Loss: {:.6f} \tTrain Accuracy: {:.2f}% \tVal Loss: {:.6f} \tVal Accuracy: {:.2f}%'.format(
+#         epoch+1, train_loss, train_accuracy, val_loss, val_accuracy))
 
-# Evaluate the model on the test set
-#test_loss, test_accuracy = test(model, device, test_loader, criterion)
-#print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
+# # Evaluate the model on the test set
+# #test_loss, test_accuracy = test(model, device, test_loader, criterion)
+# #print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
