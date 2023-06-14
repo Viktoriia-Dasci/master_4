@@ -634,9 +634,6 @@ import numpy as np
 
 def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
                        batch_size_best):    
-
-    model = model.to(device)
-    dataloaders = load_data(batch_size=batch_size_best)
     EPOCHS = 50
     
     # Create optimizer
