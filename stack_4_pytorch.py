@@ -639,6 +639,8 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
     # Create optimizer
     optimizer = getattr(optim, optimizer_best)(model.parameters(), lr=learning_rate_best)
     criterion = FocalLoss(weight=class_weights_tensor, gamma=2.0, alpha=0.25)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size_best, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size_best, shuffle=False)
 
     # For tracking metrics over epochs
     history = {'loss': [], 'val_loss': [], 'accuracy': [], 'val_accuracy': [], 'f1_score': [], 'val_f1_score': []}
