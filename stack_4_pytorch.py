@@ -686,9 +686,9 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             loss.backward()
             optimizer.step()
 
-        epoch_loss = total_loss_train / len(dataloaders['Train'])
-        epoch_accuracy = train_correct / len(dataloaders['Train'])
-        epoch_f1_score = train_f1_score / len(dataloaders['Train'])
+        epoch_loss = total_loss_train / len(train_loader)
+        epoch_accuracy = train_correct / len(train_loader)
+        epoch_f1_score = train_f1_score / len(train_loader)
 
         history['loss'].append(epoch_loss)
         history['accuracy'].append(epoch_accuracy)
@@ -728,9 +728,9 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
                 val_f1_score += f1
 
             
-        epoch_val_loss = total_loss_val / len(dataloaders['Val'])
-        epoch_val_accuracy = val_correct / len(dataloaders['Val'])
-        epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
+        epoch_val_loss = total_loss_val / len(val_loader)
+        epoch_val_accuracy = val_correct / len(val_loader)
+        epoch_val_f1_score = val_f1_score / len(val_loader)
 
         history['val_loss'].append(epoch_val_loss)
         history['val_accuracy'].append(epoch_val_accuracy)
