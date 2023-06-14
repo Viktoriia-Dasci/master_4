@@ -68,6 +68,39 @@ def load_from_dir(path):
       return slices_list
 
 
+def plot_acc_loss_f1(history, folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        
+    epochs = range(1, len(history['loss']) + 1)
+    
+    plt.plot(epochs, history['loss'], 'y', label='Training loss')
+    plt.plot(epochs, history['val_loss'], 'r', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'loss_stacked.png'))
+    plt.close()
+    
+    plt.plot(epochs, history['accuracy'], 'y', label='Training accuracy')
+    plt.plot(epochs, history['val_accuracy'], 'r', label='Validation accuracy')
+    plt.title('Training and validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'accuracy_stacked.png'))
+    plt.close()
+
+    plt.plot(epochs, history['f1_score'], 'y', label='Training F1 Score')
+    plt.plot(epochs, history['val_f1_score'], 'r', label='Validation F1 Score')
+    plt.title('Training and validation F1 Score')
+    plt.xlabel('Epochs')
+    plt.ylabel('F1 Score')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'f1_score_stacked.png'))
+    plt.close()
+
 
 HGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/HGG_stack')
 LGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_stack')
@@ -214,13 +247,13 @@ class Effnet(nn.Module):
         super().__init__()
 
         # Load the pretrained EfficientNet-B1 model
-        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
+        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
 
         # Replace the first convolutional layer to handle images with shape (240, 240, 4)
-        efficientnet_b0._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
+        efficientnet_b1._conv_stem = nn.Conv2d(4, 32, kernel_size=3, stride=2, bias=False)
         
         # Reuse the other layers from the pretrained EfficientNet-B1 model
-        self.features = efficientnet_b0.extract_features
+        self.features = efficientnet_b1.extract_features
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self.dropout = nn.Dropout(dropout)
         if dense_0_units is not None:
@@ -725,80 +758,8 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
 
   
   
-history, best_val_f1 = train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, batch_size_best, lambda_val_best, dropout_best)
+history, best_val_f1 = train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, batch_size_best)
 
 plot_acc_loss_f1(history, '/home/viktoriia.trokhova/plots/resnet')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# # Run the Hyperband algorithm to find the best hyperparameters
-# best = fmin(fn=objective,
-#             space=space,
-#             algo=tpe.suggest,
-#             max_evals=81,
-#             rstate=np.random.seed(42),
-#             #early_stop_fn=hyperband_stopping,
-#             verbose=1)
-
-# # Update the optimizer with the best hyperparameters
-# optimizer = optim.SGD(model.parameters(), lr=best['lr'], momentum=best['momentum'])
-
-# # Train the model with the best hyperparameters
-# train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
-
-
-# # Define the validating loop
-# def validation(model, device, val_loader, criterion):
-#     model.eval()
-#     val_loss = 0
-#     val_correct = 0
-#     with torch.no_grad():
-#         for data, target in val_loader:
-#             data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-#             output = model(data)
-#             val_loss += criterion(output, target).item()
-#             pred = output.argmax(dim=1, keepdim=True)
-#             val_correct += pred.eq(target.view_as(pred)).sum().item()
-
-#     val_loss /= len(val_loader.dataset)
-#     val_accuracy = 100. * val_correct / len(val_loader.dataset)
-#     return val_loss, val_accuracy
-
-# # Define the testing loop
-# def test(model, device, test_loader, criterion):
-#     model.eval()
-#     test_loss = 0
-#     test_correct = 0
-#     with torch.no_grad():
-#         for data, target in test_loader:
-#             data, target = data.permute(0, 3, 1, 2).to(device), target.to(device) # Permute dimensions
-#             output = model(data)
-#             test_loss += criterion(output, target).item()
-#             pred = output.argmax(dim=1, keepdim=True)
-#             test_correct += pred.eq(target.view_as(pred)).sum().item()
-
-#     test_loss /= len(test_loader.dataset)
-#     test_accuracy = 100. * test_correct / len(test_loader.dataset)
-#     return test_loss, test_accuracy
-
-# Train and val the model
-# for epoch in range(30):
-#     train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer)
-#     val_loss, val_accuracy = validation(model, device, val_loader, criterion)
-#     print('Epoch: {} \tTrain Loss: {:.6f} \tTrain Accuracy: {:.2f}% \tVal Loss: {:.6f} \tVal Accuracy: {:.2f}%'.format(
-#         epoch+1, train_loss, train_accuracy, val_loss, val_accuracy))
-
-# # Evaluate the model on the test set
-# #test_loss, test_accuracy = test(model, device, test_loader, criterion)
-# #print('Test Loss: {:.6f} \tTest Accuracy: {:.2f}%'.format(test_loss, test_accuracy))
