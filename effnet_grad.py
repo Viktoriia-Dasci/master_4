@@ -582,7 +582,172 @@ from sklearn.metrics import roc_auc_score
 import numpy as np
 from sklearn.metrics import f1_score
 
-def train_and_evaluate(param, model, trial):
+# def train_and_evaluate(param, model, trial):
+#     f1_scores = []
+#     accuracies = []
+#     dataloaders = load_data(batch_size=param['batch_size'])
+#     EPOCHS = 5
+    
+#     #criterion = nn.CrossEntropyLoss()
+#     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= param['learning_rate'])
+
+#     for epoch_num in range(EPOCHS):
+#         torch.cuda.empty_cache()
+#         model.train()
+#         total_acc_train = 0
+#         total_loss_train = 0
+#         train_correct = 0
+#         train_loss = 0
+
+
+#         for train_input, train_label, train_mask in dataloaders['Train']:
+#             optimizer.zero_grad()
+#             train_label = train_label.float().to(device)
+#             #print(train_label)
+#             train_input = train_input.to(device)
+#             train_mask = train_mask.to(device)
+#             targets = torch.argmax(train_label, dim=1)
+
+#             output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
+           
+            
+#             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+#             total_loss_train += batch_loss.item()
+        
+            
+#             #print('output:', output)
+#             output=F.softmax(output, dim=1)
+#             #print('softmax output:', output)
+            
+#             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+#             #print('predictions:', predictions)
+
+#             target_numpy = train_label.detach().cpu().numpy()
+#             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+           
+#             #print('correct_predictions:', correct_predictions)
+
+#             batch_accuracy = correct_predictions / target_numpy.shape[0]
+#             #print("Number of correct predictions:", correct_predictions)
+#             #print("Accuracy of the batch:", batch_accuracy)
+#             train_correct += batch_accuracy
+            
+#             model.zero_grad()
+#             batch_loss.backward()
+#             optimizer.step()
+      
+#         epoch_loss = total_loss_train / len(dataloaders['Train'])
+#         epoch_accuracy = train_correct / len(dataloaders['Train'])
+
+#         print("Epoch Loss:", epoch_num, ': ', epoch_loss)
+#         print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
+            
+        
+        
+#         total_acc_val = 0
+#         total_loss_val = 0
+#         val_correct = 0
+#         val_f1_score = 0
+#         y_preds = []
+#         val_labels = []
+#         model.eval()
+        
+#         for val_input, val_label, val_mask in dataloaders['Val']:
+#             val_label = val_label.float().to(device)
+#             print(val_label)
+#             val_input = val_input.to(device)
+#             val_mask = val_mask.to(device)
+#             val_targets = torch.argmax(val_label, dim=1)
+
+
+#             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
+            
+#             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+#             total_loss_val += batch_loss.item()
+
+#             output=F.softmax(output, dim=1)
+#             print('softmax output:', output)
+            
+#             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+#             print('predictions:', predictions)
+
+#             target_numpy = val_label.detach().cpu().numpy()
+#             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+           
+#             print('correct_predictions:', correct_predictions)
+
+#             batch_accuracy = correct_predictions / target_numpy.shape[0]
+#             print("Number of correct predictions:", correct_predictions)
+#             print("Accuracy of the batch:", batch_accuracy)
+#             val_correct += batch_accuracy
+            
+#             f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+#             val_f1_score += f1
+            
+                    
+#         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
+#         epoch_val_accuracy = val_correct / len(dataloaders['Val'])
+#         epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
+#         print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
+#         print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
+        
+        
+#         f1_scores.append(epoch_val_f1_score)
+#         print('val f1-score:', epoch_val_f1_score)
+#         trial.report(epoch_val_f1_score, epoch_num)
+#         if trial.should_prune():
+#             raise optuna.exceptions.TrialPruned()
+            
+#     final_f1 = max(f1_scores)
+#     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+#     torch.save(model.state_dict(), PATH)
+
+#     return final_f1
+
+
+  
+# # # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
+# def objective(trial):
+
+#     params = {
+#         'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
+#         'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+#         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
+#         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
+#         'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
+#         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
+#     }
+
+#     model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units']).to(device)
+
+#     max_f1 = train_and_evaluate(params, model, trial)
+
+#     return max_f1
+
+  
+# EPOCHS = 50
+    
+# study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+# study.optimize(objective, n_trials=40)
+# pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+# complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+
+# print("Study statistics: ")
+# print("  Number of finished trials: ", len(study.trials))
+# print("  Number of pruned trials: ", len(pruned_trials))
+# print("  Number of complete trials: ", len(complete_trials))
+
+# print("Best trial:")
+# trial = study.best_trial
+# print("  Value: ", trial.value)
+
+# print("  Params: ")
+# for key, value in trial.params.items():
+#     print("    {}: {}".format(key, value))
+    
+
+    
+ def train_and_evaluate(param, model, trial):
     f1_scores = []
     accuracies = []
     dataloaders = load_data(batch_size=param['batch_size'])
@@ -704,46 +869,9 @@ def train_and_evaluate(param, model, trial):
 
     return final_f1
 
-
-  
-# # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
-def objective(trial):
-
-    params = {
-        'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
-        'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
-        'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
-        'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
-        'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
-        'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
-    }
-
-    model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units']).to(device)
-
-    max_f1 = train_and_evaluate(params, model, trial)
-
-    return max_f1
-
-  
-EPOCHS = 50
     
-study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=40)
-pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
-complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
-print("Study statistics: ")
-print("  Number of finished trials: ", len(study.trials))
-print("  Number of pruned trials: ", len(pruned_trials))
-print("  Number of complete trials: ", len(complete_trials))
-
-print("Best trial:")
-trial = study.best_trial
-print("  Value: ", trial.value)
-
-print("  Params: ")
-for key, value in trial.params.items():
-    print("    {}: {}".format(key, value))
+    
 
 #EPOCHS = 50
 
