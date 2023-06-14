@@ -632,7 +632,7 @@ from torch import nn, optim
 import torch.nn.functional as F
 import numpy as np
 
-def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
+def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
                        batch_size_best):    
 
     model = model.to(device)
