@@ -381,14 +381,48 @@ msk_grid = imshow(msk_grid)
 
 """### 3. Create the network"""
 
+def plot_acc_loss_f1(history, folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        
+    epochs = range(1, len(history['loss']) + 1)
+    
+    plt.plot(epochs, history['loss'], 'y', label='Training loss')
+    plt.plot(epochs, history['val_loss'], 'r', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'loss_stacked.png'))
+    plt.close()
+    
+    plt.plot(epochs, history['accuracy'], 'y', label='Training accuracy')
+    plt.plot(epochs, history['val_accuracy'], 'r', label='Validation accuracy')
+    plt.title('Training and validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'accuracy_stacked.png'))
+    plt.close()
 
-class MyCustomEfficientNetB1(nn.Module):
-    def __init__(self, pretrained=True, dense_0_units=None):
+    plt.plot(epochs, history['f1_score'], 'y', label='Training F1 Score')
+    plt.plot(epochs, history['val_f1_score'], 'r', label='Validation F1 Score')
+    plt.title('Training and validation F1 Score')
+    plt.xlabel('Epochs')
+    plt.ylabel('F1 Score')
+    plt.legend()
+    plt.savefig(os.path.join(folder_path, 'f1_score_stacked.png'))
+    plt.close()
+
+
+
+class MyCustomEfficientNetB0(nn.Module):
+    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
-        self.features = efficientnet_b1.extract_features
-        in_features = efficientnet_b1._fc.in_features
+        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
+        self.features = efficientnet_b0.extract_features
+        in_features = efficientnet_b0._fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
@@ -666,7 +700,7 @@ def train_and_evaluate(param, model, trial):
             val_targets = torch.argmax(val_label, dim=1)
 
 
-            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['dropout']))
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_val += batch_loss.item()
@@ -717,257 +751,205 @@ def objective(trial):
 
     params = {
         'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
-        'optimizer': trial.suggest_categorical("optimizer", ["Adam", "
-"]),
+        'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
+        'dense_1_units': trial.suggest_categorical("dense_1_units", [None, 16, 32, 48, 64, 80, 96, 112, 128]),
         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
         'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units']).to(device)
+    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=['dense_1_units']).to(device)
 
     max_f1 = train_and_evaluate(params, model, trial)
 
     return max_f1
 
   
-# EPOCHS = 50
+EPOCHS = 5
     
-# study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-# study.optimize(objective, n_trials=40)
-# pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
-# complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+def print_best_trial(study, trial):
+    print("Finished trial: ", trial.number)
+    print("Current best trial:")
+    best_trial = study.best_trial
+    print("  Value: ", best_trial.value)
+    print("  Params: ")
+    for key, value in best_trial.params.items():
+        print("    {}: {}".format(key, value))
 
-# print("Study statistics: ")
-# print("  Number of finished trials: ", len(study.trials))
-# print("  Number of pruned trials: ", len(pruned_trials))
-# print("  Number of complete trials: ", len(complete_trials))
+study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+study.optimize(objective, n_trials=20, callbacks=[print_best_trial])
+pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
-# print("Best trial:")
-# trial = study.best_trial
-# print("  Value: ", trial.value)
+print("Study statistics: ")
+print("  Number of finished trials: ", len(study.trials))
+print("  Number of pruned trials: ", len(pruned_trials))
+print("  Number of complete trials: ", len(complete_trials))
 
-# print("  Params: ")
-# for key, value in trial.params.items():
-#     print("    {}: {}".format(key, value))
+print("Best trial:")
+trial = study.best_trial
+
+best_params = trial.params
+
+learning_rate_best = best_params["learning_rate"]
+optimizer_best = best_params["optimizer"]
+dense_0_units_best = best_params["dense_0_units"]
+dense_1_units_best = best_params["dense_1_units"]
+batch_size_best = best_params["batch_size"]
+lambda_val_best = best_params["lambda_val"]
+dropout_best = best_params["dropout"]
+
+print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
+
     
 
+model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=dense_0_units_best, dense_1_units=dense_1_units_best).to(device)
+                                                             
+                                                              
+
+#EPOCHS = 50
+
+import torch
+from sklearn.metrics import f1_score
+from torch import nn, optim
+import torch.nn.functional as F
+import numpy as np
+
+def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
+                       batch_size_best, lambda_val_best, dropout_best):    
+
+    model = model.to(device)
+    dataloaders = load_data(batch_size=batch_size_best)
+    EPOCHS = 50
     
- def train_and_evaluate(model):
-    f1_scores = []
-    accuracies = []
-    dataloaders = load_data(batch_size=32)
-    EPOCHS = 5
+    # Create optimizer
+    optimizer = getattr(optim, optimizer_best)(model.parameters(), lr=learning_rate_best)
+
+    # For tracking metrics over epochs
+    history = {'loss': [], 'val_loss': [], 'accuracy': [], 'val_accuracy': [], 'f1_score': [], 'val_f1_score': []}
     
-    #criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.0001)
+    # For early stopping
+    best_val_f1 = 0
+    best_epoch = 0
+    patience = 5
+    no_improve = 0
 
     for epoch_num in range(EPOCHS):
         torch.cuda.empty_cache()
         model.train()
-        total_acc_train = 0
         total_loss_train = 0
         train_correct = 0
-        train_loss = 0
+        train_f1_score = 0
 
-
+        # Training loop
         for train_input, train_label, train_mask in dataloaders['Train']:
             optimizer.zero_grad()
             train_label = train_label.float().to(device)
-            #print(train_label)
             train_input = train_input.to(device)
             train_mask = train_mask.to(device)
             targets = torch.argmax(train_label, dim=1)
 
-            output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(0.8))
-           
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, 
+                                                             batch_size=train_input.size(0))
             
-            batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+            batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
             total_loss_train += batch_loss.item()
-        
-            
-            #print('output:', output)
-            output=F.softmax(output, dim=1)
-            #print('softmax output:', output)
+
+            output = F.softmax(output, dim=1)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            #print('predictions:', predictions)
-
             target_numpy = train_label.detach().cpu().numpy()
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-            #print('correct_predictions:', correct_predictions)
-
             batch_accuracy = correct_predictions / target_numpy.shape[0]
-            #print("Number of correct predictions:", correct_predictions)
-            #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
+            
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            train_f1_score += f1
             
             model.zero_grad()
             batch_loss.backward()
             optimizer.step()
-      
+            
         epoch_loss = total_loss_train / len(dataloaders['Train'])
         epoch_accuracy = train_correct / len(dataloaders['Train'])
+        epoch_f1_score = train_f1_score / len(dataloaders['Train'])
 
-        print("Epoch Loss:", epoch_num, ': ', epoch_loss)
-        print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
+        history['loss'].append(epoch_loss)
+        history['accuracy'].append(epoch_accuracy)
+        history['f1_score'].append(epoch_f1_score)
             
-        
-        
-        total_acc_val = 0
         total_loss_val = 0
         val_correct = 0
         val_f1_score = 0
-        y_preds = []
-        val_labels = []
         model.eval()
         
         for val_input, val_label, val_mask in dataloaders['Val']:
-            val_label = val_label.float().to(device)
-            print(val_label)
+            val_label = val_label.float().to(device) 
             val_input = val_input.to(device)
             val_mask = val_mask.to(device)
             val_targets = torch.argmax(val_label, dim=1)
 
-
-            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['drop_out']))
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, 
+                                                             batch_size=val_input.size(0))
             
-            batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
+            batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
             total_loss_val += batch_loss.item()
 
-            output=F.softmax(output, dim=1)
-            print('softmax output:', output)
+            output = F.softmax(output, dim=1)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            print('predictions:', predictions)
-
             target_numpy = val_label.detach().cpu().numpy()
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-            print('correct_predictions:', correct_predictions)
-
             batch_accuracy = correct_predictions / target_numpy.shape[0]
-            print("Number of correct predictions:", correct_predictions)
-            print("Accuracy of the batch:", batch_accuracy)
             val_correct += batch_accuracy
             
             f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
             val_f1_score += f1
             
-                    
         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
         epoch_val_accuracy = val_correct / len(dataloaders['Val'])
         epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
-        print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
-        print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
-        
-        
-        f1_scores.append(epoch_val_f1_score)
-        print('val f1-score:', epoch_val_f1_score)
-        trial.report(epoch_val_f1_score, epoch_num)
-        if trial.should_prune():
-            raise optuna.exceptions.TrialPruned()
+
+        history['val_loss'].append(epoch_val_loss)
+        history['val_accuracy'].append(epoch_val_accuracy)
+        history['val_f1_score'].append(epoch_val_f1_score)
             
-    final_f1 = max(f1_scores)
-    PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-    torch.save(model.state_dict(), PATH)
+        if epoch_val_f1_score > best_val_f1:
+            best_val_f1 = epoch_val_f1_score
+            best_epoch = epoch_num
+            no_improve = 0
 
-    return final_f1
+            # Save best model
+            PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+            torch.save(model.state_dict(), PATH)
 
-    
+        else:
+            no_improve += 1
 
-    
+        if no_improve > patience:
+            print("Early stopping at epoch: ", epoch_num)
+            break
 
-#EPOCHS = 50
-
-# def train_and_evaluate(model):
-#     accuracies = []
-#     dataloaders = load_data(batch_size=8)
-#     # Freeze all layers
-
-#     #criterion = nn.CrossEntropyLoss()
+    return history, best_val_f1
 
 
-#     optimizer = optim.SGD(model.parameters(), lr=0.004)
-#     #optimizer = getattr(optim, "SGD")(model.parameters(), lr=0.004)
-
-#     for epoch_num in range(EPOCHS):
-#             torch.cuda.empty_cache()
-#             model.train()
-#             total_acc_train = 0
-#             total_loss_train = 0
-
-#             for train_input, train_label, train_mask in dataloaders['Train']:
-
-#                 train_label = train_label.long().to(device)
-#                 train_input = train_input.float().to(device)
-#                 train_mask = train_mask.to(device)
-
-#                 output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(0.79))
-                
-#                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-#                 #batch_loss = xe_loss_.mean()
-#                 total_loss_train += batch_loss.item()
-                
-#                 acc = (output.argmax(dim=1) == train_label).sum().item()
-#                 total_acc_train += acc
-
-#                 model.zero_grad()
-#                 batch_loss.backward()
-#                 optimizer.step()
-            
-#             total_acc_val = 0
-#             total_loss_val = 0
-
-#             model.eval()
-#             # with torch.no_grad():
-            
-
-#             for val_input, val_label, val_mask in dataloaders['Val']:
-
-#                 val_label = val_label.long().to(device)
-#                 val_input = val_input.float().to(device)
-#                 val_mask = val_mask.to(device)
-                
-
-#                 output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_label, val_mask, batch_size = val_input.size(0), dropout=nn.Dropout(0.79))
-
-#                 batch_loss = xe_loss_.mean() + 0.575 * gcam_losses_
-#                 #batch_loss = xe_loss_.mean()
-#                 total_loss_val += batch_loss.item()
-                
-#                 acc = (output.argmax(dim=1) == val_label).sum().item()
-#                 total_acc_val += acc
-        
-#             accuracy = total_acc_val/len(image_datasets['Val'])
-#             accuracies.append(accuracy)
-#             print(accuracy)
-#             if len(accuracies) >= 3 and accuracy <= 0.5729:
-#                 break
-
-# #             trial.report(accuracy, epoch_num)
-# #             if trial.should_prune():
-# #                 raise optuna.exceptions.TrialPruned()
-#     final_accuracy = max(accuracies)
-#     PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-#     torch.save(model.state_dict(), PATH)
-  
-#     return final_accuracy
   
   
-# train_and_evaluate(model)
+history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, batch_size_best, lambda_val_best, dropout_best)
 
 
-optimizer = optim.SGD(model.parameters(), lr=0.0051)
 
-train_losses = []
-val_losses = []
-train_accuracies = []
-val_accuracies = []
-train_auc_values = []
-val_auc_values = []
+# optimizer = optim.SGD(model.parameters(), lr=0.0051)
+
+# train_losses = []
+# val_losses = []
+# train_accuracies = []
+# val_accuracies = []
+# train_auc_values = []
+# val_auc_values = []
 
 # def train_with_early_stopping(model, optimizer, patience, PATH):
 #     dataloaders = load_data(batch_size=8)
