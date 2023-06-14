@@ -172,22 +172,20 @@ X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
 X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
+# Convert labels to numerical values and one-hot encoding
 labels = {'HGG': 0, 'LGG': 1}
-
-y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
-y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
-
-# Convert the labels to numeric values
-y_train_numeric = np.array([labels[y] for y in y_train])
-y_val_numeric = np.array([labels[y] for y in y_val])
-
+y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
-X_val = np.array(X_val)
-X_train = np.array(X_train)
-
-X_val, y_val = shuffle(X_val, y_val_numeric, random_state=101)
-X_train, y_train = shuffle(X_train, y_train_numeric, random_state=101)
-
+X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
+X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
+print(X_train.shape)
+print(y_train.shape)
+print(X_val.shape)
+print(y_val.shape)
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+print(class_weights)
 
 
 print(X_train.shape)
@@ -196,16 +194,22 @@ print(X_val.shape)
 print(y_val.shape)
 
 
-
-#class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
-class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=True)
-print(class_weights)
 datagen = ImageDataGenerator(
     rotation_range=90,
     vertical_flip=True,
     horizontal_flip=True,
     fill_mode='nearest')
     
+      
+def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
+    epsilon = tf.keras.backend.epsilon()
+    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+    
+    # Calculate focal loss
+    cross_entropy = -y_true * tf.math.log(y_pred)
+    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+    
+    return tf.reduce_mean(focal_loss, axis=-1)      
     
 train_generator = datagen.flow(
     X_train, y_train,
@@ -229,7 +233,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
    #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
 #     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
