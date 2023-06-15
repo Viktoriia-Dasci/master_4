@@ -179,13 +179,17 @@ y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
 X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
 X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
+
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+print(class_weights)
+
+
 print(X_train.shape)
 print(y_train.shape)
 print(X_val.shape)
 print(y_val.shape)
-#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
-class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
-print(class_weights)
+
 datagen = ImageDataGenerator(
     rotation_range=90,
     vertical_flip=True,
@@ -196,6 +200,17 @@ datagen = ImageDataGenerator(
 train_generator = datagen.flow(
     X_train, y_train,
     shuffle=True)
+
+
+def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
+    epsilon = tf.keras.backend.epsilon()
+    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+    
+    # Calculate focal loss
+    cross_entropy = -y_true * tf.math.log(y_pred)
+    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+    
+    return tf.reduce_mean(focal_loss, axis=-1)      
 
 
 def f1_score(y_true, y_pred):
@@ -210,32 +225,22 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
-    epsilon = tf.keras.backend.epsilon()
-    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-    
-    # Calculate focal loss
-    cross_entropy = -y_true * tf.math.log(y_pred)
-    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
-    
-    return tf.reduce_mean(focal_loss, axis=-1)
-
-
-def model_train(model_name, image_size, learning_rate, dropout):
+def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
-    model = tf.keras.layers.Dense(128, activation='relu')(model)
-    model = tf.keras.layers.Dense(16, activation='relu')(model)
+    model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
+    model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-    adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-    model.compile(loss=focal_loss, optimizer=adam, metrics=['accuracy', f1_score])
-    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/inception_flair" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+#     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+#     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=2, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=64, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
     
         
     train_loss = history.history['loss']
@@ -331,7 +336,7 @@ def model_train(model_name, image_size, learning_rate, dropout):
 
   
   
-history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.3)
+history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_flair", image_size = 224, dropout=0.3, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=128, dense_1_units=16, batch_size=64)
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.0001, dropout=0.7)
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.3)
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
