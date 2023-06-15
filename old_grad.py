@@ -325,7 +325,7 @@ msk_grid = imshow(msk_grid)
 #writer.add_image('training images', img_grid)'''
 """### 3. Create the network"""
 class MyCustomEfficientNetB0(nn.Module):
-    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
+    def __init__(self, pretrained=True, dense_0_units=None):
         super().__init__()
         
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
@@ -335,15 +335,10 @@ class MyCustomEfficientNetB0(nn.Module):
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
             self.fc1 = nn.Linear(in_features=1280, out_features=dense_0_units, bias=True)
+            self.fc2 = nn.Linear(dense_0_units, 2)
         else:
             self.fc1 = None
-        if dense_1_units is not None:
-            #dense_1_units = int(dense_1_units)
-            self.fc2 = nn.Linear(in_features=dense_0_units, out_features=dense_1_units, bias=True)
-            self.fc3 = nn.Linear(dense_1_units, 2)
-        else:
-            self.fc2 = None
-            self.fc3 = nn.Linear(dense_0_units, 2)
+            self.fc2 = nn.Linear(dense_0_units, 2)
             
             
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
@@ -352,10 +347,8 @@ class MyCustomEfficientNetB0(nn.Module):
         output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
         output = F.relu(self.fc1(output))
-        if self.fc2 is not None:
-            images_outputs = self.fc2(output)
-        else:
-            images_outputs = self.fc3(output)
+        images_outputs = self.fc2(output)
+
         
         # # compute gcam for images
         orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
@@ -614,12 +607,11 @@ def objective(trial):
         'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
         'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
-        'dense_1_units': trial.suggest_categorical("dense_1_units", [None, 16, 32, 48, 64, 80, 96, 112, 128]),
         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
         'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
-    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=params['dense_1_units']).to(device)
+    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units']).to(device)
     max_f1 = train_and_evaluate(params, model, trial)
     return max_f1
   
