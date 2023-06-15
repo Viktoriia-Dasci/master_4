@@ -231,6 +231,16 @@ def load_data(batch_size):
     }
     return dataloaders
   
+def f1_score(y_true, y_pred):
+    y_pred = torch.argmax(y_pred, dim=-1)
+    y_true = torch.argmax(y_true, dim=-1)
+    tp = torch.sum((y_true == 1) & (y_pred == 1)).float()
+    fp = torch.sum((y_true == 0) & (y_pred == 1)).float()
+    fn = torch.sum((y_true == 1) & (y_pred == 0)).float()
+    precision = tp / (tp + fp + 1e-7)
+    recall = tp / (tp + fn + 1e-7)
+    f1 = 2 * precision * recall / (precision + recall + 1e-7)
+    return f1  
   
 from collections import Counter
 from sklearn.utils.class_weight import compute_class_weight
@@ -314,7 +324,7 @@ msk_grid = imshow(msk_grid)
 # write to tensorboard
 #writer.add_image('training images', img_grid)'''
 """### 3. Create the network"""
-class MyCustomEfficientNetB1(nn.Module):
+class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
@@ -529,6 +539,9 @@ def train_and_evaluate(param, model, trial):
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
             
+            f1 = f1_score(target, output)
+            train_f1_score += f1
+            
             model.zero_grad()
             batch_loss.backward()
             optimizer.step()
@@ -537,7 +550,7 @@ def train_and_evaluate(param, model, trial):
         epoch_accuracy = train_correct / len(dataloaders['Train'])
         print("Epoch Loss:", epoch_num, ': ', epoch_loss)
         print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
-            
+        print("Epoch F1-Score:",epoch_num, train_f1_score)    
         
         
         total_acc_val = 0
@@ -550,7 +563,7 @@ def train_and_evaluate(param, model, trial):
         
         for val_input, val_label, val_mask in dataloaders['Val']:
             val_label = val_label.float().to(device)
-            print(val_label)
+            #print(val_label)
             val_input = val_input.to(device)
             val_mask = val_mask.to(device)
             val_targets = torch.argmax(val_label, dim=1)
@@ -559,20 +572,20 @@ def train_and_evaluate(param, model, trial):
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_val += batch_loss.item()
             output=F.softmax(output, dim=1)
-            print('softmax output:', output)
+            #print('softmax output:', output)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            print('predictions:', predictions)
+            #print('predictions:', predictions)
             target_numpy = val_label.detach().cpu().numpy()
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-            print('correct_predictions:', correct_predictions)
+            #print('correct_predictions:', correct_predictions)
             batch_accuracy = correct_predictions / target_numpy.shape[0]
-            print("Number of correct predictions:", correct_predictions)
-            print("Accuracy of the batch:", batch_accuracy)
+            #print("Number of correct predictions:", correct_predictions)
+            #print("Accuracy of the batch:", batch_accuracy)
             val_correct += batch_accuracy
             
-            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            f1 = f1_score(target, output)
             val_f1_score += f1
 
 
@@ -603,16 +616,16 @@ def objective(trial):
         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
         'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
-        'drop_out': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
+        'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
-    model = MyCustomEfficientNetB1(pretrained=True, dense_0_units=params['dense_0_units']).to(device)
+    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=params['dense_1_units']).to(device)
     max_f1 = train_and_evaluate(params, model, trial)
     return max_f1
   
 EPOCHS = 50
     
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=40)
+study.optimize(objective, n_trials=25)
 pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
 complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 print("Study statistics: ")
@@ -621,10 +634,47 @@ print("  Number of pruned trials: ", len(pruned_trials))
 print("  Number of complete trials: ", len(complete_trials))
 print("Best trial:")
 trial = study.best_trial
+
+def print_best_trial(study, trial):
+    print("Finished trial: ", trial.number)
+    print("Current best trial:")
+    best_trial = study.best_trial
+    print("  Value: ", best_trial.value)
+    print("  Params: ")
+    for key, value in best_trial.params.items():
+        print("    {}: {}".format(key, value))
+
+study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
+study.optimize(objective, n_trials=25, callbacks=[print_best_trial])
+pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+
+print("Study statistics: ")
+print("  Number of finished trials: ", len(study.trials))
+print("  Number of pruned trials: ", len(pruned_trials))
+print("  Number of complete trials: ", len(complete_trials))
+
 print("  Value: ", trial.value)
 print("  Params: ")
 for key, value in trial.params.items():
     print("    {}: {}".format(key, value))
+
+print("Best trial:")
+trial = study.best_trial
+
+best_params = trial.params
+
+learning_rate_best = best_params["learning_rate"]
+optimizer_best = best_params["optimizer"]
+dense_0_units_best = best_params["dense_0_units"]
+dense_1_units_best = best_params["dense_1_units"]
+batch_size_best = best_params["batch_size"]
+lambda_val_best = best_params["lambda_val"]
+dropout_best = best_params["dropout"]
+
+print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
+
+
 #EPOCHS = 50
 # def train_and_evaluate(model):
 #     accuracies = []
