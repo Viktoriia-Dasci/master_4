@@ -484,6 +484,7 @@ class MyCustomEfficientNetB0(nn.Module):
 
             #gcam_losses += gcam_loss.item() * input_imgs.size(0)
         #gcam_losses = gcam_losses/batch_size
+        print(images_outputs.shape)
         xe_loss = xe_criterion(images_outputs, targets)
         
 
