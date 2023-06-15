@@ -617,6 +617,19 @@ best_model_wts = {}
   
 #     return final_accuracy
 
+
+def f1_score(y_true, y_pred):
+    y_pred = torch.argmax(y_pred, dim=-1)
+    y_true = torch.argmax(y_true, dim=-1)
+    tp = torch.sum((y_true == 1) & (y_pred == 1)).float()
+    fp = torch.sum((y_true == 0) & (y_pred == 1)).float()
+    fn = torch.sum((y_true == 1) & (y_pred == 0)).float()
+    precision = tp / (tp + fp + 1e-7)
+    recall = tp / (tp + fn + 1e-7)
+    f1 = 2 * precision * recall / (precision + recall + 1e-7)
+    return f1
+
+
 from sklearn.metrics import roc_auc_score
 
 import numpy as np
@@ -638,6 +651,7 @@ def train_and_evaluate(param, model, trial):
         total_loss_train = 0
         train_correct = 0
         train_loss = 0
+        train_f1_score = 0
 
 
         for train_input, train_label, train_mask in dataloaders['Train']:
@@ -671,6 +685,9 @@ def train_and_evaluate(param, model, trial):
             #print("Number of correct predictions:", correct_predictions)
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
+
+            f1 = f1_score(target, output)
+            train_f1_score += f1
             
             model.zero_grad()
             batch_loss.backward()
@@ -678,10 +695,11 @@ def train_and_evaluate(param, model, trial):
       
         epoch_loss = total_loss_train / len(dataloaders['Train'])
         epoch_accuracy = train_correct / len(dataloaders['Train'])
+        epoch_f1_score = train_f1_score / len(dataloaders['Train'])
 
         print("Epoch Loss:", epoch_num, ': ', epoch_loss)
         print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
-            
+        print("Epoch Accuracy:", epoch_num, ': ', epoch_f1_score)    
         
         
         total_acc_val = 0
@@ -721,9 +739,9 @@ def train_and_evaluate(param, model, trial):
             print("Accuracy of the batch:", batch_accuracy)
             val_correct += batch_accuracy
             
-            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            f1 = f1_score(target, output)
             val_f1_score += f1
-            
+        
                     
         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
         epoch_val_accuracy = val_correct / len(dataloaders['Val'])
@@ -815,6 +833,8 @@ from sklearn.metrics import f1_score
 from torch import nn, optim
 import torch.nn.functional as F
 import numpy as np
+
+
 
 def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
                        batch_size_best, lambda_val_best, dropout_best):    
