@@ -719,8 +719,8 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
 
             f1 = f1_score(target, output)
             train_f1_score += f1
-            print(f1)
-            print(train_f1_score)
+            #print(f1)
+            #print(train_f1_score)
             
             loss.backward()
             optimizer.step()
