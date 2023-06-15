@@ -583,7 +583,7 @@ def train_and_evaluate(param, model, trial):
             f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
             val_f1_score += f1
 
-        epoch_val_loss = val_loss / len(dataloaders['Val'])
+        #epoch_val_loss = val_loss / len(dataloaders['Val'])
         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
         epoch_val_accuracy = val_correct / len(dataloaders['Val'])
         epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
