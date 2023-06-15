@@ -627,10 +627,23 @@ model = Effnet(pretrained=True, dense_0_units=dense_0_units_best, dense_1_units=
 #EPOCHS = 50
 
 import torch
-from sklearn.metrics import f1_score
 from torch import nn, optim
 import torch.nn.functional as F
 import numpy as np
+
+import torch
+
+def f1_score(y_true, y_pred):
+    y_pred = torch.argmax(y_pred, dim=-1)
+    y_true = torch.argmax(y_true, dim=-1)
+    tp = torch.sum((y_true == 1) & (y_pred == 1)).float()
+    fp = torch.sum((y_true == 0) & (y_pred == 1)).float()
+    fn = torch.sum((y_true == 1) & (y_pred == 0)).float()
+    precision = tp / (tp + fp + 1e-7)
+    recall = tp / (tp + fn + 1e-7)
+    f1 = 2 * precision * recall / (precision + recall + 1e-7)
+    return f1
+
 
 def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
                        batch_size_best):    
@@ -671,6 +684,9 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             train_loss += loss.item()
             #print('output:', output)
 
+            softmax = nn.Softmax(dim=1)
+            output = softmax(output)
+            
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
             #print('predictions:', predictions)
 
@@ -683,10 +699,14 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             #print("Number of correct predictions:", correct_predictions)
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
+
+            f1 = f1_score(target_numpy, output)
+            train_f1_score += f1.item()
+            
             loss.backward()
             optimizer.step()
 
-        epoch_loss = total_loss_train / len(train_loader)
+        epoch_loss = train_loss / len(train_loader)
         epoch_accuracy = train_correct / len(train_loader)
         epoch_f1_score = train_f1_score / len(train_loader)
 
@@ -726,11 +746,11 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
                 val_correct += batch_accuracy
                 
                 # Calculate F1 score
-                f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
-                val_f1_score += f1
+                f1 = f1_score(target_numpy, output)
+                val_f1_score += f1.item()
 
             
-        epoch_val_loss = total_loss_val / len(val_loader)
+        epoch_val_loss = val_loss / len(val_loader)
         epoch_val_accuracy = val_correct / len(val_loader)
         epoch_val_f1_score = val_f1_score / len(val_loader)
 
