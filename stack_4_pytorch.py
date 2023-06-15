@@ -626,23 +626,25 @@ model = Effnet(pretrained=True, dense_0_units=dense_0_units_best, dense_1_units=
 
 #EPOCHS = 50
 
+
 import torch
 from torch import nn, optim
 import torch.nn.functional as F
 import numpy as np
+from sklearn.metrics import f1_score
 
 import torch
 
-def f1_score(y_true, y_pred):
-    y_pred = torch.argmax(y_pred, dim=-1)
-    y_true = torch.argmax(y_true, dim=-1)
-    tp = torch.sum((y_true == 1) & (y_pred == 1)).float()
-    fp = torch.sum((y_true == 0) & (y_pred == 1)).float()
-    fn = torch.sum((y_true == 1) & (y_pred == 0)).float()
-    precision = tp / (tp + fp + 1e-7)
-    recall = tp / (tp + fn + 1e-7)
-    f1 = 2 * precision * recall / (precision + recall + 1e-7)
-    return f1
+# def f1_score(y_true, y_pred):
+#     y_pred = torch.argmax(y_pred, dim=-1)
+#     y_true = torch.argmax(y_true, dim=-1)
+#     tp = torch.sum((y_true == 1) & (y_pred == 1)).float()
+#     fp = torch.sum((y_true == 0) & (y_pred == 1)).float()
+#     fn = torch.sum((y_true == 1) & (y_pred == 0)).float()
+#     precision = tp / (tp + fp + 1e-7)
+#     recall = tp / (tp + fn + 1e-7)
+#     f1 = 2 * precision * recall / (precision + recall + 1e-7)
+#     return f1
 
 
 def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
@@ -700,8 +702,9 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
 
-            f1 = f1_score(target, output)
-            train_f1_score += f1.item()
+            
+            f1 = f1_score(target_numpy, predictions, average='macro')
+            train_f1_score += f1
             
             loss.backward()
             optimizer.step()
@@ -746,7 +749,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
                 val_correct += batch_accuracy
                 
                 # Calculate F1 score
-                f1 = f1_score(target, output)
+                f1 = f1_score(target_numpy, predictions, average='macro')
                 val_f1_score += f1.item()
 
             
