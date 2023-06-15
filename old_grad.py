@@ -579,8 +579,8 @@ def train_and_evaluate(param, model, trial):
             #print("Accuracy of the batch:", batch_accuracy)
             val_correct += batch_accuracy
             
-           f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
-           val_f1_score += f1
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            val_f1_score += f1
 
         epoch_val_loss = val_loss / len(dataloaders['Val'])
         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
