@@ -678,7 +678,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
         # Training loop
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
-            #print(target.float)
+            print(target.float)
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
@@ -688,23 +688,26 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
 
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
+            print('output:', output)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            #print('predictions:', predictions)
+            print('predictions:', predictions)
 
             target_numpy = target.detach().cpu().numpy()
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-            #print('correct_predictions:', correct_predictions)
+            print('correct_predictions:', correct_predictions)
 
             batch_accuracy = correct_predictions / target_numpy.shape[0]
             #print("Number of correct predictions:", correct_predictions)
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
+            print(batch_accuracy)
 
             
             f1 = f1_score(target_numpy, predictions, average='macro')
             train_f1_score += f1
+            print(f1)
             
             loss.backward()
             optimizer.step()
