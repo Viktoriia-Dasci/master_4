@@ -693,6 +693,8 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
         history['loss'].append(epoch_loss)
         history['accuracy'].append(epoch_accuracy)
         history['f1_score'].append(epoch_f1_score)
+        
+        print(history)
 
         model.eval()
         total_loss_val = 0
@@ -735,6 +737,8 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
         history['val_loss'].append(epoch_val_loss)
         history['val_accuracy'].append(epoch_val_accuracy)
         history['val_f1_score'].append(epoch_val_f1_score)
+
+        print(history)
             
         if epoch_val_f1_score > best_val_f1:
             best_val_f1 = epoch_val_f1_score
