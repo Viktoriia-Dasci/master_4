@@ -614,6 +614,7 @@ def objective(trial):
         'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
         'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
+        'dense_1_units': trial.suggest_categorical("dense_1_units", [None, 16, 32, 48, 64, 80, 96, 112, 128]),
         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
         'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
