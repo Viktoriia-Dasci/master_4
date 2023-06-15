@@ -440,7 +440,7 @@ class MyCustomEfficientNetB0(nn.Module):
 
 
 
-    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
+    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), dropout=None):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
         output = dropout(output)
@@ -485,7 +485,7 @@ class MyCustomEfficientNetB0(nn.Module):
             #gcam_losses += gcam_loss.item() * input_imgs.size(0)
         #gcam_losses = gcam_losses/batch_size
         print(images_outputs.shape)
-        #xe_loss = xe_criterion(images_outputs, targets)
+        xe_loss = xe_criterion(images_outputs, targets)
         
 
         return images_outputs, targets, xe_loss, gcam_losses      #return images_outputs
