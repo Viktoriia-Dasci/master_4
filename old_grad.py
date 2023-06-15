@@ -503,6 +503,7 @@ def train_and_evaluate(param, model, trial):
         total_loss_train = 0
         train_correct = 0
         train_loss = 0
+        train_f1_score = 0
         for train_input, train_label, train_mask in dataloaders['Train']:
             optimizer.zero_grad()
             train_label = train_label.float().to(device)
@@ -532,7 +533,7 @@ def train_and_evaluate(param, model, trial):
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
             
-            f1 = f1_score(train_label, output.to(device))
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
             train_f1_score += f1
             
             model.zero_grad()
