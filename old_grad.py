@@ -341,8 +341,11 @@ class MyCustomEfficientNetB1(nn.Module):
         output = self.last_pooling_operation(images_feats)
         output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
-        output = F.relu(self.fc1(output))  
-        images_outputs = self.fc2(output)
+        output = F.relu(self.fc1(output))
+        if self.fc2 is not None:
+            images_outputs = self.fc2(output)
+        else:
+            images_outputs = self.fc3(output)
         
         # # compute gcam for images
         orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
@@ -353,7 +356,7 @@ class MyCustomEfficientNetB1(nn.Module):
             img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
             img_grad_1 = img_grad.cpu()
             img_grad_2 = img_grad_1.detach().numpy()
-            img_grad_3 = cv2.resize(img_grad_2, (240,240), cv2.INTER_LINEAR)
+            img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
             img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
             img_grad_5 = torch.from_numpy(img_grad_4)
             img_grad_6 = img_grad_5.to(device)
