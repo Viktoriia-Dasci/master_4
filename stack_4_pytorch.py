@@ -646,6 +646,17 @@ import torch
 #     f1 = 2 * precision * recall / (precision + recall + 1e-7)
 #     return f1
 
+def f1_score(y_true, y_pred):
+    y_pred = torch.argmax(y_pred, dim=-1)
+    y_true = torch.argmax(y_true, dim=-1)
+    tp = torch.sum((y_true == 1) & (y_pred == 1)).float()
+    fp = torch.sum((y_true == 0) & (y_pred == 1)).float()
+    fn = torch.sum((y_true == 1) & (y_pred == 0)).float()
+    precision = tp / (tp + fp + 1e-7)
+    recall = tp / (tp + fn + 1e-7)
+    f1 = 2 * precision * recall / (precision + recall + 1e-7)
+    return f1
+
 
 def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_best, dense_1_units_best, 
                        batch_size_best):    
@@ -678,7 +689,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
         # Training loop
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.permute(0, 3, 1, 2), target.float() # Permute dimensions
-            print(target.float)
+            #print('target:',target.float)
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
@@ -688,6 +699,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
 
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
+            print('target:',target.float)
             print('output:', output)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
@@ -704,9 +716,8 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             train_correct += batch_accuracy
             print(batch_accuracy)
 
-            
-            f1 = f1_score(target_numpy, predictions, average='macro')
-            train_f1_score += f1
+            f1 = f1_score(target, output)
+            train_f1_score += f1.item()
             print(f1)
             
             loss.backward()
@@ -752,7 +763,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
                 val_correct += batch_accuracy
                 
                 # Calculate F1 score
-                f1 = f1_score(target_numpy, predictions, average='macro')
+                f1 = f1_score(target, output)
                 val_f1_score += f1.item()
 
             
