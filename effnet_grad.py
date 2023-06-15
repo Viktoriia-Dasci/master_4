@@ -796,7 +796,7 @@ def print_best_trial(study, trial):
         print("    {}: {}".format(key, value))
 
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=20, callbacks=[print_best_trial])
+study.optimize(objective, n_trials=25, callbacks=[print_best_trial])
 pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
 complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
