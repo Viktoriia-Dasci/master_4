@@ -148,6 +148,7 @@ class myDataset_train(Dataset):
         class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
     
         return img_tensor, class_id_one_hot, msk_tensor
+    
 class myDataset_val(Dataset):
     def __init__(self, transform=None): 
         #folder containing class folders with images
@@ -208,6 +209,7 @@ class myDataset_val(Dataset):
         class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
     
         return img_tensor, class_id_one_hot, msk_tensor
+    
 image_datasets = {
     'Train': 
     myDataset_train(),
@@ -228,6 +230,8 @@ def load_data(batch_size):
                                     num_workers=0)  
     }
     return dataloaders
+  
+  
 from collections import Counter
 from sklearn.utils.class_weight import compute_class_weight
 # create dataset object
@@ -311,19 +315,27 @@ msk_grid = imshow(msk_grid)
 #writer.add_image('training images', img_grid)'''
 """### 3. Create the network"""
 class MyCustomEfficientNetB1(nn.Module):
-    def __init__(self, pretrained=True, dense_0_units=None):
+    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
-        self.features = efficientnet_b1.extract_features
-        in_features = efficientnet_b1._fc.in_features
+        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
+        self.features = efficientnet_b0.extract_features
+        in_features = efficientnet_b0._fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         if dense_0_units is not None:
-            dense_0_units = int(dense_0_units)  # Convert to integer if it's not None
-            self.fc1 = nn.Linear(in_features, dense_0_units)
+            dense_0_units = int(dense_0_units)
+            self.fc1 = nn.Linear(in_features=1280, out_features=dense_0_units, bias=True)
         else:
             self.fc1 = None
-        self.fc2 = nn.Linear(dense_0_units, 2)
+        if dense_1_units is not None:
+            #dense_1_units = int(dense_1_units)
+            self.fc2 = nn.Linear(in_features=dense_0_units, out_features=dense_1_units, bias=True)
+            self.fc3 = nn.Linear(dense_1_units, 2)
+        else:
+            self.fc2 = None
+            self.fc3 = nn.Linear(dense_0_units, 2)
+            
+            
     def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
@@ -331,6 +343,7 @@ class MyCustomEfficientNetB1(nn.Module):
         output = output.view(input_imgs.size(0), -1)
         output = F.relu(self.fc1(output))  
         images_outputs = self.fc2(output)
+        
         # # compute gcam for images
         orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
         # #upsample gradcam to (224, 224, 3)
@@ -340,7 +353,7 @@ class MyCustomEfficientNetB1(nn.Module):
             img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
             img_grad_1 = img_grad.cpu()
             img_grad_2 = img_grad_1.detach().numpy()
-            img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
+            img_grad_3 = cv2.resize(img_grad_2, (240,240), cv2.INTER_LINEAR)
             img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
             img_grad_5 = torch.from_numpy(img_grad_4)
             img_grad_6 = img_grad_5.to(device)
