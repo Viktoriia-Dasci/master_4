@@ -228,7 +228,7 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
+def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, batch_size):
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
