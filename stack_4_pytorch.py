@@ -706,6 +706,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             print('predictions:', predictions)
 
             target_numpy = target.detach().cpu().numpy()
+            print('target:',target_numpy)
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
             print('correct_predictions:', correct_predictions)
@@ -718,7 +719,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
 
             f1 = f1_score(target, output)
             train_f1_score += f1.item()
-            print(f1)
+            print(f1.detach().cpu().numpy())
             
             loss.backward()
             optimizer.step()
