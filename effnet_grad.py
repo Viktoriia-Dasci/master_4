@@ -420,9 +420,9 @@ class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
-        efficientnet_b1 = EfficientNet.from_pretrained('efficientnet-b1')
-        self.features = efficientnet_b1.extract_features
-        in_features = efficientnet_b1._fc.in_features
+        efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
+        self.features = efficientnet_b0.extract_features
+        in_features = efficientnet_b0._fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
@@ -459,7 +459,7 @@ class MyCustomEfficientNetB0(nn.Module):
             img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
             img_grad_1 = img_grad.cpu()
             img_grad_2 = img_grad_1.detach().numpy()
-            img_grad_3 = cv2.resize(img_grad_2, (240,240), cv2.INTER_LINEAR)
+            img_grad_3 = cv2.resize(img_grad_2, (224,224), cv2.INTER_LINEAR)
             img_grad_4 = cv2.cvtColor(img_grad_3, cv2.COLOR_GRAY2RGB)
             img_grad_5 = torch.from_numpy(img_grad_4)
             img_grad_6 = img_grad_5.to(device)
