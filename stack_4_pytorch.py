@@ -620,7 +620,7 @@ batch_size_best = 32
 dropout_best = 0.8
     
 
-model = Effnet(pretrained=True, dense_0_units=dense_0_units_best, dense_1_units=dense_1_units_best, dropout=dropout_best)
+model = Effnet(pretrained=False, dense_0_units=dense_0_units_best, dense_1_units=dense_1_units_best, dropout=dropout_best)
                                                              
                                                               
 
