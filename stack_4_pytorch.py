@@ -700,7 +700,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
 
-            f1 = f1_score(target_numpy, output)
+            f1 = f1_score(target, output)
             train_f1_score += f1.item()
             
             loss.backward()
@@ -746,7 +746,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
                 val_correct += batch_accuracy
                 
                 # Calculate F1 score
-                f1 = f1_score(target_numpy, output)
+                f1 = f1_score(target, output)
                 val_f1_score += f1.item()
 
             
