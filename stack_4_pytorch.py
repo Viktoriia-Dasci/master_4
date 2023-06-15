@@ -699,34 +699,33 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
 
             softmax = nn.Softmax(dim=1)
             output = softmax(output)
-            print('target:',target.float)
-            print('output:', output)
+            #print('target:',target.float)
+            #print('output:', output)
             
             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-            print('predictions:', predictions)
+            #print('predictions:', predictions)
 
             target_numpy = target.detach().cpu().numpy()
-            print('target:',target_numpy)
+            #print('target:',target_numpy)
             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-            print('correct_predictions:', correct_predictions)
+            #print('correct_predictions:', correct_predictions)
 
             batch_accuracy = correct_predictions / target_numpy.shape[0]
             #print("Number of correct predictions:", correct_predictions)
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
-            print(batch_accuracy)
+            #print(batch_accuracy)
 
             f1 = f1_score(target, output)
             train_f1_score += f1.item()
-            print(f1.detach().cpu().numpy())
             
             loss.backward()
             optimizer.step()
 
         epoch_loss = train_loss / len(train_loader)
         epoch_accuracy = train_correct / len(train_loader)
-        epoch_f1_score = train_f1_score / len(train_loader)
+        epoch_f1_score = train_f1_score.detach().cpu().numpy() / len(train_loader)
 
         history['loss'].append(epoch_loss)
         history['accuracy'].append(epoch_accuracy)
@@ -770,7 +769,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             
         epoch_val_loss = val_loss / len(val_loader)
         epoch_val_accuracy = val_correct / len(val_loader)
-        epoch_val_f1_score = val_f1_score / len(val_loader)
+        epoch_val_f1_score = val_f1_score.detach().cpu().numpy() / len(val_loader)
 
         history['val_loss'].append(epoch_val_loss)
         history['val_accuracy'].append(epoch_val_accuracy)
