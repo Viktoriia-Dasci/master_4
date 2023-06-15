@@ -430,7 +430,7 @@ class MyCustomEfficientNetB0(nn.Module):
         else:
             self.fc1 = None
         if dense_1_units is not None:
-            dense_1_units = int(dense_1_units)
+            #dense_1_units = int(dense_1_units)
             self.fc2 = nn.Linear(in_features=dense_0_units, out_features=dense_1_units, bias=True)
             self.fc3 = nn.Linear(dense_1_units, 2)
         else:
