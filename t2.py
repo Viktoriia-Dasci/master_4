@@ -233,7 +233,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
-    model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
+    #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
@@ -341,7 +341,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
 
 
 #history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t2", image_size = 224, dropout=0.5, optimizer = tf.keras.optimizers.SGD(learning_rate=0.01), dense_0_units=80, dense_1_units=48, batch_size=16)
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_t2", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=96, dense_1_units=None, batch_size=32)
+history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_t2", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=96, batch_size=32)
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "densenet_t2", image_size = 224, dropout=0.5, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, dense_1_units=None, batch_size=32)
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 #plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
