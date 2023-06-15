@@ -542,9 +542,10 @@ def train_and_evaluate(param, model, trial):
       
         epoch_loss = total_loss_train / len(dataloaders['Train'])
         epoch_accuracy = train_correct / len(dataloaders['Train'])
+        epoch_f1score = train_f1_score / len(dataloaders['Train'])
         print("Epoch Loss:", epoch_num, ': ', epoch_loss)
         print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
-        print("Epoch F1-Score:",epoch_num, train_f1_score)    
+        print("Epoch F1-Score:", epoch_num,  ': ', epoch_f1score)    
         
         
         total_acc_val = 0
