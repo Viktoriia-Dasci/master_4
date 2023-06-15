@@ -532,7 +532,7 @@ def train_and_evaluate(param, model, trial):
             #print("Accuracy of the batch:", batch_accuracy)
             train_correct += batch_accuracy
             
-            f1 = f1_score(target, output)
+            f1 = f1_score(train_label, output)
             train_f1_score += f1
             
             model.zero_grad()
@@ -578,7 +578,7 @@ def train_and_evaluate(param, model, trial):
             #print("Accuracy of the batch:", batch_accuracy)
             val_correct += batch_accuracy
             
-            f1 = f1_score(target, output)
+            f1 = f1_score(val_label, output)
             val_f1_score += f1
 
 
