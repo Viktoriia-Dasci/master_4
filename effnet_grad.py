@@ -662,7 +662,7 @@ def train_and_evaluate(param, model, trial):
             train_mask = train_mask.to(device)
             targets = torch.argmax(train_label, dim=1)
 
-            output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['drop_out']))
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['dropout']))
            
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
@@ -777,7 +777,7 @@ def objective(trial):
         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
 
-    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=['dense_1_units']).to(device)
+    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=params['dense_1_units']).to(device)
 
     max_f1 = train_and_evaluate(params, model, trial)
 
