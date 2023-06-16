@@ -81,8 +81,8 @@ val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
 class myDataset_train(Dataset):
     def __init__(self, transform=False): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/train/"  
-        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/train/" 
+        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/val/"  
+        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/val/" 
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
@@ -152,8 +152,8 @@ class myDataset_train(Dataset):
 class myDataset_val(Dataset):
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/val/"
-        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/val/"
+        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/test/"
+        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
