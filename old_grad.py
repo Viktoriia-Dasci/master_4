@@ -511,6 +511,7 @@ def train_and_evaluate(param, model, trial):
             train_input = train_input.to(device)
             train_mask = train_mask.to(device)
             targets = torch.argmax(train_label, dim=1)
+            targets = targets.to(device)
             output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['dropout']))
            
             
@@ -562,6 +563,7 @@ def train_and_evaluate(param, model, trial):
             val_input = val_input.to(device)
             val_mask = val_mask.to(device)
             val_targets = torch.argmax(val_label, dim=1)
+            val_targets = val_targets.to(device)
             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['dropout']))
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
