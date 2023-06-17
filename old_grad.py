@@ -564,7 +564,7 @@ from sklearn.metrics import f1_score
 #             val_mask = val_mask.to(device)
 #             val_targets = torch.argmax(val_label, dim=1)
 #             val_targets = val_targets.to(device)
-#             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['dropout']))
+#             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['dropout']), dropout=nn.Dropout(0.3))
             
 #             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
 #             total_loss_val += batch_loss.item()
@@ -728,7 +728,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
             targets = torch.argmax(train_label, dim=1)
 
             output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, 
-                                                             batch_size=train_input.size(0))
+                                                             batch_size=train_input.size(0), dropout=nn.Dropout(0.3))
             
             batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
             total_loss_train += batch_loss.item()
@@ -769,7 +769,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
             val_targets = torch.argmax(val_label, dim=1)
 
             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, 
-                                                             batch_size=val_input.size(0))
+                                                             batch_size=val_input.size(0), dropout=nn.Dropout(0.38))
             
             batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
             total_loss_val += batch_loss.item()
@@ -983,32 +983,33 @@ history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, opt
 # # #patience = 15
 # # #PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
 # best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.0051), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_noscale_pytorch.pt')
-        
+
+
 # # plot loss and accuracy for each epoch
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(train_losses, label='Train')
-# plt.plot(val_losses, label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Loss')
-# plt.title('Loss')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(train_accuracies, label='Train')
-# plt.plot(val_accuracies, label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.title('Accuracy')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(train_auc_values, label='Train')
-# plt.plot(val_auc_values, label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('AUC')
-# plt.title('AUC')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/AUC.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['loss'], label='Train')
+plt.plot(history['val_loss'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['accuracy'], label='Train')
+plt.plot(history['val_accuracy'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['f1_score'], label='Train')
+plt.plot(history['val_f1_score'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('F1 Score')
+plt.title('F1 Score')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/F1_Score.png")  # save plot to given path
