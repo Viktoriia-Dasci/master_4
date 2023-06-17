@@ -709,7 +709,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
     # For early stopping
     best_val_f1 = 0
     best_epoch = 0
-    patience = 5
+    patience = 10
     no_improve = 0
 
     for epoch_num in range(EPOCHS):
@@ -752,6 +752,9 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
         epoch_loss = total_loss_train / len(dataloaders['Train'])
         epoch_accuracy = train_correct / len(dataloaders['Train'])
         epoch_f1_score = train_f1_score / len(dataloaders['Train'])
+        print("Epoch Loss:", epoch_num, ': ', epoch_loss)
+        print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
+        print("Epoch F1-Score:", epoch_num,  ': ', epoch_f1score)    
 
         history['loss'].append(epoch_loss)
         history['accuracy'].append(epoch_accuracy)
@@ -789,6 +792,8 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
         epoch_val_accuracy = val_correct / len(dataloaders['Val'])
         epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
+        print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
+        print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
 
         history['val_loss'].append(epoch_val_loss)
         history['val_accuracy'].append(epoch_val_accuracy)
