@@ -696,7 +696,7 @@ import numpy as np
 def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best,
                        batch_size_best, lambda_val_best, dropout_best):    
 
-    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units']).to(device)                     
+                        
     dataloaders = load_data(batch_size=batch_size_best)
     EPOCHS = 50
     
@@ -813,7 +813,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
     return history, best_val_f1
 
 
-  
+model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units']).to(device)  
   
 history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, batch_size_best, lambda_val_best, dropout_best)
 
