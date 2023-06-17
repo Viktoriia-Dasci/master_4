@@ -158,7 +158,7 @@ class myDataset_val(Dataset):
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
         print(msk_list)
-        msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
+        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
         self.images = []
         self.targets = []
         self.masks = []
