@@ -813,7 +813,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
     return history, best_val_f1
 
 
-model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units']).to(device)  
+model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=128).to(device)  
   
 history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, batch_size_best, lambda_val_best, dropout_best)
 
@@ -882,13 +882,13 @@ history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, opt
   
   
 # train_and_evaluate(model)
-optimizer = optim.SGD(model.parameters(), lr=0.0051)
-train_losses = []
-val_losses = []
-train_accuracies = []
-val_accuracies = []
-train_auc_values = []
-val_auc_values = []
+#optimizer = optim.SGD(model.parameters(), lr=0.0051)
+# train_losses = []
+# val_losses = []
+# train_accuracies = []
+# val_accuracies = []
+# train_auc_values = []
+# val_auc_values = []
 # def train_with_early_stopping(model, optimizer, patience, PATH):
 #     dataloaders = load_data(batch_size=8)
 #     # define early stopping and lr scheduler
