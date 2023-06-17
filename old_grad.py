@@ -754,7 +754,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
         epoch_f1_score = train_f1_score / len(dataloaders['Train'])
         print("Epoch Loss:", epoch_num, ': ', epoch_loss)
         print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
-        print("Epoch F1-Score:", epoch_num,  ': ', epoch_f1score)    
+        print("Epoch F1-Score:", epoch_num,  ': ', epoch_f1_score)    
 
         history['loss'].append(epoch_loss)
         history['accuracy'].append(epoch_accuracy)
