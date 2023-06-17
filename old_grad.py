@@ -325,7 +325,6 @@ msk_grid = imshow(msk_grid)
 #writer.add_image('training images', img_grid)'''
 """### 3. Create the network"""
 class MyCustomEfficientNetB0(nn.Module):
- class MyCustomEfficientNetB0(nn.Module):
     def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
