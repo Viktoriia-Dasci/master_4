@@ -325,29 +325,40 @@ msk_grid = imshow(msk_grid)
 #writer.add_image('training images', img_grid)'''
 """### 3. Create the network"""
 class MyCustomEfficientNetB0(nn.Module):
-    def __init__(self, pretrained=True, dense_0_units=None):
+ class MyCustomEfficientNetB0(nn.Module):
+    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
         efficientnet_b0 = EfficientNet.from_pretrained('efficientnet-b0')
         self.features = efficientnet_b0.extract_features
         in_features = efficientnet_b0._fc.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
+
         if dense_0_units is not None:
             dense_0_units = int(dense_0_units)
             self.fc1 = nn.Linear(in_features=1280, out_features=dense_0_units, bias=True)
-            self.fc2 = nn.Linear(dense_0_units, 2)
+        
+        if dense_1_units is not None:
+            dense_1_units = int(dense_1_units)
+            self.fc2 = nn.Linear(in_features=dense_0_units, out_features=dense_1_units, bias=True)
+            self.fc_final = nn.Linear(dense_1_units, 2)
         else:
-            self.fc1 = None
-            self.fc2 = nn.Linear(dense_0_units, 2)
+            self.fc2 = None
+            self.fc_final = nn.Linear(dense_0_units, 2)
             
-            
-    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
+    def forward(self, input_imgs, targets=None, masks=None, batch_size=None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
         output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
+        
         output = F.relu(self.fc1(output))
-        images_outputs = self.fc2(output)
+        
+        if self.fc2 is not None:
+            output = F.relu(self.fc2(output))
+        
+        images_outputs = self.fc_final(output)
+        
 
         
         # # compute gcam for images
@@ -615,7 +626,7 @@ def train_and_evaluate(param, model, trial):
 # # Define a set of hyperparameter values, build the model, train the model, and evaluate the accuracy
 def objective(trial):
     params = {
-        'learning_rate': trial.suggest_categorical("learning_rate", [0.0001, 0.001, 0.01, 0.1]),
+        'learning_rate': trial.suggest_categorical("learning_rate", [0.00001,0.0001, 0.001, 0.01, 0.1]),
         'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
@@ -629,7 +640,7 @@ def objective(trial):
 EPOCHS = 50
     
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
-study.optimize(objective, n_trials=25)
+study.optimize(objective, n_trials=50)
 pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
 complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 print("Study statistics: ")
@@ -676,7 +687,7 @@ batch_size_best = best_params["batch_size"]
 lambda_val_best = best_params["lambda_val"]
 dropout_best = best_params["dropout"]
 
-# print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
+print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
     
 # learning_rate_best = 0.0001
 # optimizer_best = 'Adam'
