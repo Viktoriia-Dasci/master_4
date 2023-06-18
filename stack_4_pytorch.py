@@ -103,7 +103,7 @@ def plot_acc_loss_f1(history, folder_path):
 
 
 HGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/HGG_stack')
-LGG_train = load_from_dir('/home/viktoriia.trokhova/train/LGG_stack')
+LGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/LGG_stack')
 
 
 HGG_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
