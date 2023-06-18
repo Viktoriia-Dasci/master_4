@@ -236,9 +236,9 @@ def model_train(model_name, save_name, image_size, learning_rate, dropout, optim
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
     model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
 #     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
 #     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
