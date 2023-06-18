@@ -230,7 +230,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
-    model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
+    #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
