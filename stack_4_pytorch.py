@@ -102,12 +102,12 @@ def plot_acc_loss_f1(history, folder_path):
     plt.close()
 
 
-HGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
-LGG_train = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
+HGG_train = load_from_dir('/home/viktoriia.trokhova/Stacked_4/train/HGG_stack')
+LGG_train = load_from_dir('/home/viktoriia.trokhova/train/LGG_stack')
 
 
-HGG_val = load_from_dir('/home/viktoriia.trokhova/test/HGG_stack')
-LGG_val = load_from_dir('/home/viktoriia.trokhova/test/LGG_stack')
+HGG_val = load_from_dir('/home/viktoriia.trokhova/Stacked_4/val/HGG_stack')
+LGG_val = load_from_dir('/home/viktoriia.trokhova/LGG_stack')
 
 from torch.utils.data import TensorDataset
 
