@@ -711,7 +711,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
             train_correct += batch_accuracy
             #print(batch_accuracy)
 
-            f1 = f1_score(target, output)
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
             train_f1_score += f1
             #print(f1)
             #print(train_f1_score)
@@ -759,7 +759,7 @@ def train_and_evaluate(model, learning_rate_best, optimizer_best, dense_0_units_
                 val_correct += batch_accuracy
                 
                 # Calculate F1 score
-                f1 = f1_score(target, output)
+                f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
                 val_f1_score += f1
 
             
