@@ -156,12 +156,12 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     class_labels = range(len(class_weights)) if mlb is None else mlb.classes_
     return dict(zip(class_labels, class_weights))
     
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/train/HGG_t1')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/train/LGG_t1')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/LGG_flair')
 
 
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/HGG_t1')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/LGG_t1')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/HGG_flair')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/LGG_flair')
 
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
@@ -172,22 +172,17 @@ X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
 X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
+# Convert labels to numerical values and one-hot encoding
 labels = {'HGG': 0, 'LGG': 1}
-
-y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
-y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
-
-# Convert the labels to numeric values
-y_train_numeric = np.array([labels[y] for y in y_train])
-y_val_numeric = np.array([labels[y] for y in y_val])
-
+y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
-X_val = np.array(X_val)
-X_train = np.array(X_train)
+X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
+X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
 
-X_val, y_val = shuffle(X_val, y_val_numeric, random_state=101)
-X_train, y_train = shuffle(X_train, y_train_numeric, random_state=101)
-
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+print(class_weights)
 
 
 print(X_train.shape)
@@ -212,8 +207,20 @@ train_generator = datagen.flow(
     shuffle=True)
 
 
+def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
+    epsilon = tf.keras.backend.epsilon()
+    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+    
+    # Calculate focal loss
+    cross_entropy = -y_true * tf.math.log(y_pred)
+    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+    
+    return tf.reduce_mean(focal_loss, axis=-1)      
+
+
 def f1_score(y_true, y_pred):
-    y_pred = tf.cast(tf.math.greater_equal(y_pred, 0.5), dtype=tf.float32)
+    y_pred = tf.argmax(y_pred, axis=-1)
+    y_true = tf.argmax(y_true, axis=-1)
     tp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 1)), dtype=tf.float32))
     fp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 0), tf.equal(y_pred, 1)), dtype=tf.float32))
     fn = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 0)), dtype=tf.float32))
@@ -223,12 +230,12 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-def model_train(model_name, save_name, image_size, learning_rate, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
+def model_train(model_name, save_name, image_size, learning_rate, dropout, optimizer, dense_1_units, dense_1_units, batch_size):
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
-    #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
+    model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
     model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
@@ -336,11 +343,11 @@ def model_train(model_name, save_name, image_size, learning_rate, dropout, optim
 
 
 #history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t1", image_size = 224, learning_rate = 0.0001, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=112, dense_1_units=None, batch_size=16)
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_t1", image_size = 224, learning_rate = 0.001, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=80, dense_1_units=None, batch_size=64)
+history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_t1", image_size = 224, learning_rate = 0.001, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=80, dense_1_units=32, batch_size=64)
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "densenet_t1", image_size = 224, learning_rate = 0.0001, dropout=0.6, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, dense_1_units=112, batch_size=64)
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 #plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
 #plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
-#plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
+plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 #history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.001, dropout=0.6)
