@@ -172,22 +172,17 @@ X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
 X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
+# Convert labels to numerical values and one-hot encoding
 labels = {'HGG': 0, 'LGG': 1}
-
-y_train_weights = tf.keras.utils.to_categorical([labels[y] for y in y_train])
-y_val_weights = tf.keras.utils.to_categorical([labels[y] for y in y_val])
-
-# Convert the labels to numeric values
-y_train_numeric = np.array([labels[y] for y in y_train])
-y_val_numeric = np.array([labels[y] for y in y_val])
-
+y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
+y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
-X_val = np.array(X_val)
-X_train = np.array(X_train)
+X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
+X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
 
-X_val, y_val = shuffle(X_val, y_val_numeric, random_state=101)
-X_train, y_train = shuffle(X_train, y_train_numeric, random_state=101)
-
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
+print(class_weights)
 
 
 print(X_train.shape)
@@ -195,11 +190,6 @@ print(y_train.shape)
 print(X_val.shape)
 print(y_val.shape)
 
-
-
-#class_weights = compute_class_weight('balanced', np.unique(y_train), y_train)
-class_weights = generate_class_weights(y_train_weights, multi_class=False, one_hot_encoded=True)
-print(class_weights)
 datagen = ImageDataGenerator(
     rotation_range=90,
     vertical_flip=True,
@@ -212,8 +202,20 @@ train_generator = datagen.flow(
     shuffle=True)
 
 
+def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
+    epsilon = tf.keras.backend.epsilon()
+    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+    
+    # Calculate focal loss
+    cross_entropy = -y_true * tf.math.log(y_pred)
+    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+    
+    return tf.reduce_mean(focal_loss, axis=-1)      
+
+
 def f1_score(y_true, y_pred):
-    y_pred = tf.cast(tf.math.greater_equal(y_pred, 0.5), dtype=tf.float32)
+    y_pred = tf.argmax(y_pred, axis=-1)
+    y_true = tf.argmax(y_true, axis=-1)
     tp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 1)), dtype=tf.float32))
     fp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 0), tf.equal(y_pred, 1)), dtype=tf.float32))
     fn = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 0)), dtype=tf.float32))
@@ -223,134 +225,123 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-
-def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
-    epsilon = tf.keras.backend.epsilon()
-    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-    
-    # Calculate focal loss
-    cross_entropy = -y_true * tf.math.log(y_pred)
-    focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
-    
-    return tf.reduce_mean(focal_loss, axis=-1)
-
-
-# def model_train(model_name, image_size, learning_rate, dropout):
-#     model = model_name.output
-#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-#     model = tf.keras.layers.Dropout(rate=dropout)(model)
-#     model = tf.keras.layers.Dense(96, activation='relu')(model)
-#     model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
-#     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
+def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
+    model = model_name.output
+    model = tf.keras.layers.GlobalAveragePooling2D()(model)
+    model = tf.keras.layers.Dropout(rate=dropout)(model)
+    model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
+    model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
+    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
 #     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-#     model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy', f1_score])
+#     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
-    
-#     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/densenet_t1ce" + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
-#     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
-#     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-#     history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
+    early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
 
     
         
-#     train_loss = history.history['loss']
-#     val_loss = history.history['val_loss']
-#     train_accuracy = history.history['accuracy']
-#     val_accuracy = history.history['val_accuracy']
-#     train_f1_score = history.history['f1_score']
-#     val_f1_score = history.history['val_f1_score']
+    train_loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    train_accuracy = history.history['accuracy']
+    val_accuracy = history.history['val_accuracy']
+    train_f1_score = history.history['f1_score']
+    val_f1_score = history.history['val_f1_score']
 
-#     print("Train Loss:", train_loss)
-#     print("Val Loss:", val_loss)
-#     print("Train Accuracy:", train_accuracy)
-#     print("Val Accuracy:", val_accuracy)
-#     print("Train F1 Score:", train_f1_score)
-#     print("Val F1 Score:", val_f1_score)  
+    print("Train Loss:", train_loss)
+    print("Val Loss:", val_loss)
+    print("Train Accuracy:", train_accuracy)
+    print("Val Accuracy:", val_accuracy)
+    print("Train F1 Score:", train_f1_score)
+    print("Val F1 Score:", val_f1_score)  
       
-#     return history
+    return history
 
 
-import keras_tuner
-import tensorflow as tf
-from tensorflow.keras.optimizers import SGD
-from kerastuner.tuners import Hyperband
-from kerastuner.engine.hyperparameters import HyperParameters
 
-def model_densenet(hp):
-    model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
-    model = model_name.output
-    model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
-    for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
-        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+# import keras_tuner
+# import tensorflow as tf
+# from tensorflow.keras.optimizers import SGD
+# from kerastuner.tuners import Hyperband
+# from kerastuner.engine.hyperparameters import HyperParameters
+
+# def model_densenet(hp):
+#     model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
+#     model = model_name.output
+#     model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+#     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
+#         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
+#     model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+#     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
-    # Define optimizer and batch size
-    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
-    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
+#     # Define optimizer and batch size
+#     optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
+#     learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
+#     batch_size = hp.Choice('batch_size', values=[16, 32, 64])
     
-    #Set optimizer parameters based on user's selection
-    if optimizer == 'adam':
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    else:
-        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+#     #Set optimizer parameters based on user's selection
+#     if optimizer == 'adam':
+#         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+#     else:
+#         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
-    # Compile the model with the optimizer and metrics
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+#     # Compile the model with the optimizer and metrics
+#     model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
     
-    return model
+#     return model
 
-#Define hp before calling tuner.search()
-hp = HyperParameters()
-
-
-tuner = Hyperband(
-    model_densenet,
-    objective=keras_tuner.Objective("val_f1_score", direction="max"),
-    overwrite=True,
-    max_epochs=30,
-    factor=3,
-    hyperband_iterations=5
-)
-
-tuner.search(train_generator,
-             validation_data=(X_val, y_val),
-             steps_per_epoch=len(train_generator),
-             epochs=50,
-             verbose=1
-             )
-
-#Print the best hyperparameters found by the tuner
-best_hyperparams = tuner.get_best_hyperparameters(1)[0]
-print(f'Best hyperparameters: {best_hyperparams}')
+# #Define hp before calling tuner.search()
+# hp = HyperParameters()
 
 
-#Get the best model found by the tuner
-best_model = tuner.get_best_models(1)[0]
+# tuner = Hyperband(
+#     model_densenet,
+#     objective=keras_tuner.Objective("val_f1_score", direction="max"),
+#     overwrite=True,
+#     max_epochs=30,
+#     factor=3,
+#     hyperband_iterations=5
+# )
 
-checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
-early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+# tuner.search(train_generator,
+#              validation_data=(X_val, y_val),
+#              steps_per_epoch=len(train_generator),
+#              epochs=50,
+#              verbose=1
+#              )
 
-#Fit the model to the training data for 50 epochs using the best hyperparameters
-history_effnet = best_model.fit(
-    train_generator,
-    epochs=50,
-    validation_data=(X_val, y_val),
-    verbose=1,
-    callbacks=[checkpoint, early_stop, reduce_lr]
-)
+# #Print the best hyperparameters found by the tuner
+# best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+# print(f'Best hyperparameters: {best_hyperparams}')
 
 
-  
-  
+# #Get the best model found by the tuner
+# best_model = tuner.get_best_models(1)[0]
+
+# checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
+# early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
+# reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+
+# #Fit the model to the training data for 50 epochs using the best hyperparameters
+# history_effnet = best_model.fit(
+#     train_generator,
+#     epochs=50,
+#     validation_data=(X_val, y_val),
+#     verbose=1,
+#     callbacks=[checkpoint, early_stop, reduce_lr]
+# )
+
+
+history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t1ce", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.SGD(learning_rate=0.1), dense_0_units=16, dense_1_units=80, batch_size=64)  
 #history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.7)
 #history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), image_size = 224, learning_rate = 0.001, dropout=0.6)
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.01, dropout=0.2)
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
-#plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
+plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
 #plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
 #plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
