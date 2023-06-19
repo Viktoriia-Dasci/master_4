@@ -65,12 +65,19 @@ train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                            mean=[0.485, 0.456, 0.406],
                                            std=[0.229, 0.224, 0.225],),
                                        ])
+# aug_transform = transforms.Compose([
+#     RandomApply([transforms.RandomHorizontalFlip()], p=0.5), 
+#     RandomApply([transforms.RandomVerticalFlip()], p=0.5), 
+#     RandomApply([transforms.RandomRotation([-90, 90])], p=0.5),
+#     Lambda(lambda x: x)
+# ])
+
 aug_transform = transforms.Compose([
-    RandomApply([transforms.RandomHorizontalFlip()], p=0.5), 
-    RandomApply([transforms.RandomVerticalFlip()], p=0.5), 
-    RandomApply([transforms.RandomRotation([-90, 90])], p=0.5),
-    Lambda(lambda x: x)
+    transforms.RandomHorizontalFlip(), 
+    transforms.RandomVerticalFlip(), 
+    transforms.RandomRotation([-90, 90]),
 ])
+
 val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                       transforms.CenterCrop((224,224)),
                                       torchvision.transforms.Normalize(
@@ -630,7 +637,7 @@ def objective(trial):
         'dense_0_units': trial.suggest_categorical("dense_0_units", [16, 32, 48, 64, 80, 96, 112, 128]),
         'dense_1_units': trial.suggest_categorical("dense_1_units", [16, 32, 48, 64, 80, 96, 112, 128]),
         'batch_size': trial.suggest_categorical("batch_size", [16, 32, 64]),
-        'lambda_val': trial.suggest_float("lambda_val", 0.2, 1.0, step=0.1),
+        'lambda_val': trial.suggest_float("lambda_val", 0.01, 1.0),
         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
     model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=params['dense_1_units']).to(device)
