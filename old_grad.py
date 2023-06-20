@@ -165,7 +165,7 @@ class myDataset_val(Dataset):
         msk_list = glob.glob(self.masks_path + "*")
         print(file_list)
         print(msk_list)
-        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
+        msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
         self.images = []
         self.targets = []
         self.masks = []
@@ -701,7 +701,7 @@ optimizer_best = 'Adam'
 dense_0_units_best = 64
 #dense_1_units_best = best_params["dense_1_units"]
 batch_size_best = 64
-lambda_val_best = 0.04
+lambda_val_best = 0.2
 dropout_best = 0.4
 print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
 
