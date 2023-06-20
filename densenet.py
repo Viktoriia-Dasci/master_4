@@ -643,7 +643,7 @@ def objective(trial):
         'lambda_val': trial.suggest_float("lambda_val", 0.01, 1.0),
         'dropout': trial.suggest_float("dropout", 0.2, 0.8, step=0.1)
     }
-    model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=params['dense_1_units']).to(device)
+    model = MyCustomDenseNet121(pretrained=True, dense_0_units=params['dense_0_units'], dense_1_units=params['dense_1_units']).to(device)
     max_f1 = train_and_evaluate(params, model, trial)
     return max_f1
   
