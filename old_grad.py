@@ -696,157 +696,157 @@ dropout_best = best_params["dropout"]
 
 print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
     
-# learning_rate_best = 0.0001
-# optimizer_best = 'Adam'
-# dense_0_units_best = 128
-# #dense_1_units_best = best_params["dense_1_units"]
-# batch_size_best = 64
-# lambda_val_best = 0.8
-# dropout_best = 0.3
-# print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
+learning_rate_best = 0.0001
+optimizer_best = 'Adam'
+dense_0_units_best = 64
+#dense_1_units_best = best_params["dense_1_units"]
+batch_size_best = 64
+lambda_val_best = 0.04
+dropout_best = 0.4
+print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
 
                                                              
                                                               
 
-# #EPOCHS = 50
+#EPOCHS = 50
 
-# import torch
-# from sklearn.metrics import f1_score
-# from torch import nn, optim
-# import torch.nn.functional as F
-# import numpy as np
-
-
+import torch
+from sklearn.metrics import f1_score
+from torch import nn, optim
+import torch.nn.functional as F
+import numpy as np
 
 
-# def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best,
-#                        batch_size_best, lambda_val_best, dropout_best):    
+
+
+def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best,
+                       batch_size_best, lambda_val_best, dropout_best):    
 
                         
-#     dataloaders = load_data(batch_size=batch_size_best)
-#     EPOCHS = 50
+    dataloaders = load_data(batch_size=batch_size_best)
+    EPOCHS = 50
     
-#     # Create optimizer
-#     optimizer = getattr(optim, optimizer_best)(model.parameters(), lr=learning_rate_best)
+    # Create optimizer
+    optimizer = getattr(optim, optimizer_best)(model.parameters(), lr=learning_rate_best)
 
-#     # For tracking metrics over epochs
-#     history = {'loss': [], 'val_loss': [], 'accuracy': [], 'val_accuracy': [], 'f1_score': [], 'val_f1_score': []}
+    # For tracking metrics over epochs
+    history = {'loss': [], 'val_loss': [], 'accuracy': [], 'val_accuracy': [], 'f1_score': [], 'val_f1_score': []}
     
-#     # For early stopping
-#     best_val_f1 = 0
-#     best_epoch = 0
-#     patience = 10
-#     no_improve = 0
+    # For early stopping
+    best_val_f1 = 0
+    best_epoch = 0
+    patience = 10
+    no_improve = 0
 
-#     for epoch_num in range(EPOCHS):
-#         torch.cuda.empty_cache()
-#         model.train()
-#         total_loss_train = 0
-#         train_correct = 0
-#         train_f1_score = 0
+    for epoch_num in range(EPOCHS):
+        torch.cuda.empty_cache()
+        model.train()
+        total_loss_train = 0
+        train_correct = 0
+        train_f1_score = 0
 
-#         # Training loop
-#         for train_input, train_label, train_mask in dataloaders['Train']:
-#             optimizer.zero_grad()
-#             train_label = train_label.float().to(device)
-#             train_input = train_input.to(device)
-#             train_mask = train_mask.to(device)
-#             targets = torch.argmax(train_label, dim=1)
+        # Training loop
+        for train_input, train_label, train_mask in dataloaders['Train']:
+            optimizer.zero_grad()
+            train_label = train_label.float().to(device)
+            train_input = train_input.to(device)
+            train_mask = train_mask.to(device)
+            targets = torch.argmax(train_label, dim=1)
 
-#             output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, 
-#                                                              batch_size=train_input.size(0), dropout=nn.Dropout(0.3))
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, 
+                                                             batch_size=train_input.size(0), dropout=nn.Dropout(dropout_best))
             
-#             batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
-#             total_loss_train += batch_loss.item()
+            batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
+            total_loss_train += batch_loss.item()
 
-#             output = F.softmax(output, dim=1)
+            output = F.softmax(output, dim=1)
             
-#             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-#             target_numpy = train_label.detach().cpu().numpy()
-#             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+            predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+            target_numpy = train_label.detach().cpu().numpy()
+            correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-#             batch_accuracy = correct_predictions / target_numpy.shape[0]
-#             train_correct += batch_accuracy
+            batch_accuracy = correct_predictions / target_numpy.shape[0]
+            train_correct += batch_accuracy
             
-#             f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
-#             train_f1_score += f1
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            train_f1_score += f1
             
-#             model.zero_grad()
-#             batch_loss.backward()
-#             optimizer.step()
+            model.zero_grad()
+            batch_loss.backward()
+            optimizer.step()
             
-#         epoch_loss = total_loss_train / len(dataloaders['Train'])
-#         epoch_accuracy = train_correct / len(dataloaders['Train'])
-#         epoch_f1_score = train_f1_score / len(dataloaders['Train'])
-#         print("Epoch Loss:", epoch_num, ': ', epoch_loss)
-#         print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
-#         print("Epoch F1-Score:", epoch_num,  ': ', epoch_f1_score)    
+        epoch_loss = total_loss_train / len(dataloaders['Train'])
+        epoch_accuracy = train_correct / len(dataloaders['Train'])
+        epoch_f1_score = train_f1_score / len(dataloaders['Train'])
+        print("Epoch Loss:", epoch_num, ': ', epoch_loss)
+        print("Epoch Accuracy:", epoch_num, ': ', epoch_accuracy)
+        print("Epoch F1-Score:", epoch_num,  ': ', epoch_f1_score)    
 
-#         history['loss'].append(epoch_loss)
-#         history['accuracy'].append(epoch_accuracy)
-#         history['f1_score'].append(epoch_f1_score)
+        history['loss'].append(epoch_loss)
+        history['accuracy'].append(epoch_accuracy)
+        history['f1_score'].append(epoch_f1_score)
             
-#         total_loss_val = 0
-#         val_correct = 0
-#         val_f1_score = 0
-#         model.eval()
+        total_loss_val = 0
+        val_correct = 0
+        val_f1_score = 0
+        model.eval()
         
-#         for val_input, val_label, val_mask in dataloaders['Val']:
-#             val_label = val_label.float().to(device) 
-#             val_input = val_input.to(device)
-#             val_mask = val_mask.to(device)
-#             val_targets = torch.argmax(val_label, dim=1)
+        for val_input, val_label, val_mask in dataloaders['Val']:
+            val_label = val_label.float().to(device) 
+            val_input = val_input.to(device)
+            val_mask = val_mask.to(device)
+            val_targets = torch.argmax(val_label, dim=1)
 
-#             output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, 
-#                                                              batch_size=val_input.size(0), dropout=nn.Dropout(0.38))
+            output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, 
+                                                             batch_size=val_input.size(0), dropout=nn.Dropout(dropout_best))
             
-#             batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
-#             total_loss_val += batch_loss.item()
+            batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
+            total_loss_val += batch_loss.item()
 
-#             output = F.softmax(output, dim=1)
+            output = F.softmax(output, dim=1)
             
-#             predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
-#             target_numpy = val_label.detach().cpu().numpy()
-#             correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+            predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+            target_numpy = val_label.detach().cpu().numpy()
+            correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
            
-#             batch_accuracy = correct_predictions / target_numpy.shape[0]
-#             val_correct += batch_accuracy
+            batch_accuracy = correct_predictions / target_numpy.shape[0]
+            val_correct += batch_accuracy
             
-#             f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
-#             val_f1_score += f1
+            f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+            val_f1_score += f1
             
-#         epoch_val_loss = total_loss_val / len(dataloaders['Val'])
-#         epoch_val_accuracy = val_correct / len(dataloaders['Val'])
-#         epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
-#         print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
-#         print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
+        epoch_val_loss = total_loss_val / len(dataloaders['Val'])
+        epoch_val_accuracy = val_correct / len(dataloaders['Val'])
+        epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
+        print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
+        print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
 
-#         history['val_loss'].append(epoch_val_loss)
-#         history['val_accuracy'].append(epoch_val_accuracy)
-#         history['val_f1_score'].append(epoch_val_f1_score)
+        history['val_loss'].append(epoch_val_loss)
+        history['val_accuracy'].append(epoch_val_accuracy)
+        history['val_f1_score'].append(epoch_val_f1_score)
             
-#         if epoch_val_f1_score > best_val_f1:
-#             best_val_f1 = epoch_val_f1_score
-#             best_epoch = epoch_num
-#             no_improve = 0
+        if epoch_val_f1_score > best_val_f1:
+            best_val_f1 = epoch_val_f1_score
+            best_epoch = epoch_num
+            no_improve = 0
 
-#             # Save best model
-#             PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
-#             torch.save(model.state_dict(), PATH)
+            # Save best model
+            PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+            torch.save(model.state_dict(), PATH)
 
-#         else:
-#             no_improve += 1
+        else:
+            no_improve += 1
 
-#         if no_improve > patience:
-#             print("Early stopping at epoch: ", epoch_num)
-#             break
+        if no_improve > patience:
+            print("Early stopping at epoch: ", epoch_num)
+            break
 
-#     return history, best_val_f1
+    return history, best_val_f1
 
 
-# model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=128).to(device)  
+model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=128).to(device)  
   
-#history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, batch_size_best, lambda_val_best, dropout_best)
+history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, batch_size_best, lambda_val_best, dropout_best)
 
 
 
@@ -1016,31 +1016,31 @@ print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {opti
 # best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.0051), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_noscale_pytorch.pt')
 
 
-# # plot loss and accuracy for each epoch
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(history['loss'], label='Train')
-# plt.plot(history['val_loss'], label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Loss')
-# plt.title('Loss')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(history['accuracy'], label='Train')
-# plt.plot(history['val_accuracy'], label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.title('Accuracy')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(history['f1_score'], label='Train')
-# plt.plot(history['val_f1_score'], label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('F1 Score')
-# plt.title('F1 Score')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/F1_Score.png")  # save plot to given path
+# plot loss and accuracy for each epoch
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['loss'], label='Train')
+plt.plot(history['val_loss'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['accuracy'], label='Train')
+plt.plot(history['val_accuracy'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['f1_score'], label='Train')
+plt.plot(history['val_f1_score'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('F1 Score')
+plt.title('F1 Score')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/F1_Score.png")  # save plot to given path
