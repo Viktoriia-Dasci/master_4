@@ -236,9 +236,9 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
           model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
           model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
     else:
-    model = tf.keras.layers.Dense(2, activation='softmax')(model)
-    model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+          model = tf.keras.layers.Dense(2, activation='softmax')(model)
+          model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
+          model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
 #     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
 #     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
