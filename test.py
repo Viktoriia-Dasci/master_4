@@ -58,8 +58,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None): 
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/Mri_slices_new/test/"
-        self.masks_path = "/home/viktoriia.trokhova/Mask_slices/test/"
+        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/test/"
+        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -109,37 +109,48 @@ class myDataset_test(Dataset):
         return img_tensor, class_id, msk_tensor
 
 
-class MyCustomResnet50(nn.Module):
-    def __init__(self, pretrained=True):
+from torchvision.models import densenet121
+
+class MyCustomDenseNet121(nn.Module):
+    def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
         super().__init__()
         
-        resnet50 = models.resnet50(pretrained=True)
-        self.features = nn.ModuleList(resnet50.children())[:-2]
-        self.features = nn.Sequential(*self.features)
-        in_features = resnet50.fc.in_features
+        densenet = densenet121(pretrained=pretrained)
+        self.features = densenet.features
+        in_features = densenet.classifier.in_features
         self.last_pooling_operation = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(2048, 128)
-        self.fc2 = nn.Linear(128, 2)
 
-
-
-
-    def forward(self, input_imgs, targets=None, masks=None, batch_size = None, xe_criterion=nn.CrossEntropyLoss(), l1_criterion=nn.L1Loss(), dropout=None):
+        if dense_0_units is not None:
+            dense_0_units = int(dense_0_units)
+            self.fc1 = nn.Linear(in_features, dense_0_units, bias=True)
+        
+        if dense_1_units is not None:
+            dense_1_units = int(dense_1_units)
+            self.fc2 = nn.Linear(dense_0_units, dense_1_units, bias=True)
+            self.fc_final = nn.Linear(dense_1_units, 2)
+        else:
+            self.fc2 = None
+            self.fc_final = nn.Linear(dense_0_units, 2)
+            
+    def forward(self, input_imgs, targets=None, masks=None, batch_size=None, xe_criterion=nn.CrossEntropyLoss(weight=class_weights_tensor), dropout=None):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
+        output = dropout(output)
         output = output.view(input_imgs.size(0), -1)
-        images_outputs = self.fc1(output)
-        output = dropout(images_outputs)
-        images_outputs = F.relu(self.fc2(output))
-        #images_outputs = nn.ReLU(self.fc2(output))
+        
+        output = F.relu(self.fc1(output))
+        
+        if self.fc2 is not None:
+            output = F.relu(self.fc2(output))
+        
+        images_outputs = self.fc_final(output)
+        
 
-
+        
         # # compute gcam for images
         orig_gradcam_mask = compute_gradcam(images_outputs, images_feats, targets)
-
         # #upsample gradcam to (224, 224, 3)
         gcam_losses = 0.0
-
         for i in range(batch_size):
             #print(orig_gradcam_mask[i].shape)
             img_grad = orig_gradcam_mask[i].unsqueeze(0).permute(1, 2, 0)
@@ -150,30 +161,27 @@ class MyCustomResnet50(nn.Module):
             img_grad_5 = torch.from_numpy(img_grad_4)
             img_grad_6 = img_grad_5.to(device)
             #img_grad_6 = torch.nn.ReLU(inplace=True)(img_grad_6)
-
-
             #masks to same dimension
             masks_per = masks[i].permute(1, 2, 0)
             masks_per = cv2.normalize(masks_per.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
             img_grad_6 = cv2.normalize(img_grad_6.cpu().numpy(), None, alpha = 0, beta = 1, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F)
+            img_grad_6[np.mean(img_grad_6, axis=-1)<0.5] = 0
+            img_grad_6[np.mean(img_grad_6, axis=-1)>=0.5] = 1
             masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
             masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
-
             gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
             #print(gcam_loss)
             #gcam_loss = l1_criterion(img_grad_6, masks_per)
             gcam_losses += gcam_loss
-
             # gcam_loss = l1_criterion(img_grad_6, masks_per)
             # gcam_losses += gcam_loss
-
             #gcam_losses += gcam_loss.item() * input_imgs.size(0)
         #gcam_losses = gcam_losses/batch_size
         xe_loss = xe_criterion(images_outputs, targets)
         
-
         return images_outputs, targets, xe_loss, gcam_losses      #return images_outputs
-      
+
+
 def compute_gradcam(output, feats, target):
     """
     Compute normalized Grad-CAM for the given target using the model output and features
@@ -183,38 +191,33 @@ def compute_gradcam(output, feats, target):
     :return:
     """
     eps = 1e-8
-
     target = target.cpu().detach().numpy()
     one_hot = np.zeros((output.shape[0], output.shape[-1]), dtype=np.float32)
     indices_range = np.arange(output.shape[0])
     one_hot[indices_range, target[indices_range]] = 1
     one_hot = torch.from_numpy(one_hot)
     one_hot = Variable(output, requires_grad=True)
-
     # Compute the Grad-CAM for the original image
     one_hot_cuda = torch.sum(one_hot.to(device) * output)
     dy_dz1, = torch.autograd.grad(one_hot_cuda, feats, grad_outputs=torch.ones(one_hot_cuda.size()).to(device),
                                   retain_graph=True, create_graph=True)
-
     # We compute the dot product of grad and features (Element-wise Grad-CAM) to preserve grad spatial locations
     gcam512_1 = dy_dz1 * feats
     gradcam = gcam512_1.sum(dim=1)
     gradcam = torch.nn.ReLU(inplace=True)(gradcam)
     spatial_sum1 = gradcam.sum(dim=[1, 2]).unsqueeze(-1).unsqueeze(-1)
     gradcam = (gradcam / (spatial_sum1 + eps)) + eps
+    return gradcam
 
 
-    return gradcam      
+model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)  
 
-  
-
-model = MyCustomResnet50(pretrained=True).to(device)
 
 model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_best.pt'), strict=False)
 
 test_dataset = myDataset_test(transform = None)
 test_dataloader = torch.utils.data.DataLoader(myDataset_test(transform = None),
-                                    batch_size=32,
+                                    batch_size=64,
                                     shuffle=False,
                                     num_workers=0)
 
@@ -226,9 +229,9 @@ for inputs, labels, masks in test_dataloader:
     labels = labels.to(device)
     masks = masks.to(device)
   
-    outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.79))
+    outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
 
-    loss = xe_loss_.mean() + 0.575 * gcam_losses_.mean()
+    loss = xe_loss_.mean() + 0.663 * gcam_losses_.mean()
     #loss = xe_loss_.mean()
    
     _, preds = torch.max(outputs, 1)  
@@ -236,7 +239,7 @@ for inputs, labels, masks in test_dataloader:
     running_loss += loss.item() * inputs.size(0)
     running_corrects += torch.sum(preds == labels.data)
 
-epoch_loss = running_loss / 1611
-epoch_acc = running_corrects.double() / 1611
+epoch_loss = running_loss / 1716
+epoch_acc = running_corrects.double() / 1716
 print('Test loss: {:.4f}, acc: {:.4f}'.format(epoch_loss,
                                             epoch_acc))
