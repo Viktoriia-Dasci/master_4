@@ -273,7 +273,7 @@ val_correct = 0
 val_f1_score = 0
 model.eval()
 
-for val_input, val_label, val_mask in dataloaders['Val']:
+for val_input, val_label, val_mask in test_dataloader:
     val_label = val_label.float().to(device) 
     val_input = val_input.to(device)
     val_mask = val_mask.to(device)
@@ -297,10 +297,10 @@ for val_input, val_label, val_mask in dataloaders['Val']:
     f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
     val_f1_score += f1
     
-epoch_val_loss = total_loss_val / len(dataloaders['Val'])
-epoch_val_accuracy = val_correct / len(dataloaders['Val'])
-epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
-print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
-print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
+epoch_val_loss = total_loss_val / len(test_dataloader)
+epoch_val_accuracy = val_correct / len(test_dataloader)
+epoch_val_f1_score = val_f1_score / len(test_dataloader)
+print('val f1-score:', epoch_val_f1_score)
+print('val accuracy:', epoch_val_accuracy)
 
 #print('Test loss: {:.4f}, acc: {:.4f}, F1 score: {:.4f}'.format(epoch_loss, epoch_acc, f1))
