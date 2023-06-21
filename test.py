@@ -58,8 +58,8 @@ class myDataset_test(Dataset):
 
     def __init__(self, transform=None):
         #folder containing class folders with images
-        self.imgs_path = "/content/drive/MyDrive/T2_new_MRI_slices/test/"
-        self.masks_path = "/content/drive/MyDrive/T2_new_Msk_slices/test/"
+        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/test/"
+        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
