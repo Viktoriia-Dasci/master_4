@@ -42,6 +42,67 @@ val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                           std=[0.229, 0.224, 0.225],
     ),
                                       ])
+
+
+class myDataset_val(Dataset):
+
+    def __init__(self, transform=None):
+        #folder containing class folders with images
+        self.imgs_path = "/content/drive/MyDrive/T2_new_MRI_slices/val/"
+        self.masks_path = "/content/drive/MyDrive/T2_new_MRI_slices/val/"
+        file_list = glob.glob(self.imgs_path + "*")
+        msk_list = glob.glob(self.masks_path + "*")
+        #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
+        self.images = []
+        self.targets = []
+        self.masks = []
+        for class_path in file_list:
+            class_name = class_path.split("/")[-1]
+            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+                self.images.append(img_path)
+            for img_path in sorted(glob.glob(class_path + "/*.npy")):
+                self.targets.append(class_name)
+        for msk_path in msk_list:
+            for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
+                  self.masks.append(masks_path)
+        self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
+        print(self.images[-100])
+        print(self.targets[-100])
+        print(self.masks[-100])
+        print(len(self.images))
+        print(len(self.targets))
+        print(len(self.masks))
+        self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
+        self.img_dim = (224, 224)
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        img_path  = self.images[idx]
+        class_name = self.targets[idx]
+        masks_path = self.masks[idx]
+        img = np.load(img_path)
+        msk = np.load(masks_path)
+        reshap_img = img.reshape(-1, 3)
+        min_max_scaler = p.MinMaxScaler()
+        img_t = min_max_scaler.fit_transform(reshap_img)
+        img = img_t.reshape(img.shape)
+        reshap_msk = msk.reshape(-1, 3)
+        msk_t = min_max_scaler.fit_transform(reshap_msk)
+        msk = msk_t.reshape(msk.shape)
+        img_float32 = np.float32(img)
+        img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
+        img_tensor = val_transforms(img_color)
+        msk_float32 = np.float32(msk)
+        msk_color = cv2.cvtColor(msk_float32, cv2.COLOR_GRAY2RGB)
+        msk_tensor = val_transforms(msk_color)
+        class_id = self.class_map[class_name]
+        class_id = torch.tensor(class_id)
+    
+        return img_tensor, class_id, msk_tensor
+
+
 class myDataset_test(Dataset):
     def __init__(self, transform=None): 
         #folder containing class folders with images
@@ -188,8 +249,8 @@ def compute_gradcam(output, feats, target):
     return gradcam
 model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)  
 model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_best.pt'), strict=False)
-test_dataset = myDataset_test(transform = None)
-test_dataloader = torch.utils.data.DataLoader(myDataset_test(transform = None),
+
+test_dataloader = torch.utils.data.DataLoader(myDataset_val(transform = None),
                                     batch_size=16,
                                     shuffle=False,
                                     num_workers=0)
