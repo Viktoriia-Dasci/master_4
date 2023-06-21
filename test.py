@@ -211,7 +211,7 @@ def compute_gradcam(output, feats, target):
     return gradcam
 
 
-model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)  
+model = MyCustomDenseNet121(pretrained=True, dense_0_units=112).to(device)  
 
 
 model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_best.pt'), strict=False)
@@ -222,25 +222,38 @@ test_dataloader = torch.utils.data.DataLoader(myDataset_test(transform = None),
                                     shuffle=False,
                                     num_workers=0)
 
+from sklearn.metrics import f1_score
 model.eval()
 running_loss = 0.0
+test_f1 = 0.0
 running_corrects = 0.0
 for inputs, labels, masks in test_dataloader:
     inputs = inputs.to(device)
     labels = labels.to(device)
+    test_labels = torch.argmax(labels, dim=1).to(device)
     masks = masks.to(device)
-  
-    outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
 
-    loss = xe_loss_.mean() + 0.663 * gcam_losses_.mean()
-    #loss = xe_loss_.mean()
-   
-    _, preds = torch.max(outputs, 1)  
+    outputs, targets_, xe_loss_, gcam_losses_, imgs_feats  = model(inputs, test_labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
 
-    running_loss += loss.item() * inputs.size(0)
-    running_corrects += torch.sum(preds == labels.data)
+    loss = xe_loss_.mean() + 0.663 * gcam_losses_
+    running_loss += loss
 
-epoch_loss = running_loss / 1716
-epoch_acc = running_corrects.double() / 1716
-print('Test loss: {:.4f}, acc: {:.4f}'.format(epoch_loss,
-                                            epoch_acc))
+    outputs = F.softmax(outputs, dim=1)
+    
+    predictions = torch.argmax(outputs, dim=1).detach().cpu().numpy()
+    target_numpy = labels.detach().cpu().numpy()
+    correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
+    
+    batch_accuracy = correct_predictions / target_numpy.shape[0]
+    running_corrects += batch_accuracy
+    
+    f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+    test_f1 += f1
+    print(f1)
+
+    
+epoch_val_loss = running_loss / len(test_dataloader)
+epoch_val_accuracy = correct_predictions / len(test_dataloader)
+epoch_val_f1_score = test_f1 / len(test_dataloader)
+print('val f1-score:', epoch_val_f1_score)
+print('val accuracy:', epoch_val_accuracy)
