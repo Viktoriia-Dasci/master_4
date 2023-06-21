@@ -218,7 +218,7 @@ model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_b
 
 test_dataset = myDataset_test(transform = None)
 test_dataloader = torch.utils.data.DataLoader(myDataset_test(transform = None),
-                                    batch_size=64,
+                                    batch_size=16,
                                     shuffle=False,
                                     num_workers=0)
 
