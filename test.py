@@ -49,7 +49,7 @@ class myDataset_val(Dataset):
     def __init__(self, transform=None):
         #folder containing class folders with images
         self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/val/"
-        self.masks_path = /home/viktoriia.trokhova/T2_new_MRI_slices/val/"
+        self.masks_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/val/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
