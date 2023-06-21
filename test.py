@@ -133,7 +133,7 @@ class MyCustomDenseNet121(nn.Module):
             self.fc_final = nn.Linear(dense_0_units, 2)
 
             
-    def forward(self, input_imgs, targets=None, masks=None, batch_size=None, xe_criterion=nn.CrossEntropyLoss(weight=tensor([0.6293, 2.4333], device='cuda:0'))), dropout=None):
+    def forward(self, input_imgs, targets=None, masks=None, batch_size=None, xe_criterion=nn.CrossEntropyLoss(weight=tensor([0.6293, 2.4333], device='cuda:0')), dropout=None):
         images_feats = self.features(input_imgs)
         output = self.last_pooling_operation(images_feats)
         output = dropout(output)
