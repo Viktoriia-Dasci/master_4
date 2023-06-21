@@ -230,10 +230,10 @@ running_corrects = 0.0
 for inputs, labels, masks in test_dataloader:
     inputs = inputs.to(device)
     labels = labels.to(device)
-    test_labels = torch.argmax(labels, dim=1).to(device)
+    #test_labels = torch.argmax(labels, dim=1).to(device)
     masks = masks.to(device)
 
-    outputs, targets_, xe_loss_, gcam_losses_, imgs_feats  = model(inputs, test_labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
+    outputs, targets_, xe_loss_, gcam_losses_, imgs_feats  = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
 
     loss = xe_loss_.mean() + 0.663 * gcam_losses_
     running_loss += loss
