@@ -251,35 +251,53 @@ model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)
 model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_best.pt'), strict=False)
 
 test_dataloader = torch.utils.data.DataLoader(myDataset_val(transform = None),
-                                    batch_size=64,
+                                    batch_size=16,
                                     shuffle=False,
                                     num_workers=0)
 
+
+learning_rate_best = 0.1
+optimizer_best = 'SGD'
+dense_0_units_best = 112
+#dense_1_units_best = best_params["dense_1_units"]
+batch_size_best = 64
+lambda_val_best = 0.663
+dropout_best = 0.8
+
 from sklearn.metrics import f1_score
-
+total_loss_val = 0
+val_correct = 0
+val_f1_score = 0
 model.eval()
-running_loss = 0.0
-running_corrects = 0.0
-all_preds = []
-all_labels = []
 
-for inputs, labels, masks in test_dataloader:
-    inputs = inputs.to(device)
-    labels = labels.to(device)
-    masks = masks.to(device)
-  
-    outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size=inputs.size(0), dropout=nn.Dropout(0.8))
-    loss = xe_loss_.mean() + 0.663 * gcam_losses_.mean()
+for val_input, val_label, val_mask in dataloaders['Val']:
+    val_label = val_label.float().to(device) 
+    val_input = val_input.to(device)
+    val_mask = val_mask.to(device)
+    val_targets = torch.argmax(val_label, dim=1)
+
+    output, targets_, xe_loss_, gcam_losses_ = model(val_input, val_targets, val_mask, 
+                                                     batch_size=val_input.size(0), dropout=nn.Dropout(dropout_best))
+    
+    batch_loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
+    total_loss_val += batch_loss.item()
+
+    output = F.softmax(output, dim=1)
+    
+    predictions = torch.argmax(output, dim=1).detach().cpu().numpy()
+    target_numpy = val_label.detach().cpu().numpy()
+    correct_predictions = np.sum(predictions == target_numpy.argmax(axis=1))
    
-    _, preds = torch.max(outputs, 1)  
-    running_loss += loss.item() * inputs.size(0)
-    running_corrects += torch.sum(preds == labels.data)
+    batch_accuracy = correct_predictions / target_numpy.shape[0]
+    val_correct += batch_accuracy
+    
+    f1 = f1_score(target_numpy.argmax(axis=1), predictions, average='macro')
+    val_f1_score += f1
+    
+epoch_val_loss = total_loss_val / len(dataloaders['Val'])
+epoch_val_accuracy = val_correct / len(dataloaders['Val'])
+epoch_val_f1_score = val_f1_score / len(dataloaders['Val'])
+print('val f1-score:',  epoch_num, ': ', epoch_val_f1_score)
+print('val accuracy:',  epoch_num, ': ', epoch_val_accuracy)
 
-    all_preds.extend(preds.tolist())
-    all_labels.extend(labels.data.tolist())
-
-epoch_loss = running_loss / len(test_dataloader.dataset)
-epoch_acc = running_corrects.double() / len(test_dataloader.dataset)
-f1 = f1_score(all_labels, all_preds, average='macro')
-
-print('Test loss: {:.4f}, acc: {:.4f}, F1 score: {:.4f}'.format(epoch_loss, epoch_acc, f1))
+#print('Test loss: {:.4f}, acc: {:.4f}, F1 score: {:.4f}'.format(epoch_loss, epoch_acc, f1))
