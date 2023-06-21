@@ -706,7 +706,7 @@ learning_rate_best = 0.1
 optimizer_best = 'SGD'
 dense_0_units_best = 112
 #dense_1_units_best = best_params["dense_1_units"]
-batch_size_best = 64
+batch_size_best = 32
 lambda_val_best = 0.663
 dropout_best = 0.8
 print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
@@ -855,7 +855,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
     return history, best_val_f1
 
 
-model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)  
+model = MyCustomDenseNet121(pretrained=True, dense_0_units=112).to(device)  
   
 history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, batch_size_best, lambda_val_best, dropout_best)
 
@@ -1027,31 +1027,31 @@ history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, opt
 # best_val_auc = train_with_early_stopping(model, optimizer = optim.SGD(model.parameters(), lr=0.0051), patience=20, PATH= '/home/viktoriia.trokhova/model_weights/resnet_noscale_pytorch.pt')
 
 
-# # plot loss and accuracy for each epoch
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(history['loss'], label='Train')
-# plt.plot(history['val_loss'], label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Loss')
-# plt.title('Loss')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(history['accuracy'], label='Train')
-# plt.plot(history['val_accuracy'], label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.title('Accuracy')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
-# plt.figure(figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(history['f1_score'], label='Train')
-# plt.plot(history['val_f1_score'], label='Validation')
-# plt.xlabel('Epoch')
-# plt.ylabel('F1 Score')
-# plt.title('F1 Score')
-# plt.legend()
-# plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/F1_Score.png")  # save plot to given path
+# plot loss and accuracy for each epoch
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['loss'], label='Train')
+plt.plot(history['val_loss'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/loss.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['accuracy'], label='Train')
+plt.plot(history['val_accuracy'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/accuracy.png")  # save plot to given path
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history['f1_score'], label='Train')
+plt.plot(history['val_f1_score'], label='Validation')
+plt.xlabel('Epoch')
+plt.ylabel('F1 Score')
+plt.title('F1 Score')
+plt.legend()
+plt.savefig("/home/viktoriia.trokhova/plots/resnet_torch/F1_Score.png")  # save plot to given path
