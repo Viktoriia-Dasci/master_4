@@ -254,7 +254,7 @@ model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)
 model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_best.pt'), strict=False)
 
 test_dataloader = torch.utils.data.DataLoader(myDataset_val(transform = None),
-                                    batch_size=16,
+                                    batch_size=32,
                                     shuffle=False,
                                     num_workers=0)
 
