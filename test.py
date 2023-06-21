@@ -56,10 +56,10 @@ val_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
 
 class myDataset_test(Dataset):
 
-    def __init__(self, transform=None): 
+    def __init__(self, transform=None):
         #folder containing class folders with images
-        self.imgs_path = "/home/viktoriia.trokhova/T2_new_MRI_slices/test/"
-        self.masks_path = "/home/viktoriia.trokhova/T2_new_Msk_slices/test/"
+        self.imgs_path = "/content/drive/MyDrive/T2_new_MRI_slices/test/"
+        self.masks_path = "/content/drive/MyDrive/T2_new_Msk_slices/test/"
         file_list = glob.glob(self.imgs_path + "*")
         msk_list = glob.glob(self.masks_path + "*")
         #msk_list[0], msk_list[1] = msk_list[1], msk_list[0]
@@ -68,20 +68,20 @@ class myDataset_test(Dataset):
         self.masks = []
         for class_path in file_list:
             class_name = class_path.split("/")[-1]
-            for img_path in sorted(glob.glob(class_path + "/*")):
+            for img_path in sorted(glob.glob(class_path + "/*.npy")):
                 self.images.append(img_path)
-            for img_path in sorted(glob.glob(class_path + "/*")):
+            for img_path in sorted(glob.glob(class_path + "/*.npy")):
                 self.targets.append(class_name)
         for msk_path in msk_list:
-            for masks_path in sorted(glob.glob(msk_path + "/*")):
+            for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
                   self.masks.append(masks_path)
         self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
         print(self.images[-100])
         print(self.targets[-100])
         print(self.masks[-100])
-        print(len(self.images))
-        print(len(self.targets))
-        print(len(self.masks))
+        # print(len(self.images))
+        # print(len(self.targets))
+        # print(len(self.masks))
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
 
@@ -94,9 +94,13 @@ class myDataset_test(Dataset):
         masks_path = self.masks[idx]
         img = np.load(img_path)
         msk = np.load(masks_path)
+        reshap_img = img.reshape(-1, 3)
         min_max_scaler = p.MinMaxScaler()
-        img = min_max_scaler.fit_transform(img)
-        msk = min_max_scaler.fit_transform(msk)
+        img_t = min_max_scaler.fit_transform(reshap_img)
+        img = img_t.reshape(img.shape)
+        reshap_msk = msk.reshape(-1, 3)
+        msk_t = min_max_scaler.fit_transform(reshap_msk)
+        msk = msk_t.reshape(msk.shape)
         img_float32 = np.float32(img)
         img_color = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
         img_tensor = val_transforms(img_color)
@@ -105,8 +109,9 @@ class myDataset_test(Dataset):
         msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
-    
-        return img_tensor, class_id, msk_tensor
+        class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
+
+        return img_tensor, class_id_one_hot, msk_tensor
 
 
 from torchvision.models import densenet121
@@ -233,7 +238,7 @@ for inputs, labels, masks in test_dataloader:
     #test_labels = torch.argmax(labels, dim=1).to(device)
     masks = masks.to(device)
 
-    outputs, targets_, xe_loss_, gcam_losses_, imgs_feats  = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
+    outputs, targets_, xe_loss_, gcam_losses_  = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
 
     loss = xe_loss_.mean() + 0.663 * gcam_losses_
     running_loss += loss
