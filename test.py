@@ -99,8 +99,9 @@ class myDataset_val(Dataset):
         msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
+        class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
     
-        return img_tensor, class_id, msk_tensor
+        return img_tensor, class_id_one_hot, msk_tensor
 
 
 class myDataset_test(Dataset):
@@ -151,8 +152,10 @@ class myDataset_test(Dataset):
         msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
+        class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
     
-        return img_tensor, class_id, msk_tensor
+        return img_tensor, class_id_one_hot, msk_tensor
+      
 from torchvision.models import densenet121
 class MyCustomDenseNet121(nn.Module):
     def __init__(self, pretrained=True, dense_0_units=None, dense_1_units=None):
