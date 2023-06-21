@@ -193,22 +193,32 @@ test_dataloader = torch.utils.data.DataLoader(myDataset_test(transform = None),
                                     batch_size=64,
                                     shuffle=False,
                                     num_workers=0)
+
+from sklearn.metrics import f1_score
+
 model.eval()
 running_loss = 0.0
 running_corrects = 0.0
+all_preds = []
+all_labels = []
+
 for inputs, labels, masks in test_dataloader:
     inputs = inputs.to(device)
     labels = labels.to(device)
     masks = masks.to(device)
   
-    outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size = inputs.size(0), dropout=nn.Dropout(0.8))
+    outputs, targets_, xe_loss_, gcam_losses_ = model(inputs, labels, masks, batch_size=inputs.size(0), dropout=nn.Dropout(0.8))
     loss = xe_loss_.mean() + 0.663 * gcam_losses_.mean()
-    #loss = xe_loss_.mean()
    
     _, preds = torch.max(outputs, 1)  
     running_loss += loss.item() * inputs.size(0)
     running_corrects += torch.sum(preds == labels.data)
-epoch_loss = running_loss / 1716
-epoch_acc = running_corrects.double() / 1716
-print('Test loss: {:.4f}, acc: {:.4f}'.format(epoch_loss,
-                                            epoch_acc))
+
+    all_preds.extend(preds.tolist())
+    all_labels.extend(labels.data.tolist())
+
+epoch_loss = running_loss / len(test_dataloader.dataset)
+epoch_acc = running_corrects.double() / len(test_dataloader.dataset)
+f1 = f1_score(all_labels, all_preds, average='macro')
+
+print('Test loss: {:.4f}, acc: {:.4f}, F1 score: {:.4f}'.format(epoch_loss, epoch_acc, f1))
