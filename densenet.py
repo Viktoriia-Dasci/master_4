@@ -392,7 +392,7 @@ class MyCustomDenseNet121(nn.Module):
             img_grad_6[np.mean(img_grad_6, axis=-1)>=0.5] = 1
             masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
             masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
-            gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
+            gcam_loss = nn.L1Loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
             #print(gcam_loss)
             #gcam_loss = l1_criterion(img_grad_6, masks_per)
             gcam_losses += gcam_loss
@@ -842,7 +842,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
             no_improve = 0
 
             # Save best model
-            PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+            PATH = '/home/viktoriia.trokhova/model_weights/model_dense.pt'
             torch.save(model.state_dict(), PATH)
 
         else:
