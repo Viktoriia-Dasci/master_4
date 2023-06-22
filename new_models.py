@@ -295,7 +295,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
     model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
-   #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
+    model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
@@ -398,9 +398,9 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
 
 
 
-#history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.5)
+history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_baseline", image_size = 224, dropout=0.5, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=16, dense_1_units=128, batch_size=16)
 
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_baseline", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=None, batch_size=16)
+#history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_baseline", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=None, batch_size=16)
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.2)
 
@@ -408,7 +408,9 @@ history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', inc
 
 #plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
 
-#plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
+plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
+
+#plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 
