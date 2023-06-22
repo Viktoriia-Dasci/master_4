@@ -290,7 +290,7 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     
     return tf.reduce_mean(focal_loss, axis=-1)
 
-def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size, gamma, alpha):
+def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
     model = tf.keras.layers.Dropout(rate=dropout)(model)
@@ -298,15 +298,15 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
    #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-    model.compile(loss=focal_loss(gamma, alpha), optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
 #     sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
 #     adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
-
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr])
+#class_weight=class_weights, focal_loss
     
         
     train_loss = history.history['loss']
@@ -400,7 +400,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
 
 #history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.5)
 
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_stacked", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=None, batch_size=16, gamma=4, alpha=1)
+history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_baseline", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=None, batch_size=16)
 
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.2)
 
