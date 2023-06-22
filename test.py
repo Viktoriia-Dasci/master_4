@@ -214,13 +214,7 @@ class MyCustomDenseNet121(nn.Module):
             masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
             masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
             gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
-            #print(gcam_loss)
-            #gcam_loss = l1_criterion(img_grad_6, masks_per)
             gcam_losses += gcam_loss
-            # gcam_loss = l1_criterion(img_grad_6, masks_per)
-            # gcam_losses += gcam_loss
-            #gcam_losses += gcam_loss.item() * input_imgs.size(0)
-        #gcam_losses = gcam_losses/batch_size
         xe_loss = xe_criterion(images_outputs, targets)
         
         return images_outputs, targets, xe_loss, gcam_losses      #return images_outputs
@@ -250,7 +244,7 @@ def compute_gradcam(output, feats, target):
     spatial_sum1 = gradcam.sum(dim=[1, 2]).unsqueeze(-1).unsqueeze(-1)
     gradcam = (gradcam / (spatial_sum1 + eps)) + eps
     return gradcam
-model = MyCustomDenseNet121(pretrained=True, dense_0_units=128).to(device)  
+model = MyCustomDenseNet121(pretrained=True, dense_0_units=112).to(device)  
 model.load_state_dict(torch.load('/home/viktoriia.trokhova/model_weights/model_best.pt'), strict=False)
 
 test_dataloader = torch.utils.data.DataLoader(myDataset_val(transform = None),
