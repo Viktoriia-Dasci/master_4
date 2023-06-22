@@ -697,10 +697,10 @@ from sklearn.metrics import f1_score
 # print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
     
 learning_rate_best = 0.0001
-optimizer_best = 'Adam'
+optimizer_best = 'SGD'
 dense_0_units_best = 64
 #dense_1_units_best = best_params["dense_1_units"]
-batch_size_best = 64
+batch_size_best = 32
 lambda_val_best = 0.2
 dropout_best = 0.4
 print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
@@ -831,7 +831,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
             no_improve = 0
 
             # Save best model
-            PATH = '/home/viktoriia.trokhova/model_weights/model_best.pt'
+            PATH = '/home/viktoriia.trokhova/model_weights/model_effnet.pt'
             torch.save(model.state_dict(), PATH)
 
         else:
@@ -844,7 +844,7 @@ def train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_
     return history, best_val_f1
 
 
-model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=128).to(device)  
+model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=64).to(device)  
   
 history, best_val_f1 = train_and_evaluate(model, device, learning_rate_best, optimizer_best, dense_0_units_best, batch_size_best, lambda_val_best, dropout_best)
 
