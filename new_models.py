@@ -290,7 +290,7 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     
     return tf.reduce_mean(focal_loss, axis=-1)
 
-def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
+def model_train(model_name, save_name, image_size, optimizer, batch_size):
     model = model_name.output
    #model = tf.keras.layers.GlobalAveragePooling2D()(model)
    #model = tf.keras.layers.Dropout(rate=dropout)(model)
