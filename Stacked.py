@@ -250,15 +250,15 @@ from tensorflow.keras.applications import EfficientNetB0
 from kerastuner.engine.hyperparameters import HyperParameters
 
 
+      
 def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     epsilon = tf.keras.backend.epsilon()
     y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-
+    
     # Calculate focal loss
     cross_entropy = -y_true * tf.math.log(y_pred)
     focal_loss = alpha * tf.pow(1.0 - y_pred, gamma) * cross_entropy
-
-    return loss
+    
     return tf.reduce_mean(focal_loss, axis=-1)
 
 def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
