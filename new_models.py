@@ -292,7 +292,7 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
 
 def model_train(model_name, save_name, image_size, optimizer, batch_size):
     model = model_name.output
-   #model = tf.keras.layers.GlobalAveragePooling2D()(model)
+    model = tf.keras.layers.GlobalAveragePooling2D()(model)
    #model = tf.keras.layers.Dropout(rate=dropout)(model)
    #model = tf.keras.layers.Dense(dense_0_units, activation='relu')(model)
    #model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
