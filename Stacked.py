@@ -212,7 +212,7 @@ train_generator = datagen.flow(
     shuffle=True)
 import tensorflow as tf
 
-def f1_score(y_true, y_pred, weight_class1=1.3):
+def f1_score(y_true, y_pred, weight_class1=1.7):
     y_pred = tf.argmax(y_pred, axis=-1)
     y_true = tf.argmax(y_true, axis=-1)
     tp = tf.reduce_sum(tf.cast(tf.logical_and(tf.equal(y_true, 1), tf.equal(y_pred, 1)), dtype=tf.float32))
