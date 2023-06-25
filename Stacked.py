@@ -358,12 +358,12 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
 #     verbose=1,
 #     callbacks=[checkpoint, early_stop, reduce_lr]
 # )
-#history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.5)
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_stacked", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=None, batch_size=16)
+history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.5)
+#history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_stacked", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=None, batch_size=16)
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.0001, dropout=0.2)
 #history_resnet_weights = model_train(model_name = tf.keras.applications.resnet50.ResNet50(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 #plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
-plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
-#plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
+#plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
+plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
 #history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.1, dropout=0.5)
 #history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), image_size = 224, learning_rate = 0.001, dropout=0.6)
