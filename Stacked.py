@@ -193,6 +193,12 @@ y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
 # Convert data to arrays and shuffle
 X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
 X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
+# Print the shape of each list
+print("Shape of HGG_list_new_train:", len(HGG_list_new_train))
+print("Shape of LGG_list_new_train:", len(LGG_list_new_train))
+print("Shape of HGG_list_new_val:", len(HGG_list_new_val))
+print("Shape of LGG_list_new_val:", len(LGG_list_new_val))
+
 print(X_train.shape)
 print(y_train.shape)
 print(X_val.shape)
