@@ -30,7 +30,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import re
-import lime
+#import lime
 
 
 
@@ -345,7 +345,7 @@ def overlay_gradCAM(img, cam3):
 
 
 
-#from lime import lime_image
+from lime import lime_image
 from skimage.segmentation import mark_boundaries
 
 # explainer = lime_image.LimeImageExplainer()
@@ -476,7 +476,7 @@ def lime_coef(img_class, img_msk_class):
         msk_rgb = msk_rgb.numpy()
 
         #calculate Lime
-        explainer = lime.lime_image.LimeImageExplainer()
+        explainer = lime_image.LimeImageExplainer()
         explanation = explainer.explain_instance(img_rgb,
                                                 pretrained_model.predict,
                                                 top_labels=1,
