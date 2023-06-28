@@ -113,16 +113,16 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
 
 
 
-def display_images(images_list):
-    for i, image in enumerate(images_list):
-        print(image.min())
-        print(image.max())
-        plt.figure(figsize=(6,6))
-        plt.imshow(rgb2gray(image))
-        plt.axis('off')
-        plt.title(f"Image {i}")
-        plt.show()
-        plt.close()
+# def display_images(images_list):
+#     for i, image in enumerate(images_list):
+#         print(image.min())
+#         print(image.max())
+#         plt.figure(figsize=(6,6))
+#         plt.imshow(rgb2gray(image))
+#         plt.axis('off')
+#         plt.title(f"Image {i}")
+#         plt.show()
+#         plt.close()
 
 
 
