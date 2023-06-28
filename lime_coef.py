@@ -526,7 +526,7 @@ def lime_coef(img_class, img_msk_class):
     return df
 
 df_lime_LGG = lime_coef('LGG', pretrained_model)
-df_lime_LGG.to_csv("/home/viktoriia.trokhova/explain_datasets/" + "/lime_coef" + model + ".csv", index=False)
+df_lime_LGG.to_csv("/home/viktoriia.trokhova/explain_datasets/" + "/lime_coef_" + model + ".csv", index=False)
 
 df_lime_HGG = lime_coef('HGG', pretrained_model)
-df_lime_HGG.to_csv("/home/viktoriia.trokhova/explain_datasets/" + "/lime_coef" + model + ".csv", index=False)
+df_lime_HGG.to_csv("/home/viktoriia.trokhova/explain_datasets/" + "/lime_coef_" + model + ".csv", index=False)
