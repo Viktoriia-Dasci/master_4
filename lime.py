@@ -56,27 +56,27 @@ def add_labels(X, y, images_list, label):
 
     return X, y
 
-def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.4):
-      model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
-      model = model_name.output
-      model = tf.keras.layers.GlobalAveragePooling2D()(model)
-      model = tf.keras.layers.Dense(128, activation='relu')(model)
-      model = tf.keras.layers.Dropout(rate=dropout)(model)
-      model = tf.keras.layers.Dense(2,activation='softmax')(model)
-      model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
-      adam = tf.keras.optimizers.Adam(learning_rate=0.001)
-      #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-      model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
-      #callbacks
-      #tensorboard = TensorBoard(log_dir = 'logs')
-      #checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weughts_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
-      early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
-      reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
-      #fitting the model
-      model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1,
-                      callbacks=[early_stop, reduce_lr], class_weight=class_weights)
+# def model_train(model_name, image_size = 224, learning_rate = 0.0009, dropout=0.4):
+#       model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(image_size,image_size,3))
+#       model = model_name.output
+#       model = tf.keras.layers.GlobalAveragePooling2D()(model)
+#       model = tf.keras.layers.Dense(128, activation='relu')(model)
+#       model = tf.keras.layers.Dropout(rate=dropout)(model)
+#       model = tf.keras.layers.Dense(2,activation='softmax')(model)
+#       model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
+#       adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+#       #sgd = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+#       model.compile(loss='categorical_crossentropy', optimizer = adam, metrics= ['accuracy', 'AUC'])
+#       #callbacks
+#       #tensorboard = TensorBoard(log_dir = 'logs')
+#       #checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/resnet_weughts_new" + ".h5",monitor='val_auc',save_best_only=True,mode="max",verbose=1)
+#       early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=10, verbose=1, restore_best_weights=True)
+#       reduce_lr = ReduceLROnPlateau(monitor = 'val_auc', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+#       #fitting the model
+#       model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=8, verbose=1,
+#                       callbacks=[early_stop, reduce_lr], class_weight=class_weights)
 
-      return model
+#       return model
 
 
 def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False):
@@ -127,8 +127,8 @@ def display_images(images_list):
 
 
 
-HGG_list_test = load_from_dir('/content/drive/MyDrive/T2_new_MRI_slices/test/HGG_t2')
-LGG_list_test = load_from_dir('/content/drive/MyDrive/T2_new_MRI_slices/test/LGG_t2')
+HGG_list_test = load_from_dir('/home/viktoriia.trokhova/T2_new_MRI_slices/test/HGG_t2')
+LGG_list_test = load_from_dir('/home/viktoriia.trokhova/T2_new_MRI_slices/test/LGG_t2')
 
 
 def preprocess(images_list):
@@ -184,7 +184,9 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     return tf.reduce_mean(focal_loss, axis=-1)
 
 
-pretrained_model = load_model('/content/drive/MyDrive/final_models/effnet_t2.h5', custom_objects={'f1_score': f1_score, 'focal_loss': focal_loss})
+pretrained_model = load_model('/home/viktoriia.trokhova/model_weights/effnet_t2.h5', custom_objects={'f1_score': f1_score, 'focal_loss': focal_loss})
+
+model = 'effnet'
 
 modality = 'T2'
 
@@ -452,9 +454,9 @@ lime_list = []
 #df = pd.DataFrame(columns=["img_class", "img_num", "pat_num", "dice_coef"])
 
 def lime_coef(img_class, img_msk_class):
-    img_dir = "/content/drive/MyDrive/Stacked_MRI_new/test/" + img_class + "_stack"
+    img_dir = "/home/viktoriia.trokhova/MyDrive/T2_new_MRI_new/test/" + img_class + "_t2"
     img_files = os.listdir(img_dir)
-    msk_dir = "/content/drive/MyDrive/Stacked_Msk_new/test/" + img_class + "_masks"
+    msk_dir = "/home/viktoriia.trokhova/MyDrive/T2_new_Msk_new/test/" + img_class + "_masks"
     msk_files = os.listdir(msk_dir)
 
     # Get the last number of the file names to set pat_num
@@ -485,12 +487,6 @@ def lime_coef(img_class, img_msk_class):
         msk_rgb = cv2.cvtColor(msk_rgb.astype('float32'), cv2.COLOR_GRAY2RGB)
         msk_rgb = tf.image.crop_to_bounding_box(msk_rgb, 8, 8, 224, 224)
         msk_rgb = msk_rgb.numpy()
-        #plt.imshow(img_msk)
-        # plt.axis("off")
-        # save_results_to = '/content/' + str(msk_num) + '_' + str(pat_num) + 'mask'
-        # plt.savefig(save_results_to, bbox_inches='tight', pad_inches=0)
-        # msk=cv2.imread('/content/' + str(msk_num) + '_' + str(pat_num) + 'mask' + '.png')
-        # msk_rgb=cv2.resize(msk,(224,224))
 
         #calculate Lime
         explainer = lime_image.LimeImageExplainer()
@@ -542,4 +538,8 @@ def lime_coef(img_class, img_msk_class):
 
     return df
 
+df_lime_LGG = lime_coef('LGG', pretrained_model)
+df_lime_LGG.to_csv("/home/viktoriia.trokhova/explain_datasets/" + "/lime_coef" + model + ".csv", index=False)
 
+df_lime_HGG = lime_coef('HGG', pretrained_model)
+df_lime_HGG.to_csv("/home/viktoriia.trokhova/explain_datasets/" + "/lime_coef" + model + ".csv", index=False)
