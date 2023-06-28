@@ -1,10 +1,8 @@
 import numpy as np
-import nibabel as nib
 import glob
 import os
 import random
 import tensorflow as tf
-#import splitfolders  # or import split_folders
 from tensorflow.keras.utils import to_categorical
 import seaborn as sns
 from tensorflow.keras.applications import EfficientNetB0
