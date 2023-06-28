@@ -345,29 +345,17 @@ def overlay_gradCAM(img, cam3):
 
 
 
-img_col = cv2.cvtColor(img_arr.astype('float32'), cv2.COLOR_GRAY2RGB)
-#img_rgb = tf.image.crop_to_bounding_box(img_col, 8, 8, 224, 224)
-#img_rgb = img_rgb.numpy()
-#img_rgb = preprocess_input(img_col)
-#img_rgb=plt.imshow(rgb2gray(img_rgb))
-img_rgb = tf.image.crop_to_bounding_box(img_col, 8, 8, 224, 224)
-img_rgb = img_rgb.numpy()
-img_rgb = tf.keras.applications.imagenet_utils.preprocess_input(img_rgb, mode='tf')
-#img_rgb = cv2.resize(img, (224,224))
-#img_rgb=rgb2gray(img_rgb)
-
-
 
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
 
-explainer = lime_image.LimeImageExplainer()
+# explainer = lime_image.LimeImageExplainer()
 
-explanation = explainer.explain_instance(img_rgb,
-                                         pretrained_model.predict,
-                                         top_labels=1,
-                                         hide_color=0,
-                                         num_samples=3000)
+# explanation = explainer.explain_instance(img_rgb,
+#                                          pretrained_model.predict,
+#                                          top_labels=1,
+#                                          hide_color=0,
+#                                          num_samples=3000)
 
 def explanation_heatmap(exp, exp_class):
     '''
@@ -382,7 +370,7 @@ def explanation_heatmap(exp, exp_class):
 
 #explanation_heatmap(explanation, explanation.top_labels[0])
 
-heatmap = explanation_heatmap(explanation, explanation.top_labels[0])
+#heatmap = explanation_heatmap(explanation, explanation.top_labels[0])
 
 #defining a colorbar for one of subplots
 def colorbar(mappable):
@@ -404,8 +392,8 @@ def colorbar(mappable):
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-temp_1, mask_1 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=1, hide_rest=True)
-temp_2, mask_2 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=1, hide_rest=False)
+# temp_1, mask_1 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=1, hide_rest=True)
+# temp_2, mask_2 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=1, hide_rest=False)
 
 
 def dice_coefficient(img1, img2):
