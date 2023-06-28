@@ -442,9 +442,9 @@ lime_list = []
 #df = pd.DataFrame(columns=["img_class", "img_num", "pat_num", "dice_coef"])
 
 def lime_coef(img_class, img_msk_class):
-    img_dir = "/home/viktoriia.trokhova/MyDrive/T2_new_MRI_new/test/" + img_class + "_t2"
+    img_dir = "/home/viktoriia.trokhova/T2_new_MRI_new/test/" + img_class + "_t2"
     img_files = os.listdir(img_dir)
-    msk_dir = "/home/viktoriia.trokhova/MyDrive/T2_new_Msk_new/test/" + img_class + "_masks"
+    msk_dir = "/home/viktoriia.trokhova/T2_new_Msk_new/test/" + img_class + "_masks"
     msk_files = os.listdir(msk_dir)
 
     # Get the last number of the file names to set pat_num
