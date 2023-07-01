@@ -126,8 +126,8 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
 
 
 
-HGG_list_test = load_from_dir('/home/viktoriia.trokhova/test/HGG_stack')
-LGG_list_test = load_from_dir('/home/viktoriia.trokhova/test/LGG_stack')
+HGG_list_test = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/test/HGG_stack')
+LGG_list_test = load_from_dir('/home/viktoriia.trokhova/Stacked_MRI_new/test/LGG_stack')
 
 
 def preprocess(images_list):
