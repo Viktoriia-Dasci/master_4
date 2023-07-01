@@ -358,7 +358,7 @@ lime_list = []
 def lime_coef(img_class, img_msk_class):
     img_dir = "/home/viktoriia.trokhova/Stacked_MRI_new/test/" + img_class + "_stack"
     img_files = os.listdir(img_dir)
-    msk_dir = "/home/viktoriia.trokhova/Stacked_MRI_new/test/" + img_class + "_masks"
+    msk_dir = "/home/viktoriia.trokhova/T2_new_Msk_slices/test/"  + img_class + "_masks"
     msk_files = os.listdir(msk_dir)
 
     # Get the last number of the file names to set pat_num
