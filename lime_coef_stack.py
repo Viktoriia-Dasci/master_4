@@ -187,7 +187,7 @@ pretrained_model = load_model('/home/viktoriia.trokhova/model_weights/densenet_s
 
 model = 'densenet'
 
-modality = 'T2'
+modality = 'Stacked'
 
 
 pred_res = pretrained_model.predict(X_test)
