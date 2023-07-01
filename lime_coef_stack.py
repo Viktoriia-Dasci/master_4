@@ -378,7 +378,7 @@ def lime_coef(img_class, img_msk_class):
         # Load the image array
         img_arr = np.load(os.path.join(img_dir, img_file))
         img_arr = cv2.resize(img_arr, (224, 224))
-        img_float32 = np.float32(img_arr)
+        img_rgb = np.float32(img_arr)
         #img_rgb = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)
         plt.show()
 
