@@ -183,9 +183,9 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=0.25):
     return tf.reduce_mean(focal_loss, axis=-1)
 
 
-pretrained_model = load_model('/home/viktoriia.trokhova/model_weights/densenet_stacked_tuned.h5', custom_objects={'f1_score': f1_score, 'focal_loss': focal_loss})
+pretrained_model = load_model('/home/viktoriia.trokhova/model_weights/inception_stacked_tuned.h5', custom_objects={'f1_score': f1_score, 'focal_loss': focal_loss})
 
-model = 'densenet'
+model = 'inception'
 
 modality = 'Stacked'
 
