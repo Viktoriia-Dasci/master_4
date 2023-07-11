@@ -20,6 +20,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 #custom functions
 from Functions import load_from_dir, preprocess, add_labels, generate_class_weights, model_train, plot_acc_loss_f1_auc
 
+#load data
 HGG_list_train = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/train/HGG_t2')
 LGG_list_train = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/train/LGG_t2')
 HGG_list_val = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/val/HGG_t2')
