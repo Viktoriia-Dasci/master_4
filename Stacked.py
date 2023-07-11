@@ -257,13 +257,13 @@ from kerastuner.engine.hyperparameters import HyperParameters
 
 
       
-def focal_loss(y_true, y_pred, gamma=2.0, class_weight=class_weights):
+def focal_loss(y_true, y_pred, gamma=2.0):
     epsilon = tf.keras.backend.epsilon()
     y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
     
     # Calculate focal loss
     cross_entropy = -y_true * tf.math.log(y_pred)
-    focal_loss = class_weight * tf.pow(1.0 - y_pred, gamma) * cross_entropy
+    focal_loss =  tf.pow(1.0 - y_pred, gamma) * cross_entropy
     
     return tf.reduce_mean(focal_loss, axis=-1)
 
@@ -282,7 +282,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr])
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
     
         
     train_loss = history.history['loss']
