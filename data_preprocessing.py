@@ -1,19 +1,24 @@
+#Importing libraries
 import os
 import glob
 import numpy as np
 import nibabel as nib
 import splitfolders
-
 from pathlib import Path
+
+#Creating directories to save new slices
+def create_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 # Define directories
 input_folder = Path('/content/drive/MyDrive/Brats_2020_TrainData')
-output_folder = Path('/content/drive/MyDrive/')
+output_folder = Path('/content/drive/MyDrive/Split_data')
 
-# Function to split folders
+# Splitting folders
 def split_folders_with_ratio(input_folder, output_folder, seed=42, ratio=(.70, .20, .10)):
     # List of folders to split
-    folders = ['Masks', 'T1', 'T2', 'T1CE', 'Flair']
+    folders = ['flair', 't1', 't1ce', 't2', 'masks']
 
     # Loop over each folder and split
     for folder in folders:
@@ -21,16 +26,11 @@ def split_folders_with_ratio(input_folder, output_folder, seed=42, ratio=(.70, .
 
 split_folders_with_ratio(input_folder, output_folder)
 
-# List of file paths for training and testing
+# Defining a list of file paths for training and testing
 data_types = ['HGG', 'LGG']
 modalities = ['flair', 't1', 't1ce', 't2', 'masks']
 split_folders = ['train', 'val', 'test']
 
-file_paths = {}
-for modality in modalities:
-    for data_type in data_types:
-        for folder in split_folders:
-            file_paths[f'{data_type}_{modality}_{folder}'] = sorted((output_folder / f'{modality}_split' / folder / f'{data_type}_{modality}').glob('*.nii'))
 
 #Extracting and saving MRI slices for individual modalities
 def extract_slices(mri_slices, masks_list, save_dir_img, save_dir_msk):
@@ -64,9 +64,9 @@ def extract_slices(mri_slices, masks_list, save_dir_img, save_dir_msk):
 
             if (1 - (counts[0] / counts.sum())) > 0.01:  # At least 1% useful volume with labels that are not 0
                 print("Save Me")
-                save_path_img = save_dir_img + '/' + str(slice_n) + '_' + str(img)
+                save_path_img = save_dir_img / (str(slice_n) + '_' + str(img) + '.npy')
                 np.save(save_path_img, temp_image)
-                save_path_msk = save_dir_msk + '/' + str(slice_n) + '_' + str(img)
+                save_path_msk = save_dir_msk / (str(slice_n) + '_' + str(img) + '.npy')
                 np.save(save_path_msk, masks)
             else:
                 print("I am useless") 
@@ -102,17 +102,15 @@ def stack_3_slices(t2_list, t1ce_list, flair_list, masks_list, save_dir_img, sav
             if (1 - (counts[0] / counts.sum())) > 0.01:  # At least 1% useful volume with labels that are not 0
                 print("Save Me")
                 # Save the slice as an image
-                save_path_img = save_dir_img + '/' + str(n_slice) + '_' + str(img)
+                save_path_img = save_dir_img / (str(n_slice) + '_' + str(img) + '.npy')
                 np.save(save_path_img, MRslice)
                 
                 # Save the corresponding mask
-                save_path_msk = save_dir_msk + '/' + str(n_slice) + '_' + str(img)
+                save_path_msk = save_dir_msk / (str(n_slice) + '_' + str(img) + '.npy')
                 np.save(save_path_msk, MRslice_mask)
 
             else:
                 print("I am useless")
-
-
 
 
 #Extracting and saving MRI slices and stacking all 4 modalities
@@ -150,33 +148,56 @@ def stack_4_slices(t2_list, t1ce_list, flair_list, t1_list, masks_list, save_dir
                 print("Save Me")
                 print(n_slice)
                 # Save the slice as an image
-                save_path_img = save_dir_img + '/' + str(n_slice) + '_' + str(img)
+                save_path_img = save_dir_img / (str(n_slice) + '_' + str(img) + '.npy')
                 np.save(save_path_img, MRslice)
                 
                 # Save the corresponding mask
-                save_path_msk = save_dir_msk + '/' + str(n_slice) + '_' + str(img)
+                save_path_msk = save_dir_msk / (str(n_slice) + '_' + str(img) + '.npy')
                 np.save(save_path_msk, MRslice_mask)
 
             else:
                 print("I am useless")
 
-# Call the function for stacking 3 slices
-for data_type in data_types:
-    for folder in split_folders:
-        stack_3_slices(file_paths[f'{data_type}_t2_{folder}'],
-                       file_paths[f'{data_type}_t1ce_{folder}'], 
-                       file_paths[f'{data_type}_flair_{folder}'], 
-                       file_paths[f'{data_type}_masks_{folder}'], 
-                       output_folder / f'Stacked_MRI_new' / folder / f'{data_type}_stack', 
-                       output_folder / f'Stacked_Msk_new' / folder / f'{data_type}_masks')
 
-# Call the function for stacking 4 slices
+# Defining a list of file paths for training and testing
+file_paths = {}
+for modality in modalities:
+    for data_type in data_types:
+        for folder in split_folders:
+            file_paths[f'{modality}_{data_type}_{folder}'] = sorted((output_folder / f'{modality}_Split' / folder / f'{data_type}_{modality}').glob('*.nii'))
+
+# Create necessary directories and save slices
+for modality in ['t1', 't2', 'flair', 't1ce']:
+    for data_type in data_types:
+        for folder in split_folders:
+            create_directory(output_folder / f'{modality}_mri_slices' / folder / f'{data_type}_{modality}')
+            create_directory(output_folder / f'{modality}_msk_slices' / folder / f'{data_type}_masks')
+            extract_slices(file_paths[f'{modality}_{data_type}_{folder}'], 
+                           file_paths[f'masks_{data_type}_{folder}'], 
+                           output_folder / f'{modality}_mri_slices' / folder / f'{data_type}_{modality}', 
+                           output_folder / f'{modality}_msk_slices' / folder / f'{data_type}_masks')
+
+# Extracting, saving, and stacking 3 slices
 for data_type in data_types:
     for folder in split_folders:
-        stack_4_slices(file_paths[f'{data_type}_t2_{folder}'], 
-                       file_paths[f'{data_type}_t1ce_{folder}'], 
-                       file_paths[f'{data_type}_flair_{folder}'], 
-                       file_paths[f'{data_type}_t1_{folder}'], 
-                       file_paths[f'{data_type}_masks_{folder}'], 
-                       output_folder / f'Stacked_4_MRI_slices' / folder / f'{data_type}_stack', 
-                       output_folder / f'Stacked_4_Msk_slices' / folder / f'{data_type}_masks')
+        create_directory(output_folder / f'stacked_mri_new' / folder / f'{data_type}_stack')
+        create_directory(output_folder / f'stacked_msk_new' / folder / f'{data_type}_masks')
+        stack_3_slices(file_paths[f't2_{data_type}_{folder}'],
+                       file_paths[f't1ce_{data_type}_{folder}'], 
+                       file_paths[f'flair_{data_type}_{folder}'], 
+                       file_paths[f'masks_{data_type}_{folder}'], 
+                       output_folder / f'stacked_mri_new' / folder / f'{data_type}_stack', 
+                       output_folder / f'stacked_msk_new' / folder / f'{data_type}_masks')
+
+# Extracting, saving, and stacking 4 slices
+for data_type in data_types:
+    for folder in split_folders:
+        create_directory(output_folder / f'stacked_4_mri_slices' / folder / f'{data_type}_stack')
+        create_directory(output_folder / f'stacked_4_msk_slices' / folder / f'{data_type}_masks')
+        stack_4_slices(file_paths[f't2_{data_type}_{folder}'], 
+                       file_paths[f't1ce_{data_type}_{folder}'], 
+                       file_paths[f'flair_{data_type}_{folder}'], 
+                       file_paths[f't1_{data_type}_{folder}'], 
+                       file_paths[f'masks_{data_type}_{folder}'], 
+                       output_folder / f'stacked_4_mri_slices' / folder / f'{data_type}_stack', 
+                       output_folder / f'stacked_4_msk_slices' / folder / f'{data_type}_masks')
