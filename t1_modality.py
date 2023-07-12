@@ -19,7 +19,7 @@ from tensorflow_addons import metrics
 import keras_tuner
 from kerastuner.tuners import Hyperband
 #custom functions
-from functions_test import *
+from Functions import *
 
 home_dir = '/home/viktoriia.trokhova/'
 
