@@ -19,9 +19,11 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLRO
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import MultiLabelBinarizer
 #custom functions
-from Functions import load_from_dir, preprocess, add_labels, generate_class_weights, model_train, plot_acc_loss_f1_auc
+from Functions import *
+ 
+home_dir = '/home/viktoriia.trokhova/'
 
-base_dir = '/content/drive/MyDrive/Split_data/'
+base_dir = '/home/viktoriia.trokhova/Split_data/'
 
 HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
 LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
@@ -135,10 +137,13 @@ checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned
 early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
+# Define the path for saving the plots
+plot_folder_path = os.path.join(home_dir, "/model_plots/t1") 
+
 # Fit the best model from each tuner to the training data for 50 epochs using the best hyperparameters
 for name, model in best_models.items():
     print(f'Training {name}...')
-    model.fit(
+    history = model.fit(
         train_generator,
         epochs=50,
         validation_data=(X_val, y_val),
@@ -146,10 +151,13 @@ for name, model in best_models.items():
         callbacks=[checkpoint, early_stop, reduce_lr]
     )
 
-#Training models with the best hyperparameters inputted manually
+    # After training, plot the accuracy, loss, and f1 score
+    plot_acc_loss_f1(history, plot_folder_path, name)
+
+#Training models with the best hyperparameters inputted manually 
 history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t1", image_size = 224, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=112, dense_1_units=None, batch_size=16)
 history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_t1", image_size = 224, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=80, dense_1_units=32, batch_size=64)
 history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "densenet_t1", image_size = 224, dropout=0.6, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, dense_1_units=112, batch_size=64)
-plot_acc_loss_f1_auc(history_inception_weights,  '/content/drive/MyDrive/plots/inception')
-plot_acc_loss_f1_auc(history_densenet_weights,  '/content/drive/MyDrive/plots/densenet')
-plot_acc_loss_f1_auc(history_effnet,  '/content/drive/MyDrive/plots/effnet')
+plot_acc_loss_f1(history_inception_weights,  os.path.join(home_dir, "plots/inception"))  
+plot_acc_loss_f1(history_densenet_weights,  os.path.join(home_dir, "plots/densenet")) 
+plot_acc_loss_f1(history_effnet,  os.path.join(home_dir, "plots/effnet"))
