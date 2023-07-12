@@ -18,6 +18,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow_addons import metrics
 import keras_tuner
 from kerastuner.tuners import Hyperband
+from kerastuner.engine.hyperparameters import HyperParameters
 
 #custom functions
 from functions_test import *
