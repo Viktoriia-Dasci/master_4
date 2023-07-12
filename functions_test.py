@@ -145,7 +145,6 @@ def f1_score(y_true, y_pred):
     f1 = 2 * precision * recall / (precision + recall + tf.keras.backend.epsilon())
     return f1
 
-
 def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_units, dense_1_units, batch_size):
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
@@ -204,7 +203,7 @@ def model_effnet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
     
     return model
 
@@ -230,7 +229,7 @@ def model_densenet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
     
     return model
 
@@ -256,6 +255,6 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
     
     return model
