@@ -32,6 +32,11 @@ base_dir = '/home/viktoriia.trokhova/Split_data/'
 # HGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/HGG_t1'))
 # LGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/LGG_t1'))
 
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/LGG_flair')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/HGG_flair')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/LGG_flair')
+
 #preprocessing data
 HGG_list_new_train = preprocess(HGG_list_train)
 LGG_list_new_train = preprocess(LGG_list_train)
@@ -39,8 +44,8 @@ LGG_list_new_train = preprocess(LGG_list_train)
 HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
 
-HGG_list_new_test = preprocess(HGG_list_test)
-LGG_list_new_test = preprocess(LGG_list_test)
+#HGG_list_new_test = preprocess(HGG_list_test)
+#LGG_list_new_test = preprocess(LGG_list_test)
 
 # Combining the HGG and LGG lists
 X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
@@ -49,19 +54,19 @@ X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
 
-X_test, y_test = add_labels([], [], HGG_list_new_test, label='HGG')
-X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
+#X_test, y_test = add_labels([], [], HGG_list_new_test, label='HGG')
+#X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
 
 # Converting labels to numerical values and one-hot encoding
 labels = {'HGG': 0, 'LGG': 1}
 y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
 y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
-y_test = tf.keras.utils.to_categorical([labels[y] for y in y_test])
+#y_test = tf.keras.utils.to_categorical([labels[y] for y in y_test])
 
 # Converting data to arrays and shuffle
 X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
 X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
-X_test, y_test = shuffle(np.array(X_test), y_test, random_state=101)
+#X_test, y_test = shuffle(np.array(X_test), y_test, random_state=101)
 
 #Calculating class_weights
 class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
