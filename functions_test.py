@@ -17,6 +17,7 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 # Hyperparameter tuning
 from keras_tuner import HyperParameters as hp
 
+class_weights = {0: 0.6468223583460949, 1: 2.2027379400260756}
 
 
 def save_to_dir(slices, path):
