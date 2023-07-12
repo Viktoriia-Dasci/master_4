@@ -123,15 +123,20 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     return dict(zip(class_labels, class_weights))
 
 
-def focal_loss(y_true, y_pred, gamma=2.0):
-    epsilon = tf.keras.backend.epsilon()
-    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-    
-    # Calculate focal loss
-    cross_entropy = -y_true * tf.math.log(y_pred)
-    focal_loss = tf.pow(1.0 - y_pred, gamma) * cross_entropy
-    
-    return tf.reduce_mean(focal_loss, axis=-1)      
+def focal_loss(class_weights):
+    def focal_loss_with_weights(y_true, y_pred, gamma=2.0):
+        epsilon = tf.keras.backend.epsilon()
+        y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+
+        cross_entropy = -y_true * tf.math.log(y_pred)
+        loss = tf.pow(1.0 - y_pred, gamma) * cross_entropy
+
+        # apply class weights
+        class_weights_array = np.array(list(class_weights.values()))
+        loss = loss * class_weights_array
+
+        return tf.reduce_mean(loss, axis=-1)
+    return focal_loss_with_weights      
 
 
 def f1_score(y_true, y_pred):
@@ -203,7 +208,7 @@ def model_effnet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -229,7 +234,7 @@ def model_densenet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
     
     return model
 
@@ -255,6 +260,6 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
     
     return model
