@@ -189,7 +189,7 @@ def model_effnet(hp):
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
@@ -204,7 +204,7 @@ def model_effnet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -215,7 +215,7 @@ def model_densenet(hp):
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
@@ -230,7 +230,7 @@ def model_densenet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -241,7 +241,7 @@ def model_inception(hp):
     model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
         model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
-    model = tf.keras.layers.Dense(1, activation='sigmoid')(model)
+    model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
@@ -256,6 +256,6 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
