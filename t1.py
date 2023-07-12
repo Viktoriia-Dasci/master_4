@@ -19,11 +19,14 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLRO
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import MultiLabelBinarizer
 #custom functions
-from Functions import *
- 
+#from Functions import *
+import Functions
+
 home_dir = '/home/viktoriia.trokhova/'
 
 base_dir = '/home/viktoriia.trokhova/Split_data/'
+
+print('start')
 
 # HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
 # LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
