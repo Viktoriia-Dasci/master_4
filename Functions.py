@@ -204,7 +204,7 @@ def model_effnet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -230,7 +230,7 @@ def model_densenet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -256,6 +256,6 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
