@@ -15,7 +15,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 
 # Hyperparameter tuning
-from kerastuner import HyperParameters as hp
+from keras_tuner import HyperParameters as hp
 
 
 
@@ -182,7 +182,7 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
       
     return history
 
-def model_effnet(hp, model_name):
+def model_effnet(hp):
     model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3))
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
