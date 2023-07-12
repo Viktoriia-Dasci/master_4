@@ -25,12 +25,12 @@ home_dir = '/home/viktoriia.trokhova/'
 
 base_dir = '/home/viktoriia.trokhova/Split_data/'
 
-HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
-LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
-HGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/HGG_t1'))
-LGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/LGG_t1'))
-HGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/HGG_t1'))
-LGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/LGG_t1'))
+# HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
+# LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
+# HGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/HGG_t1'))
+# LGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/LGG_t1'))
+# HGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/HGG_t1'))
+# LGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/LGG_t1'))
 
 #preprocessing data
 HGG_list_new_train = preprocess(HGG_list_train)
