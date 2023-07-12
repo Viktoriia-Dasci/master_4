@@ -1,59 +1,38 @@
 import numpy as np
-import nibabel as nib
-import glob
 import os
 import random
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
-import seaborn as sns
 from tensorflow.keras.applications import EfficientNetB0
-import matplotlib.pyplot as plt
-from tifffile import imsave
-import cv2
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras import layers
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 import tensorflow_addons as tfa
-from sklearn.metrics import classification_report,confusion_matrix
-from PIL import Image
-from keras.models import load_model
-from skimage.color import rgb2gray
 from sklearn.utils import shuffle
-from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow_addons import metrics
-from sklearn.utils.class_weight import compute_class_weight
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.metrics import f1_score
 import keras_tuner
-import tensorflow as tf
-from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
-from kerastuner.engine.hyperparameters import HyperParameters
 #custom functions
 from functions_test import *
 
-#home_dir = '/home/viktoriia.trokhova/'
+home_dir = '/home/viktoriia.trokhova/'
 
-#base_dir = '/home/viktoriia.trokhova/Split_data/'
+base_dir = '/home/viktoriia.trokhova/Split_data/'
 
 
-# HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
-# LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
-# HGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/HGG_t1'))
-# LGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/LGG_t1'))
-# HGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/HGG_t1'))
-# LGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/LGG_t1'))
+HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
+LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
+HGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/HGG_t1'))
+LGG_list_val = load_from_dir(os.path.join(base_dir, 't1_mri_slices/val/LGG_t1'))
+HGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/HGG_t1'))
+LGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/LGG_t1'))
 
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/HGG_t1')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/LGG_t1')
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/test/HGG_t1')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/test/LGG_t1')
 
 #preprocessing data
 HGG_list_new_train = preprocess(HGG_list_train)
@@ -62,8 +41,8 @@ LGG_list_new_train = preprocess(LGG_list_train)
 HGG_list_new_val = preprocess(HGG_list_val)
 LGG_list_new_val = preprocess(LGG_list_val)
 
-#HGG_list_new_test = preprocess(HGG_list_test)
-#LGG_list_new_test = preprocess(LGG_list_test)
+HGG_list_new_test = preprocess(HGG_list_test)
+LGG_list_new_test = preprocess(LGG_list_test)
 
 # Combining the HGG and LGG lists
 X_train, y_train = add_labels([], [], HGG_list_new_train, label='HGG')
@@ -72,19 +51,19 @@ X_train, y_train = add_labels(X_train, y_train, LGG_list_new_train, label='LGG')
 X_val, y_val = add_labels([], [], HGG_list_new_val, label='HGG')
 X_val, y_val = add_labels(X_val, y_val, LGG_list_new_val, label='LGG')
 
-#X_test, y_test = add_labels([], [], HGG_list_new_test, label='HGG')
-#X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
+X_test, y_test = add_labels([], [], HGG_list_new_test, label='HGG')
+X_test, y_test = add_labels(X_test, y_test, LGG_list_new_test, label='LGG')
 
 # Converting labels to numerical values and one-hot encoding
 labels = {'HGG': 0, 'LGG': 1}
 y_train = tf.keras.utils.to_categorical([labels[y] for y in y_train])
 y_val = tf.keras.utils.to_categorical([labels[y] for y in y_val])
-#y_test = tf.keras.utils.to_categorical([labels[y] for y in y_test])
+y_test = tf.keras.utils.to_categorical([labels[y] for y in y_test])
 
 # Converting data to arrays and shuffle
 X_val, y_val = shuffle(np.array(X_val), y_val, random_state=101)
 X_train, y_train = shuffle(np.array(X_train), y_train, random_state=101)
-#X_test, y_test = shuffle(np.array(X_test), y_test, random_state=101)
+X_test, y_test = shuffle(np.array(X_test), y_test, random_state=101)
 
 #Calculating class_weights
 class_weights = generate_class_weights(y_train, multi_class=False, one_hot_encoded=True)
