@@ -235,7 +235,7 @@ def model_densenet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -261,6 +261,6 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score], class_weight=class_weights)
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
