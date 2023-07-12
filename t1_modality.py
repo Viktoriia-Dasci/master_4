@@ -36,7 +36,7 @@ from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 #custom functions
-from Functions import *
+from functions_test import *
 
 #home_dir = '/home/viktoriia.trokhova/'
 
