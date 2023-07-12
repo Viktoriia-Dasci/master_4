@@ -22,9 +22,9 @@ from sklearn.preprocessing import MultiLabelBinarizer
 #from Functions import *
 import Functions
 
-home_dir = '/home/viktoriia.trokhova/'
+#home_dir = '/home/viktoriia.trokhova/'
 
-base_dir = '/home/viktoriia.trokhova/Split_data/'
+#base_dir = '/home/viktoriia.trokhova/Split_data/'
 
 print('start')
 
