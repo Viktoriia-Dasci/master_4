@@ -160,16 +160,16 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
           model = tf.keras.layers.Dense(dense_1_units, activation='relu')(model)
           model = tf.keras.layers.Dense(2, activation='softmax')(model)
           model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-          model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+          model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     else:
           model = tf.keras.layers.Dense(2, activation='softmax')(model)
           model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-          model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+          model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr])
         
     train_loss = history.history['loss']
     val_loss = history.history['val_loss']
