@@ -194,7 +194,7 @@ def model_effnet(hp):
     
     # Define optimizer and batch size
     optimizer = hp.Choice('optimizer', values=['adam'])
-    learning_rate = hp.Choice('learning_rate', values=[0.1])
+    learning_rate = hp.Choice('learning_rate', values=[0.01])
     batch_size = hp.Choice('batch_size', values=[16])
     
     #Set optimizer parameters based on user's selection
@@ -220,7 +220,7 @@ def model_densenet(hp):
     
     # Define optimizer and batch size
     optimizer = hp.Choice('optimizer', values=['adam'])
-    learning_rate = hp.Choice('learning_rate', values=[0.1])
+    learning_rate = hp.Choice('learning_rate', values=[0.01])
     batch_size = hp.Choice('batch_size', values=[16])
     
     #Set optimizer parameters based on user's selection
@@ -246,7 +246,7 @@ def model_inception(hp):
     
     # Define optimizer and batch size
     optimizer = hp.Choice('optimizer', values=['adam'])
-    learning_rate = hp.Choice('learning_rate', values=[0.1])
+    learning_rate = hp.Choice('learning_rate', values=[0.01])
     batch_size = hp.Choice('batch_size', values=[16])
     
     #Set optimizer parameters based on user's selection
