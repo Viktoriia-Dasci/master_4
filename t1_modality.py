@@ -146,7 +146,7 @@ for name, tuner in tuners.items():
     tuner.search(train_generator,
                  validation_data=(X_val, y_val),
                  steps_per_epoch=len(train_generator),
-                 epochs=2,
+                 epochs=50,
                  verbose=1
                  )
     
@@ -168,7 +168,7 @@ for name, model in best_models.items():
     print(f'Training {name}...')
     history = model.fit(
         train_generator,
-        epochs=2,
+        epochs=50,
         validation_data=(X_val, y_val),
         verbose=1,
         callbacks=[checkpoint, early_stop, reduce_lr]
