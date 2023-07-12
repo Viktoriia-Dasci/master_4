@@ -212,16 +212,16 @@ def model_densenet(hp):
     model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.2))(model)
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
-        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
+        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=16), activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
-    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
-    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
+    optimizer = hp.Choice('optimizer', values=['adam'])
+    learning_rate = hp.Choice('learning_rate', values=[0.1])
+    batch_size = hp.Choice('batch_size', values=[16])
     
     #Set optimizer parameters based on user's selection
     if optimizer == 'adam':
@@ -238,16 +238,16 @@ def model_inception(hp):
     model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2)
     model = model_name.output
     model = tf.keras.layers.GlobalAveragePooling2D()(model)
-    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.8, step=0.1))(model)
+    model = tf.keras.layers.Dropout(rate=hp.Float('dropout', min_value=0.2, max_value=0.2))(model)
     for i in range(hp.Int('num_layers', min_value=1, max_value=2)):
-        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=128, step=16), activation='relu')(model)
+        model = tf.keras.layers.Dense(hp.Int(f'dense_{i}_units', min_value=16, max_value=16), activation='relu')(model)
     model = tf.keras.layers.Dense(2, activation='softmax')(model)
     model = tf.keras.models.Model(inputs=model_name.input, outputs = model)
     
     # Define optimizer and batch size
-    optimizer = hp.Choice('optimizer', values=['adam', 'sgd'])
-    learning_rate = hp.Choice('learning_rate', values=[0.0001, 0.001, 0.01, 0.1])
-    batch_size = hp.Choice('batch_size', values=[16, 32, 64])
+    optimizer = hp.Choice('optimizer', values=['adam'])
+    learning_rate = hp.Choice('learning_rate', values=[0.1])
+    batch_size = hp.Choice('batch_size', values=[16])
     
     #Set optimizer parameters based on user's selection
     if optimizer == 'adam':
