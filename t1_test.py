@@ -1,40 +1,24 @@
 import numpy as np
-import nibabel as nib
-import glob
 import os
 import random
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
-import seaborn as sns
 from tensorflow.keras.applications import EfficientNetB0
-import matplotlib.pyplot as plt
-from tifffile import imsave
-import cv2
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras import layers
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 import tensorflow_addons as tfa
-from sklearn.metrics import classification_report,confusion_matrix
-from PIL import Image
-from keras.models import load_model
-from skimage.color import rgb2gray
 from sklearn.utils import shuffle
-from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow_addons import metrics
-from sklearn.utils.class_weight import compute_class_weight
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.metrics import f1_score
 import keras_tuner
-import tensorflow as tf
-from tensorflow.keras.optimizers import SGD
 from kerastuner.tuners import Hyperband
-from kerastuner.engine.hyperparameters import HyperParameters
+
 #custom functions
 from functions_test import *
 
