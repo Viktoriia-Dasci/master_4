@@ -42,7 +42,6 @@ from functions_test import *
 
 #base_dir = '/home/viktoriia.trokhova/Split_data/'
 
-print('start')
 
 # HGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/HGG_t1'))
 # LGG_list_train = load_from_dir(os.path.join(base_dir, 't1_mri_slices/train/LGG_t1'))
@@ -147,7 +146,7 @@ for name, tuner in tuners.items():
     tuner.search(train_generator,
                  validation_data=(X_val, y_val),
                  steps_per_epoch=len(train_generator),
-                 epochs=50,
+                 epochs=2,
                  verbose=1
                  )
     
@@ -169,7 +168,7 @@ for name, model in best_models.items():
     print(f'Training {name}...')
     history = model.fit(
         train_generator,
-        epochs=50,
+        epochs=2,
         validation_data=(X_val, y_val),
         verbose=1,
         callbacks=[checkpoint, early_stop, reduce_lr]
