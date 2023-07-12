@@ -35,10 +35,10 @@ print('start')
 # HGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/HGG_t1'))
 # LGG_list_test = load_from_dir(os.path.join(base_dir, 't1_mri_slices/test/LGG_t1'))
 
-HGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/HGG_flair')
-LGG_list_train = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/train/LGG_flair')
-HGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/HGG_flair')
-LGG_list_val = load_from_dir('/home/viktoriia.trokhova/Flair_MRI_slices/val/LGG_flair')
+HGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/train/HGG_t1')
+LGG_list_train = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/train/LGG_t1')
+HGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/HGG_t1')
+LGG_list_val = load_from_dir('/home/viktoriia.trokhova/T1_MRI_slices/val/LGG_t1')
 
 #preprocessing data
 HGG_list_new_train = preprocess(HGG_list_train)
