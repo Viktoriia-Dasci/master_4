@@ -1,6 +1,6 @@
 import numpy as np
 import nibabel as nib
-#import glob
+import glob
 import os
 import random
 import tensorflow as tf
