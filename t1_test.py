@@ -23,7 +23,7 @@ from kerastuner.engine.hyperparameters import HyperParameters
 #custom functions
 from functions_test import *
 
-#home_dir = '/home/viktoriia.trokhova/'
+home_dir = '/home/viktoriia.trokhova/'
 
 #base_dir = '/home/viktoriia.trokhova/Split_data/'
 
@@ -138,7 +138,6 @@ for name, tuner in tuners.items():
     best_hyperparameters[name] = tuner.get_best_hyperparameters(1)[0]
     best_models[name] = tuner.get_best_models(1)[0]
 
-    print(f'Best hyperparameters for {name}: {best_hyperparameters[name]}')
 
 # Define callbacks
 checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
