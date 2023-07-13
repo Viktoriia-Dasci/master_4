@@ -1,11 +1,8 @@
-# General libraries
 import os
 import glob
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import MultiLabelBinarizer
-
-# Image processing libraries
 import cv2
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -13,10 +10,9 @@ from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
-
-# Hyperparameter tuning
 from keras_tuner import HyperParameters as hp
 
+class_weights = {0: 0.63, 1: 2.43}
 
 
 def save_to_dir(slices, path):
@@ -123,15 +119,20 @@ def generate_class_weights(class_series, multi_class=True, one_hot_encoded=False
     return dict(zip(class_labels, class_weights))
 
 
-def focal_loss(y_true, y_pred, gamma=2.0):
-    epsilon = tf.keras.backend.epsilon()
-    y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
-    
-    # Calculate focal loss
-    cross_entropy = -y_true * tf.math.log(y_pred)
-    focal_loss = tf.pow(1.0 - y_pred, gamma) * cross_entropy
-    
-    return tf.reduce_mean(focal_loss, axis=-1)      
+def focal_loss(class_weights):
+    def focal_loss_with_weights(y_true, y_pred, gamma=2.0):
+        epsilon = tf.keras.backend.epsilon()
+        y_pred = tf.clip_by_value(y_pred, epsilon, 1.0 - epsilon)
+
+        cross_entropy = -y_true * tf.math.log(y_pred)
+        loss = tf.pow(1.0 - y_pred, gamma) * cross_entropy
+
+        # apply class weights
+        class_weights_array = np.array(list(class_weights.values()))
+        loss = loss * class_weights_array
+
+        return tf.reduce_mean(loss, axis=-1)
+    return focal_loss_with_weights    
 
 
 def f1_score(y_true, y_pred):
@@ -159,12 +160,12 @@ def model_train(model_name, save_name, image_size, dropout, optimizer, dense_0_u
     else:
           model = tf.keras.layers.Dense(2, activation='softmax')(model)
           model = tf.keras.models.Model(inputs=model_name.input, outputs=model)
-          model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+          model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/" + save_name + ".h5", monitor='val_f1_score', save_best_only=True, mode="max", verbose=1)
     early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', factor=0.3, patience=5, min_delta=0.001, mode='max', verbose=1)
-    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr], class_weight=class_weights)
+    history = model.fit(train_generator, validation_data=(X_val, y_val), epochs=50, batch_size=batch_size, verbose=1, callbacks=[checkpoint, early_stop, reduce_lr])
         
     train_loss = history.history['loss']
     val_loss = history.history['val_loss']
@@ -204,7 +205,7 @@ def model_effnet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -230,7 +231,7 @@ def model_densenet(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
 
@@ -256,6 +257,6 @@ def model_inception(hp):
         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
     
     # Compile the model with the optimizer and metrics
-    model.compile(loss=focal_loss, optimizer=optimizer, metrics=['accuracy', f1_score])
+    model.compile(loss=focal_loss(class_weights), optimizer=optimizer, metrics=['accuracy', f1_score])
     
     return model
