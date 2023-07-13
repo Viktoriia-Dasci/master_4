@@ -20,7 +20,7 @@ import keras_tuner
 from kerastuner.tuners import Hyperband
 from kerastuner.engine.hyperparameters import HyperParameters
 #custom functions
-from Functions import *
+from Model_functions import *
 
 home_dir = '/home/viktoriia.trokhova/'
 
