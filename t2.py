@@ -26,13 +26,16 @@ home_dir = '/home/viktoriia.trokhova/'
 
 base_dir = '/home/viktoriia.trokhova/Split_data/'
 
+modality = 't2'
+
 #load data
-HGG_list_train = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/train/HGG_t2')
-LGG_list_train = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/train/LGG_t2')
-HGG_list_val = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/val/HGG_t2')
-LGG_list_val = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/val/LGG_t2')
-HGG_list_test = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/test/HGG_t2')
-LGG_list_test = load_from_dir('/content/drive/MyDrive/Split_data/t2_mri_slices/test/LGG_t2')
+HGG_list_train = load_from_dir(f'/content/drive/MyDrive/Split_data/{modality}_mri_slices/train/HGG_{modality}')
+LGG_list_train = load_from_dir(f'/content/drive/MyDrive/Split_data/{modality}_mri_slices/train/LGG_{modality}')
+HGG_list_val = load_from_dir(f'/content/drive/MyDrive/Split_data/{modality}_mri_slices/val/HGG_{modality}')
+LGG_list_val = load_from_dir(f'/content/drive/MyDrive/Split_data/{modality}_mri_slices/val/LGG_{modality}')
+HGG_list_test = load_from_dir(f'/content/drive/MyDrive/Split_data/{modality}_mri_slices/test/HGG_{modality}')
+LGG_list_test = load_from_dir(f'/content/drive/MyDrive/Split_data/{modality}_mri_slices/test/LGG_{modality}')
+
 
 #preprocessing data
 HGG_list_new_train = preprocess(HGG_list_train)
@@ -133,12 +136,12 @@ for name, tuner in tuners.items():
     best_models[name] = tuner.get_best_models(1)[0]
 
 # Define callbacks
-checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
+checkpoint = ModelCheckpoint(f"{home_dir}/model_weights/model_tuned.h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
 early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 5, min_delta = 0.001, mode='max',verbose=1)
 
 # Define the path for saving the plots
-plot_folder_path = os.path.join(home_dir, "/model_plots/t2") 
+plot_folder_path = os.path.join(home_dir, f"/model_plots/{modality}") 
 
 # Fit the best model from each tuner to the training data for 50 epochs using the best hyperparameters
 for name, model in best_models.items():
@@ -154,10 +157,10 @@ for name, model in best_models.items():
     # After training, plot the accuracy, loss, and f1 score
     plot_acc_loss_f1(history, plot_folder_path, name)
 
-
-history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "inception_t2", image_size = 224, dropout=0.5, optimizer = tf.keras.optimizers.SGD(learning_rate=0.01), dense_0_units=80, dense_1_units=48, batch_size=16)
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = "effnet_t2", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=96, batch_size=32)
-history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = "densenet_t2", image_size = 224, dropout=0.5, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, batch_size=32)
-plot_acc_loss_f1_auc(history_inception_weights,  '/home/viktoriia.trokhova/plots/inception')
-plot_acc_loss_f1_auc(history_densenet_weights,  '/home/viktoriia.trokhova/plots/densenet')
-plot_acc_loss_f1_auc(history_effnet,  '/home/viktoriia.trokhova/plots/effnet')
+#Training models with the best hyperparameters inputted manually
+# history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"inception_{modality}", image_size = 224, dropout=0.5, optimizer = tf.keras.optimizers.SGD(learning_rate=0.01), dense_0_units=80, dense_1_units=48, batch_size=16)
+# history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = f"effnet_{modality}", image_size = 224, dropout=0.7, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=96, batch_size=32)
+# history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"densenet_{modality}", image_size = 224, dropout=0.5, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, batch_size=32)
+# plot_acc_loss_f1(history_inception_weights,  plot_folder_path, 'inception')  
+# plot_acc_loss_f1(history_densenet_weights,  plot_folder_path, 'densenet') 
+# plot_acc_loss_f1(history_effnet,  plot_folder_path, 'effnet')
