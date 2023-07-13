@@ -159,9 +159,9 @@ for name, model in best_models.items():
     plot_acc_loss_f1(history, plot_folder_path, name)
 
 #Training models with the best hyperparameters inputted manually 
-history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"inception_{modality}", image_size = 224, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=112, dense_1_units=None, batch_size=16)
-history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = f"effnet_{modality}", image_size = 224, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=80, dense_1_units=32, batch_size=64)
-history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"densenet_{modality}", image_size = 224, dropout=0.6, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, dense_1_units=112, batch_size=64)
-plot_acc_loss_f1(history_inception_weights,  os.path.join(home_dir, "plots/inception"))  
-plot_acc_loss_f1(history_densenet_weights,  os.path.join(home_dir, "plots/densenet")) 
-plot_acc_loss_f1(history_effnet,  os.path.join(home_dir, "plots/effnet"))
+# history_inception_weights = model_train(model_name = tf.keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"inception_{modality}", image_size = 224, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=112, dense_1_units=None, batch_size=16)
+# history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = f"effnet_{modality}", image_size = 224, dropout=0.4, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=80, dense_1_units=32, batch_size=64)
+# history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"densenet_{modality}", image_size = 224, dropout=0.6, optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), dense_0_units=32, dense_1_units=112, batch_size=64)
+# plot_acc_loss_f1(history_inception_weights,  plot_folder_path, 'inception')  
+# plot_acc_loss_f1(history_densenet_weights,  plot_folder_path, 'densenet') 
+# plot_acc_loss_f1(history_effnet,  plot_folder_path, 'effnet')
