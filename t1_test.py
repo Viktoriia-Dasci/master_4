@@ -140,7 +140,6 @@ for name, tuner in tuners.items():
 
 
 # Define callbacks
-checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
 early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
@@ -150,6 +149,7 @@ plot_folder_path = os.path.join(home_dir, "model_plots/t1")
 # Fit the best model from each tuner to the training data for 50 epochs using the best hyperparameters
 for name, model in best_models.items():
     print(f'Training {name}...')
+    checkpoint = ModelCheckpoint(f"{home_dir}/model_weights/model_tuned_{name}.h5", monitor='val_f1_score',save_best_only=True, mode="max",verbose=1)
     history = model.fit(
         train_generator,
         epochs=2,
