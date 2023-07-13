@@ -145,7 +145,7 @@ early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verb
 reduce_lr = ReduceLROnPlateau(monitor = 'val_f1_score', factor = 0.3, patience = 2, min_delta = 0.001, mode='max',verbose=1)
 
 # Define the path for saving the plots
-plot_folder_path = os.path.join(home_dir, "/model_plots/t1") 
+plot_folder_path = os.path.join(home_dir, "model_plots/t1") 
 
 # Fit the best model from each tuner to the training data for 50 epochs using the best hyperparameters
 for name, model in best_models.items():
