@@ -45,8 +45,6 @@ def add_labels(X, y, images_list, label):
   
   
 def plot_acc_loss_f1(model_history, folder_path, modality):
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
         
     loss = model_history.history['loss']
     val_loss = model_history.history['val_loss']
