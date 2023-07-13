@@ -79,10 +79,17 @@ def preprocess(images_list):
     list_new = []
     for img in images_list:
         img_color = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_GRAY2RGB)
-        #img_res = cv2.resize(img, (224, 224))
         img_cropped = tf.image.crop_to_bounding_box(img_color, 8, 8, 224, 224)
         img_processed = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
         list_new.append(img_processed)
+    return list_new
+
+def preprocess_stack(images_list):
+    list_new = []
+    for img in images_list:
+        img_cropped = tf.image.crop_to_bounding_box(img, 8, 8, 224, 224)
+        img_cropped = tf.keras.applications.imagenet_utils.preprocess_input(img_cropped)
+        list_new.append(img_cropped)
     return list_new
 
 #Adapted from 'https://gist.github.com/angeligareta/83d9024c5e72ac9ebc34c9f0b073c64c'
