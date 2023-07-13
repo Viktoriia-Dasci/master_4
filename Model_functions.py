@@ -39,7 +39,7 @@ def add_labels(X, y, images_list, label):
     return X, y
   
   
-def plot_acc_loss_f1(model_history, folder_path, modality):
+def plot_acc_loss_f1(model_history, folder_path, model):
 
     loss = model_history.history['loss']
     val_loss = model_history.history['val_loss']
@@ -50,7 +50,7 @@ def plot_acc_loss_f1(model_history, folder_path, modality):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, f'loss_{modality}.png'))
+    plt.savefig(os.path.join(folder_path, f'loss_{model}.png'))
     plt.close()
     
     acc = model_history.history['accuracy']
@@ -61,7 +61,7 @@ def plot_acc_loss_f1(model_history, folder_path, modality):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, f'accuracy_{modality}.png'))
+    plt.savefig(os.path.join(folder_path, f'accuracy_{model}.png'))
     plt.close()
     f1 = model_history.history['f1_score']
     val_f1 = model_history.history['val_f1_score']
@@ -71,7 +71,7 @@ def plot_acc_loss_f1(model_history, folder_path, modality):
     plt.xlabel('Epochs')
     plt.ylabel('F1 Score')
     plt.legend()
-    plt.savefig(os.path.join(folder_path, f'f1_score_{modality}.png'))
+    plt.savefig(os.path.join(folder_path, f'f1_score_{model}.png'))
     plt.close()
 
 
