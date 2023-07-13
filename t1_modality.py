@@ -133,8 +133,6 @@ for name, tuner in tuners.items():
     best_hyperparameters[name] = tuner.get_best_hyperparameters(1)[0]
     best_models[name] = tuner.get_best_models(1)[0]
 
-    print(f'Best hyperparameters for {name}: {best_hyperparameters[name]}')
-
 # Define callbacks
 checkpoint = ModelCheckpoint("/home/viktoriia.trokhova/model_weights/model_tuned" + ".h5",monitor='val_f1_score',save_best_only=True,mode="max",verbose=1)
 early_stop = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, verbose=1, restore_best_weights=True)
