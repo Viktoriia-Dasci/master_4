@@ -162,6 +162,6 @@ history_inception_weights = model_train(model_name = tf.keras.applications.incep
 history_effnet = model_train(model_name = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224,224,3)), save_name = f"effnet_{modality}", image_size = 224, dropout=0.6, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), dense_0_units=48, dense_1_units=80, batch_size=64)  
 history_densenet_weights = model_train(model_name = tf.keras.applications.densenet.DenseNet121(include_top=False, weights='imagenet', input_shape=(224,224,3), classes=2), save_name = f"densenet_{modality}", image_size = 224, dropout=0.2, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01), dense_0_units=96, dense_1_units=None, batch_size=32)  
 
-plot_acc_loss_f1_auc(history_inception_weights,  f'{home_dir}/plots/inception')
-plot_acc_loss_f1_auc(history_densenet_weights,  f'{home_dir}/plots/densenet')
-plot_acc_loss_f1_auc(history_effnet,  f'{home_dir}/plots/effnet')
+plot_acc_loss_f1(history_inception_weights,  f'{home_dir}/plots/inception')
+plot_acc_loss_f1(history_densenet_weights,  f'{home_dir}/plots/densenet')
+plot_acc_loss_f1(history_effnet,  f'{home_dir}/plots/effnet')
