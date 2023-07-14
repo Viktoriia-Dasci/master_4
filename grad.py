@@ -35,6 +35,8 @@ warnings.filterwarnings('ignore')
 from sklearn.metrics import f1_score
 from sklearn.utils import shuffle
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
                                        transforms.CenterCrop((224,224)),                                  
