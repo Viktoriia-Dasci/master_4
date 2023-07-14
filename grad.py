@@ -420,15 +420,13 @@ def train_and_evaluate(param, model, trial):
         train_f1_score = 0
 
 
-        for train_input, train_label, train_mask in dataloaders['Train']:
-            optimizer.zero_grad()
-            train_label = train_label.float().to(device)
-            #print(train_label)
-            train_input = train_input.to(device)
+       for train_input, train_label, train_mask in dataloaders['Train']:
+
+            train_label = train_label.long().to(device)
+            train_input = train_input.float().to(device)
             train_mask = train_mask.to(device)
 
-            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['dropout']))
-           
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size = train_input.size(0), dropout=nn.Dropout(param['drop_out']))
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_train += batch_loss.item()
