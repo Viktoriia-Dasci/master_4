@@ -36,6 +36,28 @@ from sklearn.metrics import f1_score
 from sklearn.utils import shuffle
 
 
+train_transforms = transforms.Compose([torchvision.transforms.ToTensor(),
+                                       transforms.CenterCrop((224,224)),                                  
+                                       torchvision.transforms.Normalize(
+                                           mean=[0.485, 0.456, 0.406],
+                                           std=[0.229, 0.224, 0.225],),
+                                       ])
+
+aug_transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(), 
+    transforms.RandomVerticalFlip(), 
+    transforms.RandomRotation([-90, 90]),
+])
+
+val_transforms = transforms.Compose([transforms.ToTensor(),
+                                      transforms.Resize((224,224)),
+                                     #transforms.Normalize(mean=train_mean, std=train_std),
+                                      transforms.Normalize(
+                                          mean=[0.485, 0.456, 0.406],
+                                          std=[0.229, 0.224, 0.225],),
+                                      ])
+
+
 class myDataset_train(Dataset):
 
     def __init__(self, transform=False):
