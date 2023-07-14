@@ -35,6 +35,8 @@ warnings.filterwarnings('ignore')
 from sklearn.metrics import f1_score
 from sklearn.utils import shuffle
 
+dice_loss = losses.DiceLoss('binary')
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Transformation for training data
@@ -348,7 +350,6 @@ if torch.cuda.is_available():
     class_weights_tensor = class_weights_tensor.cuda()
 
 # Focal Loss
-foc_loss = losses.FocalLoss('binary')
 EPOCHS = 10
 
 # Defining the model
@@ -397,7 +398,7 @@ class MyCustomEfficientNetB0(nn.Module):
             img_grad_6[np.mean(img_grad_6, axis=-1)>=0.5] = 1
             masks_per[np.mean(masks_per, axis=-1)<0.2] = 0
             masks_per[np.mean(masks_per, axis=-1)>=0.2] = 1
-            gcam_loss = foc_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
+            gcam_loss = dice_loss(torch.from_numpy(img_grad_6), torch.from_numpy(masks_per))
             gcam_losses += gcam_loss
 
         xe_loss = xe_criterion(images_outputs, targets)
