@@ -426,7 +426,7 @@ def train_and_evaluate(param, model, trial):
             train_input = train_input.float().to(device)
             train_mask = train_mask.to(device)
     
-            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=val_input.size(0), dropout=nn.Dropout(param['dropout']))
+            output, targets_, xe_loss_, gcam_losses_ = model(train_input, train_label, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['dropout']))
             
             batch_loss = xe_loss_.mean() + param['lambda_val'] * gcam_losses_
             total_loss_train += batch_loss.item()
