@@ -249,6 +249,36 @@ def imshow(image):
     plt.imshow(npimg)
     return npimg
 
+#Loading data
+dataloaders = load_data(batch_size=16)
+
+# get images
+images, labels, masks = next(iter(dataloaders['Train']))
+# create grid of images
+img_grid = torchvision.utils.make_grid(images)
+img_grid = imshow(img_grid)
+# create grid of masks
+msk_grid = torchvision.utils.make_grid(masks)
+# get and show the unnormalized masks
+msk_grid = imshow(msk_grid)
+
+#Calculating class weights
+dataset = image_datasets['Train']
+class_counts = Counter(dataset.targets)
+
+dataset = myDataset_train()
+class_counts = Counter(dataset.targets)
+class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(dataset.targets), y=dataset.targets)
+print(class_weights)
+class_weights_np = np.array(class_weights, dtype=np.float32)
+class_weights_tensor = torch.from_numpy(class_weights_np)
+if torch.cuda.is_available():
+    class_weights_tensor = class_weights_tensor.cuda()
+
+#Focal Loss
+foc_loss = losses.FocalLoss('binary')
+
+EPOCHS = 10
 
 #defining the model
 class MyCustomEfficientNetB0(nn.Module):
@@ -509,37 +539,6 @@ def overlay_gradCAM(img, cam3):
     return (new_img * 255.0 / new_img.max()).astype("float32")
 
 
-#Main code
-#Loading data
-dataloaders = load_data(batch_size=16)
-
-# get images
-images, labels, masks = next(iter(dataloaders['Train']))
-# create grid of images
-img_grid = torchvision.utils.make_grid(images)
-img_grid = imshow(img_grid)
-# create grid of masks
-msk_grid = torchvision.utils.make_grid(masks)
-# get and show the unnormalized masks
-msk_grid = imshow(msk_grid)
-
-#Calculating class weights
-dataset = image_datasets['Train']
-class_counts = Counter(dataset.targets)
-
-dataset = myDataset_train()
-class_counts = Counter(dataset.targets)
-class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(dataset.targets), y=dataset.targets)
-print(class_weights)
-class_weights_np = np.array(class_weights, dtype=np.float32)
-class_weights_tensor = torch.from_numpy(class_weights_np)
-if torch.cuda.is_available():
-    class_weights_tensor = class_weights_tensor.cuda()
-
-#Focal Loss
-foc_loss = losses.FocalLoss('binary')
-
-EPOCHS = 10
 
 #Hyperparameter tuning
 study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.HyperbandPruner(min_resource=1, max_resource=6, reduction_factor=5))
@@ -567,7 +566,6 @@ dropout_best = best_params["dropout"]
 
 print(f"Best Params: \n learning_rate: {learning_rate_best}, \n optimizer: {optimizer_best}, \n dense_0_units: {dense_0_units_best}, \n batch_size: {batch_size_best}, \n lambda_val: {lambda_val_best}, \n dropout: {dropout_best}")
     
-
 model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=dense_0_units_best, dense_1_units=dense_1_units_best).to(device)
 
 #Testing
