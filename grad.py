@@ -239,7 +239,6 @@ class myDataset_test(Dataset):
         msk_tensor = val_transforms(msk_color)
         class_id = self.class_map[class_name]
         class_id = torch.tensor(class_id)
-        #class_id_one_hot = F.one_hot(class_id, num_classes=2).float()
 
         return img_tensor, class_id, msk_tensor
 
@@ -427,7 +426,7 @@ def train_and_evaluate(param, model, trial):
             #print(train_label)
             train_input = train_input.to(device)
             train_mask = train_mask.to(device)
-            targets = torch.argmax(train_label, dim=1)
+            targets = F.one_hot(train_label.squeeze(), num_classes=2).float().to(device)
 
             output, targets_, xe_loss_, gcam_losses_ = model(train_input, targets, train_mask, batch_size=train_input.size(0), dropout=nn.Dropout(param['dropout']))
            
