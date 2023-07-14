@@ -603,7 +603,7 @@ model = MyCustomEfficientNetB0(pretrained=True, dense_0_units=dense_0_units_best
 test_dataset = myDataset_test(transform=None)
 test_dataloader = torch.utils.data.DataLoader(
     myDataset_test(transform=None),
-    batch_size=8,
+    batch_size=batch_size_best,
     shuffle=False,
     num_workers=0
 )
@@ -617,8 +617,8 @@ for inputs, labels, masks in test_dataloader:
     inputs = inputs
     labels = labels
     masks = masks
-    outputs, targets_, xe_loss_, gcam_losses_, imgs_feats = model(inputs, labels, masks, batch_size=inputs.size(0), dropout=nn.Dropout(0.8))
-    loss = xe_loss_.mean() + 0.2 * gcam_losses_
+    outputs, targets_, xe_loss_, gcam_losses_, imgs_feats = model(inputs, labels, masks, batch_size=inputs.size(0), dropout=nn.Dropout(dropout_best))
+    loss = xe_loss_.mean() + lambda_val_best * gcam_losses_
     _, preds = torch.max(outputs, 1)
     all_preds.extend(preds)
     all_labels.extend(labels)
