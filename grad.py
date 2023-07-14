@@ -33,6 +33,7 @@ from skimage.color import rgb2gray
 import warnings
 warnings.filterwarnings('ignore')
 from sklearn.metrics import f1_score
+from sklearn.utils import shuffle
 
 
 class myDataset_train(Dataset):
@@ -60,12 +61,9 @@ class myDataset_train(Dataset):
             for masks_path in sorted(glob.glob(msk_path + "/*.npy")):
                   self.masks.append(masks_path)
         self.images, self.targets, self.masks = shuffle(self.images, self.targets, self.masks, random_state=101)
-        # print(self.images[-100])
-        # print(self.targets[-100])
-        # print(self.masks[-100])
-        # print(len(self.images))
-        # print(len(self.targets))
-        # print(len(self.masks))
+        print(self.images[-100])
+        print(self.targets[-100])
+        print(self.masks[-100])
         self.class_map = {"HGG_t2" : 0, "LGG_t2": 1}
         self.img_dim = (224, 224)
 
