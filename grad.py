@@ -241,6 +241,14 @@ class myDataset_test(Dataset):
 
         return img_tensor, class_id, msk_tensor
 
+
+image_datasets = {
+    'Train': 
+    myDataset_train(),
+    'Val': 
+    myDataset_val(transform = val_transforms)
+}
+
 def load_data(batch_size):
 
     dataloaders = {
