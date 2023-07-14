@@ -280,7 +280,8 @@ class myDataset_test(Dataset):
 
 image_datasets = {
     'Train': myDataset_train(),
-    'Val': myDataset_val(transform=val_transforms)
+    'Val': myDataset_val(transform=val_transforms),
+    'Test': myDataset_test(transform=val_transforms),
 }
 
 
@@ -297,8 +298,15 @@ def load_data(batch_size):
             batch_size=batch_size,
             shuffle=False,
             num_workers=0
+        ),
+        'Test': torch.utils.data.DataLoader(
+            myDataset_test(transform=val_transforms),
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=0
         )
     }
+    
     return dataloaders
 
 
